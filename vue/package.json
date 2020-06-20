@@ -1,0 +1,67 @@
+{
+    "name": "@appstate-fast/vue",
+    "version": "3.0.0-rc.3",
+    "description": "The flexible, fast and extendable state management for Vue that is based on hooks and state usage tracking.",
+    "license": "MIT",
+    "author": {
+        "name": "Bruce Wayne"
+    },
+    "repository": {
+        "url": "https://github.com/pathscale/appstate-fast"
+    },
+    "bugs": {
+        "url": "https://github.com/pathscale/appstate-fast/issues"
+    },
+    "homepage": "https://github.com/pathscale/appstate-fast",
+    "main": "dist/index.js",
+    "module": "dist/index.es.js",
+    "jsnext:main": "dist/index.es.js",
+    "engines": {
+        "node": ">=8",
+        "npm": ">=5"
+    },
+    "scripts": {
+        "start": "rollup -c -w",
+        "build": "rollup -c",
+        "build:watch": "yarn run start",
+        "lint": "tslint --project .",
+        "clean": "rimraf dist",
+        "clean-deps": "rimraf node_modules",
+        "test": "cross-env CI=1 react-scripts test --env=jsdom",
+        "test:watch": "react-scripts test --env=jsdom --watch",
+        "check-updates": "ncu",
+        "apply-updates": "ncu -u",
+        "build:docs": "typedoc --plugin typedoc-plugin-markdown --hideBreadcrumbs --tsconfig ./tsconfig.typedoc.json --exclude \"dist/**.js\" --gitRevision master --includeDeclarations --excludeExternals --excludeNotExported --categorizeByGroup false --readme none --hideGenerator --mode file --out dist/docs && concat-md --decrease-title-levels --dir-name-as-title dist/docs > dist/typedoc.md && rimraf dist/docs && replace '></a>' '/>' dist/typedoc.md && replace 'Ƭ [*][*]([A-Za-z0-9]+)[*][*]: [*](.*)[*]' 'Ƭ **$1**: *`$2`*' dist/typedoc.md && replace 'Ƭ [*][*]State[*][*]: [*](.*)[*]' 'Ƭ **State**: *[StateMixin](#interfacesstatemixinmd) & `S extends object` ? `{ readonly [K in keyof Required<S>]: State<S[K]> }` : [StateMethods](#interfacesstatemethodsmd)*' dist/typedoc.md && replace '[(]statemethods.md#\\[self\\][)]' '(#self)' dist/typedoc.md && replace '[(]statemixin.md#\\[self\\][)]' '(#self-1)' dist/typedoc.md && replace '[(]statemixindestroy.md#\\[self\\][)]' '(#self-2)' dist/typedoc.md && replace '# @appstate-fast/core' '' dist/typedoc.md && replace '<a name=\"readmemd\"/>' '\n---\nid: typedoc-appstate-fast-core\ntitle: API @appstate-fast/core\n---' dist/typedoc.md && replace '\n\n(---)' '$1' dist/typedoc.md && mv dist/typedoc.md docs/index/docs/typedoc-appstate-fast-core.md",
+        "prepare": "yarn build"
+    },
+    "dependencies": {},
+    "peerDependencies": {
+        "vue": "^3.0.0-beta.14"
+    },
+    "devDependencies": {
+        "@babel/core": "7.9.6",
+        "@babel/runtime": "7.9.6",
+        "@rollup/plugin-babel": "5.0.2",
+        "@rollup/plugin-commonjs": "12.0.0",
+        "@rollup/plugin-node-resolve": "8.0.0",
+        "@rollup/plugin-url": "5.0.0",
+        "@types/jest": "25.2.3",
+        "concat-md": "0.3.5",
+        "cross-env": "7.0.2",
+        "npm-check-updates": "6.0.1",
+        "replace": "1.2.0",
+        "rimraf": "3.0.2",
+        "rollup": "2.10.5",
+        "rollup-plugin-peer-deps-external": "2.2.2",
+        "rollup-plugin-typescript2": "0.26.0",
+        "ts-jest": "26.0.0",
+        "tslint": "6.1.2",
+        "typedoc": "0.17.7",
+        "typedoc-plugin-markdown": "2.2.17",
+        "typescript": "3.9.3",
+        "vue": "3.0.0-beta.14"
+    },
+    "files": [
+        "dist"
+    ]
+}
