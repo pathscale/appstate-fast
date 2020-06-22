@@ -27,6 +27,7 @@ export default {
         replace({
             // TODO esm should preserve `(process.env.NODE_ENV !== 'production')`:
             __DEV__: process.env.NODE_ENV !== "production",
+            __LOGGING__: true,
         }),
         external(),
         url(),
