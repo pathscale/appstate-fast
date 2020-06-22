@@ -1,7 +1,7 @@
 import { onUnmounted, customRef, computed, defineComponent, Component } from 'vue';
 
 // const logger = console
-const logger = {
+const logger =  __DEV__ ? console : {
     log(...args: any[]) {
         
     },

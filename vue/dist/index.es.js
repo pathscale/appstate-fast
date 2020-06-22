@@ -30,27 +30,7 @@ function __extends(d, b) {
 }
 
 // const logger = console
-var logger = {
-    log: function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-    },
-    warn: function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-    },
-    error: function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        logger.log.apply(logger, args);
-    }
-};
+var logger =  console ;
 /**
  * Special symbol which is used as a property to switch
  * between [StateMethods](#interfacesstatemethodsmd) and the corresponding [State](#state).
