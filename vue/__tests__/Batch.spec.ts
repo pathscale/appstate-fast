@@ -25,7 +25,7 @@ test('object: should rerender used via nested batch update', async () => {
     expect(renderTimes).toStrictEqual(1);
     expect(result.field1[self].get()).toStrictEqual(0);
     expect(result.field2[self].get()).toStrictEqual('str');
-  });
+    
 })
 
 it.todo('object: should rerender used via nested batch merge')
