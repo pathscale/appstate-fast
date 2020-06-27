@@ -24,7 +24,6 @@ test("array: should rerender used", async () => {
     expect(renderTimes).toBe(1);
 
     expect(result[self].get()[0]).toStrictEqual(0);
-
     result[0][self].set((p) => p + 1);
     await nextTick();
 
