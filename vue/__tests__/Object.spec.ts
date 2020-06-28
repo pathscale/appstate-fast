@@ -199,25 +199,36 @@ test('object: should not rerender used symbol properties', async () => {
     expect(result[self].get().field1).toEqual(0);
 });
 
-// test('object: should rerender used when set to the same', async () => {
-//     let renderTimes = 0
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState({
-//             field: 1
-//         })
-//     });
-//     expect(renderTimes).toStrictEqual(1);
-//     expect(result.current[self].get()).toEqual({ field: 1 });
+test('object: should rerender used when set to the same', async () => {
+  let renderTimes = 0
+  let result: State<{field: number}> = {} as any;
 
-//     act(() => {
-//         result.current[self].set(p => p);
-//     });
-//     expect(renderTimes).toStrictEqual(2);
-//     expect(result.current[self].get()).toEqual({ field: 1 });
-//     expect(Object.keys(result.current)).toEqual(['field']);
-//     expect(Object.keys(result.current[self].get())).toEqual(['field']);
-// });
+  const wrapper = mount({      
+      setup() {            
+          result = useState({
+            field: 1
+          });
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  });
+
+    expect(renderTimes).toStrictEqual(1);
+    expect(result[self].get()).toEqual({ field: 1 });
+
+    result[self].set(p => p);
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(2);
+    expect(result[self].get()).toEqual({ field: 1 });
+    expect(Object.keys(result)).toEqual(['field']);
+    expect(Object.keys(result[self].get())).toEqual(['field']);
+});
 
 // test('object: should rerender when keys used', async () => {
 //     let renderTimes = 0
