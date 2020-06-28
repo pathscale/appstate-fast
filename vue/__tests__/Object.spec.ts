@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { useState, self, State, none } from "../src";
+import { useState, createState, self, State, none } from "../src";
 import { h, nextTick } from "vue";
 
 test('object: should rerender used', async () => {
@@ -22,36 +22,47 @@ test('object: should rerender used', async () => {
           };
       },
   });
-    expect(renderTimes).toStrictEqual(1);
-    expect(result[self].get().field1).toStrictEqual(0);
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].get().field1).toStrictEqual(0);
 
-    result.field1.set(p => p + 1);
-    await nextTick();
-    
-    expect(renderTimes).toStrictEqual(2);
-    expect(result[self].get().field1).toStrictEqual(1);
-    expect(Object.keys(result)).toEqual(['field1', 'field2']);
-    expect(Object.keys(result[self].get())).toEqual(['field1', 'field2']);
+  result.field1.set(p => p + 1);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get().field1).toStrictEqual(1);
+  expect(Object.keys(result)).toEqual(['field1', 'field2']);
+  expect(Object.keys(result[self].get())).toEqual(['field1', 'field2']);
 });
 
-// test('object: should rerender used null', async () => {
-//     let renderTimes = 0
-    
-//     const state = createState<{ field: string } | null>(null)
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState(state)
-//     });
-//     expect(renderTimes).toStrictEqual(1);
-//     expect(result.current[self].value?.field).toStrictEqual(undefined);
+test('object: should rerender used null', async () => {
+    let renderTimes = 0
+    const state = createState<{ field: string } | null>(null)
 
-//     act(() => {
-//         state[self].set({ field: 'a' });
-//     });
-//     expect(renderTimes).toStrictEqual(2);
-//     expect(result.current[self].get()?.field).toStrictEqual('a');
-//     expect(Object.keys(result.current)).toEqual(['field']);
-// });
+    // let result: State<{field:string}> = {} as any;
+    let result: any = {} as any;
+    const wrapper = mount({      
+      setup() {            
+          result = useState(state);
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  });
+
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].value?.field).toStrictEqual(undefined);
+
+  state[self].set({ field: 'a' });
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()?.field).toStrictEqual('a');
+  expect(Object.keys(result)).toEqual(['field']);
+});
 
 // test('object: should rerender used property-hiphen', async () => {
 //     let renderTimes = 0
