@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { useState, createState, self, State, none } from "../src";
+import { useState, createState, self, State } from "../src";
 import { h, nextTick } from "vue";
 
 test('object: should rerender used', async () => {
@@ -35,22 +35,22 @@ test('object: should rerender used', async () => {
 });
 
 test('object: should rerender used null', async () => {
-    let renderTimes = 0
-    const state = createState<{ field: string } | null>(null)
+  let renderTimes = 0
+  const state = createState<{ field: string } | null>(null)
 
-    // let result: State<{field:string}> = {} as any;
-    let result: any = {} as any;
-    const wrapper = mount({      
-      setup() {            
-          result = useState(state);
-          return () => {
-              ++renderTimes;
-              return h(
-                  "div",
-                  Object.keys(result).map((x) => x)
-              );
-          };
-      },
+  // let result: State<{field:string}> = {} as any;
+  let result: any = {} as any;
+  const wrapper = mount({      
+    setup() {            
+        result = useState(state);
+        return () => {
+            ++renderTimes;
+            return h(
+                "div",
+                Object.keys(result).map((x) => x)
+            );
+        };
+    },
   });
 
   expect(renderTimes).toStrictEqual(1);
@@ -64,24 +64,35 @@ test('object: should rerender used null', async () => {
   expect(Object.keys(result)).toEqual(['field']);
 });
 
-// test('object: should rerender used property-hiphen', async () => {
-//     let renderTimes = 0
+test('object: should rerender used property-hiphen', async () => {
+    let renderTimes = 0
+    const state = createState<{ 'hiphen-property': string }>({ 'hiphen-property': 'value' })
     
-//     const state = createState<{ 'hiphen-property': string }>({ 'hiphen-property': 'value' })
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState(state)
-//     });
-//     expect(renderTimes).toStrictEqual(1);
-//     expect(result.current[self].value['hiphen-property']).toStrictEqual('value');
+    // let result: State<StateMixin<{ 'hiphen-property': string; }> = {} as any;
+    let result: any = {} as any;
+    const wrapper = mount({      
+      setup() {            
+          result = useState(state);
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+    });    
 
-//     act(() => {
-//         state['hiphen-property'].set('updated');
-//     });
-//     expect(renderTimes).toStrictEqual(2);
-//     expect(result.current['hiphen-property'].get()).toStrictEqual('updated');
-//     expect(Object.keys(result.current)).toEqual(['hiphen-property']);
-// });
+    expect(renderTimes).toStrictEqual(1);
+    expect(result[self].value['hiphen-property']).toStrictEqual('value');
+
+    state['hiphen-property'].set('updated');
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(2);
+    expect(result['hiphen-property'].get()).toStrictEqual('updated');
+    expect(Object.keys(result)).toEqual(['hiphen-property']);
+});
 
 // test('object: should rerender used (boolean-direct)', async () => {
 //     let renderTimes = 0
