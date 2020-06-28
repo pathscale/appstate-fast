@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { useState, self, State, none} from "../src";
+import { useState, createState, self, State} from "../src";
 import { h, nextTick } from "vue";
 
 test('complex: should rerender used', async () => {
@@ -200,5 +200,40 @@ test('complex: should not rerender unused self', async () => {
   expect(renderTimes).toStrictEqual(1);
   expect(result[0][self].get().field1).toStrictEqual(2);
 })
+
 it.todo('complex: should delete property when set to none')
-it.todo('complex: should auto save latest state for unmounted')
+
+test('complex: should auto save latest state for unmounted', async () => {
+  let renderTimes = 0;
+
+  const state = createState([{
+    field1: 0,
+    field2: 'str'
+  }])
+
+  let result: any // we need set up the type here?  
+
+  const wrapper = mount({      
+      setup() {            
+          result = useState(state);
+          
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  })
+  const unmountedLink = state[0]
+  expect(unmountedLink.field1[self].get()).toStrictEqual(0);
+  expect(result[0][self].get().field1).toStrictEqual(0);
+
+  result[0].field1[self].set(2);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(unmountedLink.field1[self].get()).toStrictEqual(2);
+  expect(result[0][self].get().field1).toStrictEqual(2);
+})
