@@ -63,7 +63,7 @@ test("object: should rerender used after merge update", async () => {
         field3: number,
         field4: number,
         field5: number,
-        field6: number;
+        field6: number
     }> = {} as any;
 
     const wrapper = mount({
@@ -103,15 +103,62 @@ test("object: should rerender used after merge update", async () => {
     ]);
 });
 
-it.todo("object: should rerender used after merge update");
-it.todo("object: should rerender used after merge insert");
-it.todo("object: should rerender used after merge delete");
-it.todo("object: should rerender used after merge complex");
-it.todo("object: should not rerender unused after merge update");
-it.todo("array: should rerender used after merge update");
-it.todo("array: should rerender used after merge insert");
-it.todo("array: should rerender used after merge concat");
-it.todo("array: should rerender used after merge concat (scoped)");
-it.todo("array: should rerender used after merge delete");
-it.todo("array: should rerender used after merge complex");
-it.todo("array: should not rerender unused after merge update");
+
+test("object: should rerender used after merge insert", async () => {
+    let renderTimes = 0;
+
+    //TODO THE newField PROPERTY SHOULD BE OPTIONAL BUT RESULT: STATE<> IS NOT ACCEPTING newField?: number,
+    // let result: State<{
+    //     field1: number,
+    //     field2: number,
+    //     field3: number,
+    //     field4: number,
+    //     field5: number,
+    //     field6: number,
+    //     newField?: number,
+    // }> = {} as any;
+    let result: any = {}
+
+    const wrapper = mount({
+        setup() {
+            result = useState({
+                field1: 1,
+                field2: 2,
+                field3: 3,
+                field4: 4,
+                field5: 5,
+                field6: 6,
+            });
+            return () => {
+                ++renderTimes;
+                return h(
+                    "div",
+                    Object.keys(result).map((x) => x)
+                );
+            };
+        },
+    });
+    expect(renderTimes).toStrictEqual(1);
+    expect(result.field1[self].get()).toStrictEqual(1);
+    
+    result[self].merge(() => ({ newField: 100 }));
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(2);
+    expect(result.field1[self].get()).toStrictEqual(1);
+    expect(Object.keys(result)).toEqual(
+        ['field1', 'field2', 'field3', 'field4', 'field5', 'field6', 'newField']);
+
+})
+
+
+// it.todo("object: should rerender used after merge delete");
+// it.todo("object: should rerender used after merge complex");
+// it.todo("object: should not rerender unused after merge update");
+// it.todo("array: should rerender used after merge update");
+// it.todo("array: should rerender used after merge insert");
+// it.todo("array: should rerender used after merge concat");
+// it.todo("array: should rerender used after merge concat (scoped)");
+// it.todo("array: should rerender used after merge delete");
+// it.todo("array: should rerender used after merge complex");
+// it.todo("array: should not rerender unused after merge update");
