@@ -158,36 +158,46 @@ test('object: should rerender used via nested', async () => {
   expect(Object.keys(result[self].get())).toEqual(['field1', 'field2']);
 });
 
-// // tslint:disable-next-line: no-any
-// const TestSymbol = Symbol('TestSymbol') as any;
-// test('object: should not rerender used symbol properties', async () => {
-//     let renderTimes = 0
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState({
-//             field1: 0,
-//             field2: 'str'
-//         })
-//     });
+// tslint:disable-next-line: no-any
+const TestSymbol = Symbol('TestSymbol') as any;
+test('object: should not rerender used symbol properties', async () => {
+  let renderTimes = 0
+  let result: State<{field1: number, field2: string}> = {} as any;
 
-//     expect(TestSymbol in result.current[self].get()).toEqual(false)
-//     expect(TestSymbol in result.current).toEqual(false)
-//     expect(result.current[self].get()[TestSymbol]).toEqual(undefined)
-//     expect(result.current[TestSymbol]).toEqual(undefined)
-    
-//     expect(() => { result.current[self].get().field1 = 100 })
-//     .toThrow('Error: HOOKSTATE-202 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-202')
-    
-//     result.current[self].get()[TestSymbol] = 100
+  const wrapper = mount({      
+      setup() {            
+          result = useState({
+            field1: 0,
+            field2: 'str'
+          });
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  });
 
-//     expect(renderTimes).toStrictEqual(1);
-//     expect(TestSymbol in result.current[self].get()).toEqual(false)
-//     expect(TestSymbol in result.current).toEqual(false)
-//     expect(result.current[self].get()[TestSymbol]).toEqual(100);
-//     expect(Object.keys(result.current)).toEqual(['field1', 'field2']);
-//     expect(Object.keys(result.current[self].get())).toEqual(['field1', 'field2']);
-//     expect(result.current[self].get().field1).toEqual(0);
-// });
+    expect(TestSymbol in result[self].get()).toEqual(false)
+    expect(TestSymbol in result).toEqual(false)
+    expect(result[self].get()[TestSymbol]).toEqual(undefined)
+    expect(result[TestSymbol]).toEqual(undefined)
+    
+    expect(() => { result[self].get().field1 = 100 })
+    .toThrow('Error: APPSTATE-FAST-202 [path: /]. See https://vue3.dev/docs/exceptions#appastate-fast-202')
+    
+    result[self].get()[TestSymbol] = 100
+
+    expect(renderTimes).toStrictEqual(1);
+    expect(TestSymbol in result[self].get()).toEqual(false)
+    expect(TestSymbol in result).toEqual(false)
+    expect(result[self].get()[TestSymbol]).toEqual(100);
+    expect(Object.keys(result)).toEqual(['field1', 'field2']);
+    expect(Object.keys(result[self].get())).toEqual(['field1', 'field2']);
+    expect(result[self].get().field1).toEqual(0);
+});
 
 // test('object: should rerender used when set to the same', async () => {
 //     let renderTimes = 0
