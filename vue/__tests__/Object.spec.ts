@@ -95,9 +95,9 @@ test('object: should rerender used property-hiphen', async () => {
 });
 
 test('object: should rerender used (boolean-direct)', async () => {
-    let renderTimes = 0
-    // let result: State<{field1:boolean, field2: string}> = {} as any;
-    let result: any = {} as any;
+  let renderTimes = 0
+  // let result: State<{field1:boolean, field2: string}> = {} as any;
+  let result: any = {} as any;
 
   const wrapper = mount({      
       setup() {            
@@ -126,26 +126,37 @@ test('object: should rerender used (boolean-direct)', async () => {
   expect(Object.keys(result[self].get())).toEqual(['field1', 'field2']);
 });
 
-// test('object: should rerender used via nested', async () => {
-//     let renderTimes = 0
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState({
-//             field1: 0,
-//             field2: 'str'
-//         })
-//     });
-//     expect(renderTimes).toStrictEqual(1);
-//     expect(result.current.field1[self].get()).toStrictEqual(0);
+test('object: should rerender used via nested', async () => {
+  let renderTimes = 0
+  let result: State<{field1: number, field2: string}> = {} as any;
 
-//     act(() => {
-//         result.current.field1[self].set(p => p + 1);
-//     });
-//     expect(renderTimes).toStrictEqual(2);
-//     expect(result.current.field1[self].get()).toStrictEqual(1);
-//     expect(Object.keys(result.current)).toEqual(['field1', 'field2']);
-//     expect(Object.keys(result.current[self].get())).toEqual(['field1', 'field2']);
-// });
+  const wrapper = mount({      
+      setup() {            
+          result = useState({
+            field1: 0,
+            field2: 'str'
+          });
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  });
+
+  expect(renderTimes).toStrictEqual(1);
+  expect(result.field1[self].get()).toStrictEqual(0);
+
+  result.field1[self].set(p => p + 1);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result.field1[self].get()).toStrictEqual(1);
+  expect(Object.keys(result)).toEqual(['field1', 'field2']);
+  expect(Object.keys(result[self].get())).toEqual(['field1', 'field2']);
+});
 
 // // tslint:disable-next-line: no-any
 // const TestSymbol = Symbol('TestSymbol') as any;
