@@ -432,27 +432,40 @@ test('object: should delete property when set to none', async () => {
     //////////////////////NEED TO CHECK IT HERE
 });
 
-// test('object: should auto save latest state for unmounted', async () => {
-//     const state = createState({
-//         field1: 0,
-//         field2: 'str'
-//     })
-//     let renderTimes = 0
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState(state)
-//     });
-//     const unmountedLink = state
-//     expect(unmountedLink.field1[self].get()).toStrictEqual(0);
-//     expect(result.current[self].get().field1).toStrictEqual(0);
+test('object: should auto save latest state for unmounted', async () => {
+    const state = createState({
+      field1: 0,
+      field2: 'str'
+    })
+    let renderTimes = 0
+    
+    let result: any // do we need set up the type here?  
 
-//     act(() => {
-//         result.current.field1[self].set(2);
-//     });
-//     expect(renderTimes).toStrictEqual(2);
-//     expect(unmountedLink.field1[self].get()).toStrictEqual(2);
-//     expect(result.current[self].get().field1).toStrictEqual(2);
-// });
+  const wrapper = mount({      
+      setup() {            
+          result = useState(state);
+          
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  })
+    
+    const unmountedLink = state
+    expect(unmountedLink.field1[self].get()).toStrictEqual(0);
+    expect(result[self].get().field1).toStrictEqual(0);
+
+    result.field1[self].set(2);
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(2);
+    expect(unmountedLink.field1[self].get()).toStrictEqual(2);
+    expect(result[self].get().field1).toStrictEqual(2);
+});
 
 // test('object: should set to null', async () => {
 //     let renderTimes = 0
