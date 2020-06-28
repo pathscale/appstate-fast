@@ -268,39 +268,50 @@ test('object: should rerender when keys used', async () => {
   
   result[self].set(null);
   await nextTick();
-  
+
   expect(renderTimes).toStrictEqual(3);
   expect(result[self].keys).toEqual(undefined);
 });
 
-// test('object: should rerender unused when new element', async () => {
-//     let renderTimes = 0
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState({
-//             field1: 0,
-//             field2: 'str'
-//         })
-//     });
-//     expect(renderTimes).toStrictEqual(1);
+test('object: should rerender unused when new element', async () => {
+  let renderTimes = 0
+let result: State<{field1:number, field2: string}> = {} as any;
 
-//     act(() => {
-//         // tslint:disable-next-line: no-string-literal
-//         result.current['field3'][self].set(1);
-//     });
-//     expect(renderTimes).toStrictEqual(2);
-//     expect(result.current[self].get()).toEqual({
-//         field1: 0,
-//         field2: 'str',
-//         field3: 1
-//     });
-//     expect(Object.keys(result.current)).toEqual(['field1', 'field2', 'field3']);
-//     expect(Object.keys(result.current[self].get())).toEqual(['field1', 'field2', 'field3']);
-//     expect(result.current[self].get().field1).toStrictEqual(0);
-//     expect(result.current[self].get().field2).toStrictEqual('str');
-//     // tslint:disable-next-line: no-string-literal
-//     expect(result.current[self].get()['field3']).toStrictEqual(1);
-// });
+const wrapper = mount({      
+    setup() {            
+        result = useState({
+          field1: 0,
+          field2: 'str'
+        });
+        return () => {
+            ++renderTimes;
+            return h(
+                "div",
+                Object.keys(result).map((x) => x)
+            );
+        };
+    },
+});
+
+  expect(renderTimes).toStrictEqual(1);
+
+  // tslint:disable-next-line: no-string-literal
+  result['field3'][self].set(1);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()).toEqual({
+      field1: 0,
+      field2: 'str',
+      field3: 1
+  });
+  expect(Object.keys(result)).toEqual(['field1', 'field2', 'field3']);
+  expect(Object.keys(result[self].get())).toEqual(['field1', 'field2', 'field3']);
+  expect(result[self].get().field1).toStrictEqual(0);
+  expect(result[self].get().field2).toStrictEqual('str');
+  // tslint:disable-next-line: no-string-literal
+  expect(result[self].get()['field3']).toStrictEqual(1);
+});
 
 // test('object: should not rerender unused property', async () => {
 //     let renderTimes = 0
