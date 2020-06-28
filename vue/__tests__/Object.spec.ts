@@ -390,56 +390,56 @@ test('object: should delete property when set to none', async () => {
       },
   });
 
-    expect(renderTimes).toStrictEqual(1);
-    expect(result[self].get().field1).toStrictEqual(0);
-    
-    // deleting existing property
-    result.field1[self].set(none);
-    await nextTick();
-    
-    expect(renderTimes).toStrictEqual(2);
-    expect(result[self].get()).toEqual({ field2: 'str', field3: true });
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].get().field1).toStrictEqual(0);
+  
+  // deleting existing property
+  result.field1[self].set(none);
+  await nextTick();
+  
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()).toEqual({ field2: 'str', field3: true });
 
-    // deleting non existing property
-    result.field1[self].set(none);
-    // await nextTick(); // if uncommented unsuccessful test
+  // deleting non existing property
+  result.field1[self].set(none);
+  // await nextTick(); // if uncommented unsuccessful test
 
-    expect(renderTimes).toStrictEqual(2);
-    expect(result[self].get()).toEqual({ field2: 'str', field3: true });
-    
-    // inserting property
-    result.field1[self].set(1);
-    await nextTick();
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()).toEqual({ field2: 'str', field3: true });
+  
+  // inserting property
+  result.field1[self].set(1);
+  await nextTick();
 
-    expect(renderTimes).toStrictEqual(3);
-    expect(result[self].get().field1).toEqual(1);
+  expect(renderTimes).toStrictEqual(3);
+  expect(result[self].get().field1).toEqual(1);
 
-    // deleting existing but not used in render property
-    result.field2[self].set(none);
-    await nextTick();
+  // deleting existing but not used in render property
+  result.field2[self].set(none);
+  await nextTick();
 
-    expect(renderTimes).toStrictEqual(4);
-    expect(result[self].get()).toEqual({ field1: 1, field3: true });
+  expect(renderTimes).toStrictEqual(4);
+  expect(result[self].get()).toEqual({ field1: 1, field3: true });
 
 
-    //////////////////////NEED TO CHECK IT HERE
-    // deleting root value makes it promised    
-    // result[self].set(none)
-    // await nextTick();
-    //////////////////////NEED TO CHECK IT HERE
-    // expect(result[self].map(() => false, () => true)).toEqual(true)
-    // expect(renderTimes).toStrictEqual(5);
-    //////////////////////NEED TO CHECK IT HERE
+  //////////////////////NEED TO CHECK IT HERE
+  // deleting root value makes it promised    
+  // result[self].set(none)
+  // await nextTick();
+  //////////////////////NEED TO CHECK IT HERE
+  // expect(result[self].map(() => false, () => true)).toEqual(true)
+  // expect(renderTimes).toStrictEqual(5);
+  //////////////////////NEED TO CHECK IT HERE
 });
 
 test('object: should auto save latest state for unmounted', async () => {
-    const state = createState({
-      field1: 0,
-      field2: 'str'
-    })
-    let renderTimes = 0
-    
-    let result: any // do we need set up the type here?  
+  const state = createState({
+    field1: 0,
+    field2: 'str'
+  })
+  let renderTimes = 0
+  
+  let result: any // do we need set up the type here?  
 
   const wrapper = mount({      
       setup() {            
@@ -455,16 +455,16 @@ test('object: should auto save latest state for unmounted', async () => {
       },
   })
     
-    const unmountedLink = state
-    expect(unmountedLink.field1[self].get()).toStrictEqual(0);
-    expect(result[self].get().field1).toStrictEqual(0);
+  const unmountedLink = state
+  expect(unmountedLink.field1[self].get()).toStrictEqual(0);
+  expect(result[self].get().field1).toStrictEqual(0);
 
-    result.field1[self].set(2);
-    await nextTick();
+  result.field1[self].set(2);
+  await nextTick();
 
-    expect(renderTimes).toStrictEqual(2);
-    expect(unmountedLink.field1[self].get()).toStrictEqual(2);
-    expect(result[self].get().field1).toStrictEqual(2);
+  expect(renderTimes).toStrictEqual(2);
+  expect(unmountedLink.field1[self].get()).toStrictEqual(2);
+  expect(result[self].get().field1).toStrictEqual(2);
 });
 
 test('object: should set to null', async () => {
@@ -474,7 +474,6 @@ test('object: should set to null', async () => {
   const wrapper = mount({      
       setup() {            
           result = useState<{} | null>({})
-
           return () => {
               ++renderTimes;
               return h(
@@ -484,10 +483,6 @@ test('object: should set to null', async () => {
           };
       },
   });
-  // const { result } = renderHook(() => {
-  //     renderTimes += 1;
-  //     return useState<{} | null>({})
-  // });
 
   const _unused = result[self].get()
   result[self].set(p => null);
@@ -496,19 +491,30 @@ test('object: should set to null', async () => {
   expect(renderTimes).toStrictEqual(2);
 });
 
-// test('object: should denull', async () => {
-//     let renderTimes = 0
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState<{} | null>({})
-//     });
+test('object: should denull', async () => {
+  let renderTimes = 0
+  let result: State<{} | null> = {} as any;
+  
+  const wrapper = mount({      
+      setup() {            
+          result = useState<{} | null>({})
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  });
 
-//     const state = result.current[self].ornull
-//     expect(state ? state[self].get() : null).toEqual({})
-//     act(() => {
-//         result.current[self].set(p => null);
-//         result.current[self].set(null);
-//     });
-//     expect(renderTimes).toStrictEqual(2);
-//     expect(result.current[self].ornull).toEqual(null)
-// });
+  const state = result[self].ornull
+  expect(state ? state[self].get() : null).toEqual({})
+  
+  result[self].set(p => null);
+  result[self].set(null);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].ornull).toEqual(null)
+});
