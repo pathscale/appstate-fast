@@ -3,7 +3,7 @@ import { useState, self, State } from "../src";
 import { h, nextTick } from "vue";
 
 test('object: should rerender used via nested batch update', async () => {
-  let renderTimes = 0;
+    let renderTimes = 0;
 
     let result: State<{field1:number, field2: string}> = {} as any;
 
@@ -25,9 +25,10 @@ test('object: should rerender used via nested batch update', async () => {
     expect(renderTimes).toStrictEqual(1);
     expect(result.field1[self].get()).toStrictEqual(0);
     expect(result.field2[self].get()).toStrictEqual('str');
-
-    result.field1[self].set((p) => p + 1);
-    result.field2[self].set((p) => p + 'str');
+    result[self].map(()=>{
+        result.field1[self].set((p) => p + 1);
+        result.field2[self].set((p) => p + 'str');
+    })
     await nextTick();
 
     expect(renderTimes).toStrictEqual(2);
@@ -39,7 +40,44 @@ test('object: should rerender used via nested batch update', async () => {
     
 })
 
-it.todo('object: should rerender used via nested batch merge')
+test('object: should rerender used via nested batch merge', async () => {
+    let renderTimes = 0;
+    let result: State<{field1:number, field2: string}> = {} as any;
+    const wrapper = mount({      
+        setup() {            
+            result = useState({
+              field1: 0,
+              field2: 'str'
+            });
+            return () => {
+                ++renderTimes;
+                return h(
+                    "div",
+                    result
+                );
+            };
+        },
+    });
+    expect(renderTimes).toStrictEqual(1);
+    expect(result.field1[self].get()).toStrictEqual(0);
+    expect(result.field2[self].get()).toStrictEqual('str');
+
+    result[self].map(()=>{
+        result[self].merge(p=>({
+            field1: p.field1 +1,
+            field2: p.field2 + 'str'
+        }))
+    })
+    
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(2);
+    expect(result.field1[self].get()).toStrictEqual(1);
+    expect(result.field2[self].get()).toStrictEqual('strstr');
+    
+    expect(Object.keys(result)).toEqual(['field1', 'field2']);
+    expect(Object.keys(result[self].get())).toEqual(['field1', 'field2']);
+})
 
 it.todo('object: should rerender used via nested batch double')
 
