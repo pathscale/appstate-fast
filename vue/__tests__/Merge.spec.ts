@@ -186,9 +186,64 @@ test("object: should rerender used after merge delete", async () => {
         ['field1', 'field2', 'field3', 'field4', 'field5']);
 })
 
+test("object: should rerender used after merge complex", async () => {
+    let renderTimes = 0;
 
-// it.todo("object: should rerender used after merge delete");
-// it.todo("object: should rerender used after merge complex");
+    let result: any = {} as any; // DO WE NEED TO SET UP THE TYPES HERE?
+
+    const wrapper = mount({
+        setup() {
+            result = useState<Record<string, number>>({
+                field1: 1,
+                field2: 2,
+                field3: 3,
+                field4: 4,
+                field5: 5,
+                field6: 6,
+            });
+            return () => {
+                ++renderTimes;
+                return h(
+                    "div",
+                    Object.keys(result).map((x) => x)
+                );
+            };
+        },
+    });
+    expect(renderTimes).toStrictEqual(1);
+    expect(result.field1[self].get()).toStrictEqual(1);
+    
+    result[self].merge({
+        field8: 200,
+        field6: none,
+        field2: 3,
+        field4: none,
+        field5: 2,
+        field3: none,
+        field7: 100,
+    });
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(2);
+    expect(result.field1[self].get()).toStrictEqual(1);
+    console.log(Object.keys(result))
+    expect(Object.keys(result)).toEqual([
+        "field1",
+        "field2",
+        "field5",
+        "field8",
+        "field7",
+    ]);
+    expect(result[self].get()).toEqual({
+        field1: 1,
+        field2: 3,
+        field5: 2,
+        field8: 200,
+        field7: 100,
+    });
+})
+
+
 // it.todo("object: should not rerender unused after merge update");
 // it.todo("array: should rerender used after merge update");
 // it.todo("array: should rerender used after merge insert");
