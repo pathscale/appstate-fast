@@ -230,35 +230,48 @@ test('object: should rerender used when set to the same', async () => {
     expect(Object.keys(result[self].get())).toEqual(['field']);
 });
 
-// test('object: should rerender when keys used', async () => {
-//     let renderTimes = 0
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState<{field: number, optional?: number} | null>({
-//             field: 1
-//         })
-//     });
-//     expect(renderTimes).toStrictEqual(1);
-//     expect(result.current[self].keys).toEqual(['field']);
+test('object: should rerender when keys used', async () => {
+  let renderTimes = 0
+  // let result: State<{field: number, optional: number } | null> = {} as any;
+  // let result: State<{field: number, optional: number }> = {} as any;
+  let result: any = {} as any;
 
-//     act(() => {
-//         result.current[self].ornull!.field[self].set(p => p);
-//     });
-//     expect(renderTimes).toStrictEqual(1);
-//     expect(result.current[self].keys).toEqual(['field']);
+  const wrapper = mount({      
+      setup() {            
+          result = useState<{field: number, optional?: number} | null>({
+              field: 1
+          })
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  });
 
-//     act(() => {
-//         result.current[self].ornull!.optional[self].set(2);
-//     });
-//     expect(renderTimes).toStrictEqual(2);
-//     expect(result.current[self].keys).toEqual(['field', 'optional']);
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].keys).toEqual(['field']);
+  
+  result[self].ornull!.field[self].set((p:any) => p);
+  await nextTick();
 
-//     act(() => {
-//         result.current[self].set(null);
-//     });
-//     expect(renderTimes).toStrictEqual(3);
-//     expect(result.current[self].keys).toEqual(undefined);
-// });
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].keys).toEqual(['field']);
+
+  result[self].ornull!.optional[self].set(2);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].keys).toEqual(['field', 'optional']);
+  
+  result[self].set(null);
+  await nextTick();
+  
+  expect(renderTimes).toStrictEqual(3);
+  expect(result[self].keys).toEqual(undefined);
+});
 
 // test('object: should rerender unused when new element', async () => {
 //     let renderTimes = 0
