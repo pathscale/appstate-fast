@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { useState, self, State } from "../src";
+import { useState, self, State, none } from "../src";
 import { h, nextTick } from "vue";
 
 test("primitive: should rerender used after merge update", async () => {
@@ -103,7 +103,6 @@ test("object: should rerender used after merge update", async () => {
     ]);
 });
 
-
 test("object: should rerender used after merge insert", async () => {
     let renderTimes = 0;
 
@@ -121,7 +120,7 @@ test("object: should rerender used after merge insert", async () => {
 
     const wrapper = mount({
         setup() {
-            result = useState({
+            result = useState<Record<string, number>>({
                 field1: 1,
                 field2: 2,
                 field3: 3,
@@ -149,6 +148,42 @@ test("object: should rerender used after merge insert", async () => {
     expect(Object.keys(result)).toEqual(
         ['field1', 'field2', 'field3', 'field4', 'field5', 'field6', 'newField']);
 
+})
+
+test("object: should rerender used after merge delete", async () => {
+    let renderTimes = 0;
+
+    let result: any = {} as any; // DO WE NEED TO SET UP THE TYPES HERE?
+
+    const wrapper = mount({
+        setup() {
+            result = useState<Record<string, number>>({
+                field1: 1,
+                field2: 2,
+                field3: 3,
+                field4: 4,
+                field5: 5,
+                field6: 6,
+            });
+            return () => {
+                ++renderTimes;
+                return h(
+                    "div",
+                    Object.keys(result).map((x) => x)
+                );
+            };
+        },
+    });
+    expect(renderTimes).toStrictEqual(1);
+    expect(result.field1[self].get()).toStrictEqual(1);
+    
+    result[self].merge(() => ({ field6: none }));
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(2);
+    expect(result.field1[self].get()).toStrictEqual(1);
+    expect(Object.keys(result)).toEqual(
+        ['field1', 'field2', 'field3', 'field4', 'field5']);
 })
 
 
