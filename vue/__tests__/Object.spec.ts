@@ -313,23 +313,33 @@ const wrapper = mount({
   expect(result[self].get()['field3']).toStrictEqual(1);
 });
 
-// test('object: should not rerender unused property', async () => {
-//     let renderTimes = 0
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState({
-//             field1: 0,
-//             field2: 'str'
-//         })
-//     });
-//     expect(renderTimes).toStrictEqual(1);
-    
-//     act(() => {
-//         result.current.field1[self].set(p => p + 1);
-//     });
-//     expect(renderTimes).toStrictEqual(1);
-//     expect(result.current[self].get().field1).toStrictEqual(1);
-// });
+test('object: should not rerender unused property', async () => {
+  let renderTimes = 0
+  let result: State<{field1:number, field2: string}> = {} as any;
+  
+  const wrapper = mount({      
+      setup() {            
+          result = useState({
+            field1: 0,
+            field2: 'str'
+          });
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  });
+  expect(renderTimes).toStrictEqual(1);
+  
+  result.field1[self].set(p => p + 1);
+  await nextTick();
+  
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].get().field1).toStrictEqual(1);
+});
 
 // test('object: should not rerender unused self', async () => {
 //     let renderTimes = 0
