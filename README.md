@@ -3,7 +3,7 @@
 </h1>
 
 <p align="center">
-  The simple but very powerful and incredibly fast state management for React that is based on hooks.
+  Fast state management for Vue3 with reduced overhead and robust API
 </p>
 <br/>
 
