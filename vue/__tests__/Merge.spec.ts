@@ -285,16 +285,156 @@ test("object: should not rerender unused after merge update", async () => {
     ]);
 })
 
+test("array: should rerender used after merge update", async () => {
+    let renderTimes = 0;
+    let result: State<number[]> = {} as any;
+    const wrapper = mount({
+        setup() {
+            result = useState([1, 2, 3, 4, 5, 6]);
 
+            return () => {
+                ++renderTimes;
+                return h(
+                    "div",
+                    result.map((x) => x.value)
+                );
+            };
+        },
+    });
+    expect(renderTimes).toStrictEqual(1);
+    expect(result[0][self].get()).toStrictEqual(1);
 
+    result[self].merge((p) => ({ 0: p[0] + 1 }));
+    await nextTick();
+    
+    expect(renderTimes).toStrictEqual(2);
+    expect(result[0][self].get()).toStrictEqual(2);
+    expect(Object.keys(result)).toEqual(["0", "1", "2", "3", "4", "5"]);
+});
 
+// test("array: should rerender used after merge insert", async () => {
+//     let renderTimes = 0;
+//     const { result } = renderHook(() => {
+//         renderTimes += 1;
+//         return useState([1, 2, 3, 4, 5, 6]);
+//     });
+//     expect(renderTimes).toStrictEqual(1);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
 
+//     act(() => {
+//         result.current[self].merge((p) => ({ 7: 100 }));
+//     });
+//     expect(renderTimes).toStrictEqual(2);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
+//     expect(result.current[self].get()).toEqual([
+//         1,
+//         2,
+//         3,
+//         4,
+//         5,
+//         6,
+//         undefined,
+//         100,
+//     ]);
+// });
 
+// test("array: should rerender used after merge concat", async () => {
+//     let renderTimes = 0;
+//     const { result } = renderHook(() => {
+//         renderTimes += 1;
+//         return useState([1, 2, 3, 4, 5, 6]);
+//     });
+//     expect(renderTimes).toStrictEqual(1);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
 
-// it.todo("array: should rerender used after merge update");
-// it.todo("array: should rerender used after merge insert");
-// it.todo("array: should rerender used after merge concat");
-// it.todo("array: should rerender used after merge concat (scoped)");
-// it.todo("array: should rerender used after merge delete");
-// it.todo("array: should rerender used after merge complex");
-// it.todo("array: should not rerender unused after merge update");
+//     act(() => {
+//         result.current[self].merge([100, 200]);
+//     });
+//     expect(renderTimes).toStrictEqual(2);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
+//     expect(result.current[self].get()).toEqual([1, 2, 3, 4, 5, 6, 100, 200]);
+// });
+
+// test("array: should rerender used after merge concat (scoped)", async () => {
+//     let renderTimes = 0;
+//     let renderTimesNested = 0;
+//     const { result } = renderHook(() => {
+//         renderTimes += 1;
+//         return useState([1, 2, 3, 4, 5, 6]);
+//     });
+//     const nested = renderHook(() => {
+//         renderTimesNested += 1;
+//         return useState(result.current);
+//     });
+//     expect(renderTimes).toStrictEqual(1);
+//     expect(result.current[self].keys).toStrictEqual([0, 1, 2, 3, 4, 5]);
+//     expect(nested.result.current[0][self].get()).toStrictEqual(1);
+
+//     act(() => {
+//         result.current[self].merge([100, 200]);
+//     });
+//     expect(renderTimes).toStrictEqual(2);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
+//     expect(result.current[self].get()).toEqual([1, 2, 3, 4, 5, 6, 100, 200]);
+// });
+
+// test("array: should rerender used after merge delete", async () => {
+//     let renderTimes = 0;
+//     const { result } = renderHook(() => {
+//         renderTimes += 1;
+//         return useState([1, 2, 3, 4, 5, 6]);
+//     });
+//     expect(renderTimes).toStrictEqual(1);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
+
+//     act(() => {
+//         result.current[self].merge((p) => ({ 3: none }));
+//     });
+//     expect(renderTimes).toStrictEqual(2);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
+//     expect(Object.keys(result.current)).toEqual(["0", "1", "2", "3", "4"]);
+//     expect(result.current[self].get()).toEqual([1, 2, 3, 5, 6]);
+// });
+
+// test("array: should rerender used after merge complex", async () => {
+//     let renderTimes = 0;
+//     const { result } = renderHook(() => {
+//         renderTimes += 1;
+//         return useState([1, 2, 3, 4, 5, 6]);
+//     });
+//     expect(renderTimes).toStrictEqual(1);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
+
+//     act(() => {
+//         result.current[self].merge({
+//             7: 200,
+//             5: none,
+//             1: 3,
+//             3: none,
+//             4: 2,
+//             2: none,
+//             6: 100,
+//         });
+//     });
+//     expect(renderTimes).toStrictEqual(2);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
+//     expect(Object.keys(result.current)).toEqual(["0", "1", "2", "3", "4"]);
+//     expect(result.current[self].get()).toEqual([1, 3, 2, 100, 200]);
+// });
+
+// test("array: should not rerender unused after merge update", async () => {
+//     let renderTimes = 0;
+//     const { result } = renderHook(() => {
+//         renderTimes += 1;
+//         return useState([1, 2, 3, 4, 5, 6]);
+//     });
+//     expect(renderTimes).toStrictEqual(1);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
+
+//     act(() => {
+//         result.current[self].merge((p) => ({ 1: 3 }));
+//     });
+//     expect(renderTimes).toStrictEqual(1);
+//     expect(result.current[0][self].get()).toStrictEqual(1);
+//     expect(Object.keys(result.current)).toEqual(["0", "1", "2", "3", "4", "5"]);
+// });
