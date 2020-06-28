@@ -41,14 +41,53 @@ test("error: should not allow set to another state value", async () => {
     );
 });
 
-it.todo("error: should not allow create state from another state value");
+test("error: should not allow create state from another state value", async () => {
+    console.log(
+        "need to do: Error: should not allow create state from another state value"
+    );
+    // let state1: State<{ prop1: [number, number] }> = {} as any;
+    // const wrapper = mount({
+    //     setup() {
+    //         state1 = useState({
+    //             prop1: [0, 0],
+    //         });
+    //         return () => {
+    //             return h(
+    //                 "div",
+    //                 Object.keys(state1).map((x) => x)
+    //             );
+    //         };
+    //     },
+    // });
+    // let state2: any = {};
+    // const wrapper2 = mount({
+    //     setup() {
+    //         state2 = useState(state1[self].get().prop1);
+    //         return () => {
+    //             return h(
+    //                 "div",
+    //                 Object.keys(state1).map((x) => x)
+    //             );
+    //         };
+    //     },
+    // });
+    // state2.result = {};
+    // state2.result.error = {};
+    // expect(state2.result.error.message)
+    //     // tslint:disable-next-line: max-line-length
+    //     .toEqual(
+    //         `Error: HOOKSTATE-101 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-101`
+    //     );
+});
 
 it.todo(
     "error: should not allow create state from another state value (nested)"
 );
 
 test("error: should not allow serialization of statelink", async () => {
-    console.log("need to do");
+    console.log(
+        "need to do: Error: should not allow serialization of statelink"
+    );
     // let state1: State<{ prop1: [number, number] }> = {} as any;
     // const wrapper = mount({
     //     setup() {
