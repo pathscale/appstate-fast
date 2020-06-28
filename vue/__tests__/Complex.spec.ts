@@ -204,7 +204,7 @@ test('complex: should not rerender unused self', async () => {
 test('complex: should delete property when set to none', async () => {
   let renderTimes = 0;
 
-  let result: any // do we need set up the type here? it's not accepting boolean maybe State should be refactored...
+  let result: any // do we need set up the type here? it's not accepting boolean
 
   const wrapper = mount({      
       setup() {            
