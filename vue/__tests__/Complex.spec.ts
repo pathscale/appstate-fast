@@ -174,31 +174,31 @@ test('complex: should not rerender unused property', async () => {
 
 })
 
-// test('complex: should not rerender unused self', async () => {
-//   let renderTimes = 0;
+test('complex: should not rerender unused self', async () => {
+  let renderTimes = 0;
 
-//   let result: State<{field1:number, field2: string}[]> = {} as any;
+  let result: State<{field1:number, field2: string}[]> = {} as any;
 
-//   const wrapper = mount({      
-//       setup() {            
-//           result = useState([{
-//             field1: 0,
-//             field2: 'str'
-//           }]);
-//           return () => {
-//               ++renderTimes;
-//               return h(
-//                   "div",
-//                   Object.keys(result).map((x) => x)
-//               );
-//           };
-//       },
-//   })
+  const wrapper = mount({      
+      setup() {            
+          result = useState([{
+            field1: 0,
+            field2: 'str'
+          }]);
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  })
 
-//   result[0].field1[self].set(2);
-//   await nextTick();
-//   expect(renderTimes).toStrictEqual(1);
-//   expect(result[0][self].get().field1).toStrictEqual(2);
-// })
+  result[0].field1[self].set(2);
+  await nextTick();
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[0][self].get().field1).toStrictEqual(2);
+})
 it.todo('complex: should delete property when set to none')
 it.todo('complex: should auto save latest state for unmounted')
