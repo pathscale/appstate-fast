@@ -68,7 +68,38 @@ test('complex: should rerender used via nested', async () => {
     expect(Object.keys(result[0][self].get())).toEqual(['field1', 'field2']);
 })
 
-it.todo('complex: should rerender used when set to the same')
+test('complex: should rerender used when set to the same', async () => {
+  let renderTimes = 0;
+
+  let result: State<[{field:number}]> = {} as any;
+
+  const wrapper = mount({
+      setup() {
+          result = useState([{
+            field: 1,
+          }]);
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  });
+
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[0][self].get()).toEqual({ field: 1 });
+
+  result[self].set(p => p);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[0][self].get()).toEqual({ field: 1 });
+  expect(Object.keys(result[0])).toEqual(['field']);
+  expect(Object.keys(result[0][self].get())).toEqual(['field']);
+})
+
 it.todo('complex: should rerender unused when new element')
 it.todo('complex: should not rerender unused property')
 it.todo('complex: should not rerender unused self')
