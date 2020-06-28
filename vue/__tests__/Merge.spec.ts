@@ -226,7 +226,6 @@ test("object: should rerender used after merge complex", async () => {
 
     expect(renderTimes).toStrictEqual(2);
     expect(result.field1[self].get()).toStrictEqual(1);
-    console.log(Object.keys(result))
     expect(Object.keys(result)).toEqual([
         "field1",
         "field2",
@@ -243,8 +242,55 @@ test("object: should rerender used after merge complex", async () => {
     });
 })
 
+test("object: should not rerender unused after merge update", async () => {
+    let renderTimes = 0;
 
-// it.todo("object: should not rerender unused after merge update");
+    let result: any = {} as any; // DO WE NEED TO SET UP THE TYPES HERE?
+
+    const wrapper = mount({
+        setup() {
+            result = useState<Record<string, number>>({
+                field1: 1,
+                field2: 2,
+                field3: 3,
+                field4: 4,
+                field5: 5,
+                field6: 6,
+            });
+            return () => {
+                ++renderTimes;
+                return h(
+                    "div",
+                    Object.keys(result).map((x) => x)
+                );
+            };
+        },
+    });
+
+    expect(renderTimes).toStrictEqual(1);
+    expect(result.field1[self].get()).toStrictEqual(1);
+
+    result[self].merge(() => ({ field2: 3 }));
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(1);
+    expect(result.field1[self].get()).toStrictEqual(1);
+    expect(Object.keys(result)).toEqual([
+        "field1",
+        "field2",
+        "field3",
+        "field4",
+        "field5",
+        "field6",
+    ]);
+})
+
+
+
+
+
+
+
 // it.todo("array: should rerender used after merge update");
 // it.todo("array: should rerender used after merge insert");
 // it.todo("array: should rerender used after merge concat");
