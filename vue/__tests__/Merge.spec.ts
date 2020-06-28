@@ -370,34 +370,55 @@ test("array: should rerender used after merge concat", async () => {
     
     result[self].merge([100, 200]);
     await nextTick();
-    
+
     expect(renderTimes).toStrictEqual(2);
     expect(result[0][self].get()).toStrictEqual(1);
     expect(result[self].get()).toEqual([1, 2, 3, 4, 5, 6, 100, 200]);
 });
 
-// test("array: should rerender used after merge concat (scoped)", async () => {
-//     let renderTimes = 0;
-//     let renderTimesNested = 0;
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState([1, 2, 3, 4, 5, 6]);
-//     });
-//     const nested = renderHook(() => {
-//         renderTimesNested += 1;
-//         return useState(result.current);
-//     });
-//     expect(renderTimes).toStrictEqual(1);
-//     expect(result.current[self].keys).toStrictEqual([0, 1, 2, 3, 4, 5]);
-//     expect(nested.result.current[0][self].get()).toStrictEqual(1);
+test("array: should rerender used after merge concat (scoped)", async () => {
+    let renderTimes = 0;
+    let renderTimesNested = 0;
+    let result: State<number[]> = {} as any;
+    let nested: State<number[]> = {} as any;
 
-//     act(() => {
-//         result.current[self].merge([100, 200]);
-//     });
-//     expect(renderTimes).toStrictEqual(2);
-//     expect(result.current[0][self].get()).toStrictEqual(1);
-//     expect(result.current[self].get()).toEqual([1, 2, 3, 4, 5, 6, 100, 200]);
-// });
+    const wrapper = mount({
+        setup() {
+            result = useState([1, 2, 3, 4, 5, 6]);
+            return () => {
+                ++renderTimes;
+                return h(
+                    "div",
+                    result.map((x) => x.value)
+                );
+            };
+        },
+    });
+
+    const wrapperNested = mount({
+        setup() {
+            nested = useState(result);
+            return () => {
+                ++renderTimesNested;
+                return h(
+                    "div",
+                    result.map((x) => x.value)
+                );
+            };
+        },
+    });
+
+    expect(renderTimes).toStrictEqual(1);
+    expect(result[self].keys).toStrictEqual([0, 1, 2, 3, 4, 5]);
+    expect(nested[0][self].get()).toStrictEqual(1);
+
+    result[self].merge([100, 200]);
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(2);
+    expect(result[0][self].get()).toStrictEqual(1);
+    expect(result[self].get()).toEqual([1, 2, 3, 4, 5, 6, 100, 200]);
+});
 
 // test("array: should rerender used after merge delete", async () => {
 //     let renderTimes = 0;
