@@ -467,20 +467,34 @@ test('object: should auto save latest state for unmounted', async () => {
     expect(result[self].get().field1).toStrictEqual(2);
 });
 
-// test('object: should set to null', async () => {
-//     let renderTimes = 0
-//     const { result } = renderHook(() => {
-//         renderTimes += 1;
-//         return useState<{} | null>({})
-//     });
+test('object: should set to null', async () => {
+  let renderTimes = 0
+  let result: State<{} | null> = {} as any;
+  
+  const wrapper = mount({      
+      setup() {            
+          result = useState<{} | null>({})
 
-//     const _unused = result.current[self].get()
-//     act(() => {
-//         result.current[self].set(p => null);
-//         result.current[self].set(null);
-//     });
-//     expect(renderTimes).toStrictEqual(2);
-// });
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  Object.keys(result).map((x) => x)
+              );
+          };
+      },
+  });
+  // const { result } = renderHook(() => {
+  //     renderTimes += 1;
+  //     return useState<{} | null>({})
+  // });
+
+  const _unused = result[self].get()
+  result[self].set(p => null);
+  result[self].set(null);
+  await nextTick();
+  expect(renderTimes).toStrictEqual(2);
+});
 
 // test('object: should denull', async () => {
 //     let renderTimes = 0
