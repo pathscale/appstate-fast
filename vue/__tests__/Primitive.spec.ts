@@ -140,7 +140,6 @@ test('primitive: should rerender used (global undefined)', async () => {
   let renderTimes = 0
   const state = createState<number | undefined>(undefined)
   let result: State<number | undefined> = undefined as any;
-  // let result: any = undefined as any;
   const wrapper = mount({
       setup() {
           result = useState(state)
@@ -165,87 +164,136 @@ test('primitive: should rerender used (global undefined)', async () => {
   expect(result[self].get()).toStrictEqual(2);
 });
 
-// test('primitive: should rerender used when set to the same', async () => {
-//   let renderTimes = 0
-//   const { result } = renderHook(() => {
-//       renderTimes += 1
-//       return useState(0)
-//   });
-//   expect(renderTimes).toStrictEqual(1);
-//   expect(result.current.get()).toStrictEqual(0);
+test('primitive: should rerender used when set to the same', async () => {
+  let renderTimes = 0;
+  let result: State<number> = {} as any;
+  const wrapper = mount({
+      setup() {
+          result = useState(0);
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  result.map((x) => x.value)
+              );
+          };
+      },
+  });
 
-//   act(() => {
-//       result.current.set(p => p);
-//   });
-//   expect(renderTimes).toStrictEqual(2);
-//   expect(result.current.get()).toStrictEqual(0);
-// });
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].get()).toStrictEqual(0);
 
-// test('primitive: should rerender when keys used', async () => {
-//   let renderTimes = 0
-//   const { result } = renderHook(() => {
-//       renderTimes += 1;
-//       return useState('value')
-//   });
-//   expect(renderTimes).toStrictEqual(1);
-//   expect(result.current.keys).toEqual(undefined);
+  result[self].set(p => p);
+  await nextTick();
 
-//   act(() => {
-//       result.current.set(p => p);
-//   });
-//   expect(renderTimes).toStrictEqual(2);
-//   expect(result.current.keys).toEqual(undefined);
-// });
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()).toStrictEqual(0);
+});
+
+test('primitive: should rerender when keys used', async () => {
+  let renderTimes = 0;
+  let result: State<string> = {} as any;
+  const wrapper = mount({
+      setup() {
+          result = useState('value');
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  result.map((x) => x.value)
+              );
+          };
+      },
+  });
+
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].keys).toEqual(undefined);
+
+  result[self].set(p => p);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].keys).toEqual(undefined);
+});
 
 // test('primitive: should not rerender unused', async () => {
-//   let renderTimes = 0
-//   const { result } = renderHook(() => {
-//       renderTimes += 1;
-//       return useState(0)
+//   let renderTimes = 0;
+//   let result: State<number> = {} as any;
+//   const wrapper = mount({
+//       setup() {
+//           result = useState(0);
+//           return () => {
+//               ++renderTimes;
+//               return h(
+//                   "div",
+//                   result.map((x) => x.value)
+//               );
+//           };
+//       },
 //   });
 //   expect(renderTimes).toStrictEqual(1);
 
-//   act(() => {
-//       result.current.set(p => p + 1);
-//   });
+//   result[self].set(p => p + 1);
+//   //await nextTick();
 //   expect(renderTimes).toStrictEqual(1);
-//   expect(result.current.get()).toStrictEqual(1);
-//   expect(() => result.current['non-existing']).toThrow('Error: HOOKSTATE-107 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-107');
-//   expect(() => result.current[0]).toThrow('Error: HOOKSTATE-107 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-107');
+//   expect(result[self].get()).toStrictEqual(1);
+//   expect(() => result[self]['non-existing']).toThrow('Error: HOOKSTATE-107 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-107');
+//   expect(() => result[self][0]).toThrow('Error: HOOKSTATE-107 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-107');
 // });
 
-// test('primitive: global state', async () => {
-//   const stateInf = createState(0)
+test('primitive: global state', async () => {
+
+  let renderTimes = 0
+  const state = createState<number>(0)
+  let result: State<number> = null as any;
+  // let result: any = undefined as any;
+  const wrapper = mount({
+      setup() {
+          result = useState(state)
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  result[self]
+              );
+          };
+      },
+  });
+
+  expect(result[self].get()).toStrictEqual(0);
+  result[self].set(p => p + 1);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()).toStrictEqual(1);
+});
+
+test('primitive: global state created locally', async () => {
+  let renderTimes = 0
+  let result: State<number> = null as any;
+  // let result: any = undefined as any;
+  const wrapper = mount({
+    setup() {
+          const state = createState<number>(0)
+          result = useState(state)
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  result[self]
+              );
+          };
+      },
+  });
+
+  expect(result[self].get()).toStrictEqual(0);
   
-//   let renderTimes = 0
-//   const { result } = renderHook(() => {
-//       renderTimes += 1;
-//       return useState(stateInf)
-//   });
+  result[self].set(p => p + 1);
+  await nextTick();
 
-//   expect(result.current.get()).toStrictEqual(0);
-//   act(() => {
-//       result.current.set(p => p + 1);
-//   });
-//   expect(renderTimes).toStrictEqual(2);
-//   expect(result.current.get()).toStrictEqual(1);
-// });
-
-// test('primitive: global state created locally', async () => {
-//   let renderTimes = 0
-//   const { result } = renderHook(() => {
-//       const state = createState(0)
-//       renderTimes += 1;
-//       return useState(state)
-//   });
-
-//   expect(result.current.get()).toStrictEqual(0);
-//   act(() => {
-//       result.current.set(p => p + 1);
-//   });
-//   expect(renderTimes).toStrictEqual(2);
-//   expect(result.current.get()).toStrictEqual(1);
-// });
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()).toStrictEqual(1);
+});
 
 // test('primitive: stale state should auto refresh', async () => {
 //   let renderTimes = 0
