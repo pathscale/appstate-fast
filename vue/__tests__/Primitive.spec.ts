@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { useState, self, State } from "../src";
+import { useState, createState, self, State } from "../src";
 import { h, nextTick } from "vue";
 
 test('primitive: should rerender used', async () => {
@@ -84,7 +84,7 @@ test('primitive: should rerender used (null)', async () => {
 
 test('primitive: should rerender used (undefined)', async () => {
   let renderTimes = 0;
-  let result: State<any> = null as any;
+  let result: State<number | undefined> = null as any;
   const wrapper = mount({
       setup() {
           result = useState<number | undefined>(undefined);
@@ -108,22 +108,33 @@ test('primitive: should rerender used (undefined)', async () => {
   expect(result[self].get()).toStrictEqual(2);
 });
 
-// test('primitive: should rerender used (global null)', async () => {
-//   let renderTimes = 0
-//   const state = createState<number | null>(null)
-//   const { result } = renderHook(() => {
-//       renderTimes += 1;
-//       return useState(state)
-//   });
-//   expect(renderTimes).toStrictEqual(1);
-//   expect(result.current.get()).toStrictEqual(null);
+test('primitive: should rerender used (global null)', async () => {
+  let renderTimes = 0
+  const state = createState<number | null>(null)
+  let result: State<number | null> = null as any;
+  // let result: any = undefined as any;
+  const wrapper = mount({
+      setup() {
+          result = useState(state)
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  result[self]
+              );
+          };
+      },
+  });
 
-//   act(() => {
-//       result.current[self].set(2);
-//   });
-//   expect(renderTimes).toStrictEqual(2);
-//   expect(result.current.get()).toStrictEqual(2);
-// });
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].get()).toStrictEqual(null);
+
+  result[self].set(2);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()).toStrictEqual(2);
+});
 
 // test('primitive: should rerender used (global undefined)', async () => {
 //   let renderTimes = 0
