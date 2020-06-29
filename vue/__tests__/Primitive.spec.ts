@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { useState, createState, self, State } from "../src";
-import { h, nextTick } from "vue";
+import { h, nextTick, watchEffect, watch } from "vue";
 
 test('primitive: should rerender used', async () => {
   let renderTimes = 0;
@@ -246,7 +246,6 @@ test('primitive: global state', async () => {
   let renderTimes = 0
   const state = createState<number>(0)
   let result: State<number> = null as any;
-  // let result: any = undefined as any;
   const wrapper = mount({
       setup() {
           result = useState(state)
@@ -271,7 +270,6 @@ test('primitive: global state', async () => {
 test('primitive: global state created locally', async () => {
   let renderTimes = 0
   let result: State<number> = null as any;
-  // let result: any = undefined as any;
   const wrapper = mount({
     setup() {
           const state = createState<number>(0)
@@ -297,41 +295,50 @@ test('primitive: global state created locally', async () => {
 
 // test('primitive: stale state should auto refresh', async () => {
 //   let renderTimes = 0
-//   const { result } = renderHook(() => {
-//       renderTimes += 1;
+//   let result: State<number> = null as any;
+//   const wrapper = mount({
+//     setup() {
 //       const r = useState(0)
-//       React.useEffect(() => {
+//       return () => {        
+//         watchEffect(async () => {
+//           ++renderTimes;
 //           // simulated subscription, long running process
-//           const timer = setInterval(() => {
+//           const timer = setInterval(async() => {
 //               // intentionally use value coming from cache
 //               // which should be the latest
-//               // even if the effect is not rerun on rerender
-//               act(() => {
-//                   r.set(r.get() + 1) // 1 + 1
-//               })
+//               // even if the effect is not rerun on rerender              
+//               r[self].set(r.get() + 1) // 1 + 1
+//               await nextTick();
 //           }, 100)
 //           return () => clearInterval(timer)
-//       }, [])
-//       return r
+//         })
+//         result = r;
+//         return h(
+//             "div",
+//             result[self]
+//         );
+//       };
+//     },
 //   });
 
-//   act(() => {
-//       // this also marks it as used,
-//       // although it was not used during rendering
-//       result.current.set(result.current.get() + 1); // 0 + 1
-//   });
+//   // this also marks it as used,
+//   // although it was not used during rendering
+//   result[self].set(result[self].get() + 1); // 0 + 1
+//   await nextTick();
+  
 //   expect(renderTimes).toStrictEqual(2);
-//   expect(result.current.get()).toStrictEqual(1);
+//   expect(result[self].get()).toStrictEqual(1);
   
 //   await new Promise(resolve => setTimeout(() => resolve(), 110));
+
 //   expect(renderTimes).toStrictEqual(3);
-//   expect(result.current.get()).toStrictEqual(2);
+//   expect(result[self].get()).toStrictEqual(2);
   
-//   act(() => {
-//       result.current.set(p => p + 1);
-//   });
+//   result[self].set(p => p + 1);
+//   await nextTick();
+
 //   expect(renderTimes).toStrictEqual(4);
-//   expect(result.current.get()).toStrictEqual(3);
+//   expect(result[self].get()).toStrictEqual(3);
 // });
 
 // test('primitive: state value should be the latest', async () => {
