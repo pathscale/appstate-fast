@@ -424,11 +424,11 @@ test('object: should delete property when set to none', async () => {
 
   //////////////////////NEED TO CHECK IT HERE
   // deleting root value makes it promised    
-  // result[self].set(none)
-  // await nextTick();
+  result[self].set(none)
+  await nextTick();
   //////////////////////NEED TO CHECK IT HERE
-  // expect(result[self].map(() => false, () => true)).toEqual(true)
-  // expect(renderTimes).toStrictEqual(5);
+  expect(result[self].map(() => false, () => true)).toEqual(true)
+  expect(renderTimes).toStrictEqual(5);
   //////////////////////NEED TO CHECK IT HERE
 });
 
