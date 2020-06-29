@@ -32,10 +32,10 @@ test('primitive: should rerender used', async () => {
 
 test('primitive: should rerender used (boolean)', async () => {
   let renderTimes = 0;
-  let result: State<any> = new Boolean() as any;
+  let result: State<boolean> = new Boolean() as any;
   const wrapper = mount({
       setup() {
-          result = useState(true);
+          result = useState<boolean>(true);
           return () => {
               ++renderTimes;
               return h(
@@ -82,21 +82,31 @@ test('primitive: should rerender used (null)', async () => {
   expect(result[self].get()).toStrictEqual(2);
 });
 
-// test('primitive: should rerender used (undefined)', async () => {
-//   let renderTimes = 0
-//   const { result } = renderHook(() => {
-//       renderTimes += 1;
-//       return useState<number | undefined>(undefined)
-//   });
-//   expect(renderTimes).toStrictEqual(1);
-//   expect(result.current.get()).toStrictEqual(undefined);
+test('primitive: should rerender used (undefined)', async () => {
+  let renderTimes = 0;
+  let result: State<any> = null as any;
+  const wrapper = mount({
+      setup() {
+          result = useState<number | undefined>(undefined);
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  result[self]
+              );
+          };
+      },
+  });
 
-//   act(() => {
-//       result.current[self].set(2);
-//   });
-//   expect(renderTimes).toStrictEqual(2);
-//   expect(result.current.get()).toStrictEqual(2);
-// });
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].get()).toStrictEqual(undefined);
+
+  result[self].set(2);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()).toStrictEqual(2);
+});
 
 // test('primitive: should rerender used (global null)', async () => {
 //   let renderTimes = 0
