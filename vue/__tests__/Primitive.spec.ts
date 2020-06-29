@@ -5,46 +5,57 @@ import { h, nextTick } from "vue";
 test('primitive: should rerender used', async () => {
   let renderTimes = 0;
 
-    let result: State<number> = {} as any;
-    const wrapper = mount({
-        setup() {
-            result = useState(0);
+  let result: State<number> = {} as any;
+  const wrapper = mount({
+      setup() {
+          result = useState(0);
 
-            return () => {
-                ++renderTimes;
-                return h(
-                    "div",
-                    result.map((x) => x.value)
-                );
-            };
-        },
-    });
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  result.map((x) => x.value)
+              );
+          };
+      },
+  });
 
   expect(renderTimes).toStrictEqual(1);
   expect(result[self].get()).toStrictEqual(0);
 
   result[self].set((p) => p + 1);
   await nextTick();
-  
+
   expect(renderTimes).toStrictEqual(2);
   expect(result[self].get()).toStrictEqual(1);
 });
 
-// test('primitive: should rerender used (boolean)', async () => {
-//   let renderTimes = 0
-//   const { result } = renderHook(() => {
-//       renderTimes += 1;
-//       return useState(true)
-//   });
-//   expect(renderTimes).toStrictEqual(1);
-//   expect(result.current.get()).toStrictEqual(true);
+test('primitive: should rerender used (boolean)', async () => {
+  let renderTimes = 0;
 
-//   act(() => {
-//       result.current.set(p => !p);
-//   });
-//   expect(renderTimes).toStrictEqual(2);
-//   expect(result.current.get()).toStrictEqual(false);
-// });
+  let result: State<any> = new Boolean() as any;
+  const wrapper = mount({
+      setup() {
+          result = useState(true);
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  JSON.stringify(result)
+              );
+          };
+      },
+  });
+
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].get()).toStrictEqual(true);
+
+  result[self].set((p:any) => !p);
+  await nextTick();
+
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()).toStrictEqual(false);
+});
 
 // test('primitive: should rerender used (null)', async () => {
 //   let renderTimes = 0
