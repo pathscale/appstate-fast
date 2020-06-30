@@ -122,37 +122,146 @@ test('object: should rerender used via nested batch double', async () => {
 
 })
 
-// test('object: should rerender used via nested batch promised', async () => {
-    
-//     let renderTimes = 0;
-//     let result: State<number> = 0 as any;
-//     const wrapper = mount({
-//         setup() {
-//             result = useState(0);
-//             return () => {
-//                 ++renderTimes;
-//                 return h(
-//                     "div",
-//                     result.map((x) => x.value)
-//                 );
-//             };
-//         },
-//     });
+test.skip('object: should rerender used via nested batch promised', async () => {
+    // let renderTimes = 0
+    // const { result } = renderHook(() => {
+    //     renderTimes += 1;
+    //     return useState(0)
+    // });
+    // expect(renderTimes).toStrictEqual(1);
+    // expect(result.current[self].get()).toStrictEqual(0);
 
-    //TO DO !
+    // const promise = new Promise<number>(resolve => setTimeout(() => {
+    //     act(() => resolve(100))
+    // }, 500))
+    // act(() => {
+    //     result.current[self].set(promise);
+    // });
+    // expect(renderTimes).toStrictEqual(2);
+    // expect(result.current[self].map(() => false, () => true)).toStrictEqual(true);
+    // expect(() => result.current[self].map((s) => false, (s: State<number>) => s[self].keys))
+    //     .toThrow('Error: HOOKSTATE-103 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-103');
+    // expect(() => result.current[self].get())
+    //     .toThrow('Error: HOOKSTATE-103 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-103');
+
+    // expect(() => result.current[self].set(200))
+    //     .toThrow('Error: HOOKSTATE-104 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-104')
+
+    // let executed = false;
+    // act(() => {
+    //     expect(() => result.current[self].map(() => {
+    //         executed = true;
+    //         expect(renderTimes).toStrictEqual(2);
+    //         result.current[self].set(10000)
+    //         expect(renderTimes).toStrictEqual(2);
+    //     }, (s) => s[self].value)).toThrow(`Error: HOOKSTATE-103 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-103`)
+    // })
+    // expect(executed).toBeFalsy()
+
+    // act(() => {
+    //     expect(() => result.current[self].map(() => {
+    //         executed = true;
+    //         expect(renderTimes).toStrictEqual(2);
+    //         result.current[self].set(10000)
+    //         expect(renderTimes).toStrictEqual(2);
+    //     }, (s) => s[self].value)).toThrow(`Error: HOOKSTATE-103 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-103`)
+    // })
+    // expect(executed).toBeFalsy()
+
+    // executed = false;
+    // act(() => {
+    //     expect(() => result.current[self].map(() => {
+    //         executed = true;
+    //         expect(renderTimes).toStrictEqual(2);
+    //         result.current[self].set(10000)
+    //     }, null)).toThrow(`Error: HOOKSTATE-104 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-104`)
+    // })
+    // expect(executed).toBeTruthy()
+
+    // executed = false;
+    // act(() => {
+    //     result.current[self].map(() => {
+    //         executed = true;
+    //         expect(renderTimes).toStrictEqual(2);
+    //         result.current[self].set(p => p + 100)
+    //         expect(renderTimes).toStrictEqual(2);
+    //         result.current[self].set(p => p + 100)
+    //         expect(renderTimes).toStrictEqual(2);
+    //     }, () => undefined);
+    // })
+    // expect(executed).toBeFalsy()
+
+    // executed = false;
+    // act(() => {
+    //     result.current[self].map(() => {
+    //         act(() => {
+    //             executed = true
+    //             expect(renderTimes).toStrictEqual(3);
+    //             result.current[self].set(p => p + 100)
+    //             expect(renderTimes).toStrictEqual(3);
+    //             result.current[self].set(p => p + 100)
+    //             expect(renderTimes).toStrictEqual(3);
+    //         })
+    //     }, () => postpone);
+    // })
+    // expect(executed).toBeFalsy()
+
+    // expect(result.current[self].map(() => false, () => true)).toStrictEqual(true);
+    // await act(async () => {
+    //     await promise;
+    //     expect(executed).toBeFalsy()
+    //     expect(renderTimes).toStrictEqual(3);
+    //     expect(result.current[self].map(() => false, () => true)).toStrictEqual(false);
+    //     expect(result.current[self].map(() => undefined, () => undefined, () => true)).toEqual(undefined);
+    //     expect(result.current[self].get()).toEqual(100);
+    // })
+
+    // expect(executed).toBeTruthy()
+    // expect(renderTimes).toStrictEqual(4);
+    // expect(result.current[self].map(() => false, () => true)).toStrictEqual(false);
+    // expect(result.current[self].map(() => undefined, () => undefined, () => true)).toEqual(undefined);
+    // expect(result.current[self].get()).toEqual(300);
+});
+
+test.skip('object: should rerender used via nested batch promised manual', async () => {
+    // let renderTimes = 0
+    // const { result } = renderHook(() => {
+    //     renderTimes += 1;
+    //     return useState<number>(none)
+    // });
+    // expect(renderTimes).toStrictEqual(1);
+    // expect(result.current[self].map(() => false, () => true)).toStrictEqual(true);
+    // expect(() => result.current[self].map(() => undefined, (s) => s[self].keys))
+    //     .toThrow('Error: HOOKSTATE-103 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-103');
+    // expect(() => result.current[self].get())
+    //     .toThrow('Error: HOOKSTATE-103 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-103');
+
+    // act(() => {
+    //     result.current[self].map(() => {
+    //         act(() => {
+    //             expect(renderTimes).toStrictEqual(2);
+    //             result.current[self].set(p => p + 100)
+    //             expect(renderTimes).toStrictEqual(2);
+    //             result.current[self].set(p => p + 100)
+    //             expect(renderTimes).toStrictEqual(2);
+    //         })
+    //     }, () => postpone);
+    // })
 
     // expect(renderTimes).toStrictEqual(1);
-    // expect(result[self].get()).toStrictEqual(0);
-    // const promise = new Promise<number>(resolve => setTimeout(async () => {
-    //     resolve(100)
-    //     await nextTick();
-    // }, 500))
-    // result[self].set(promise);
-// })
+    // act(() => {
+    //     result.current[self].set(100)
+    // })
+    // expect(renderTimes).toStrictEqual(2);
+    // expect(result.current[self].get()).toEqual(100); // mark used
 
-it.todo('object: should rerender used via nested batch promised')
+    // await act(async () => new Promise(resolve => setTimeout(() => resolve(), 100)))
 
-it.todo('object: should rerender used via nested batch promised manual')
+    // expect(renderTimes).toStrictEqual(3);
+    // expect(result.current[self].map(() => false, () => true)).toStrictEqual(false);
+    // expect(result.current[self].map(() => undefined, () => undefined, () => true)).toEqual(undefined);
+    // expect(result.current[self].get()).toEqual(300);
+});
 
 test('object: should rerender used via scoped batched updates', async () => {
     let parentRenderTimes = 0
@@ -203,13 +312,13 @@ test('object: should rerender used via scoped batched updates', async () => {
     }, 'batched')
     await nextTick();
 
-    console.log(parent)
-    console.log(child)
     expect(parent.fieldUsedByParent[self].get()).toStrictEqual(0);
     expect(parent.fieldUsedByBoth[self].get()).toStrictEqual(200);
     expect(child.fieldUsedByChild[self].get()).toStrictEqual(102);
     expect(child.fieldUsedByBoth[self].get()).toStrictEqual(200);
-    // expect(parentRenderTimes).toStrictEqual(1); TO DO THIS TEST IS GETTING FAILED NEED TO CHECK AFTER
+    // TODO
+    //expect(parentRenderTimes).toStrictEqual(1); //TO DO THIS TEST IS GETTING FAILED NEED TO CHECK AFTER
+    // TODO
     expect(childRenderTimes).toStrictEqual(2);
 
     child[self].map(() => {
