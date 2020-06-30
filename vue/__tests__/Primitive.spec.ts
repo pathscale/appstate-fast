@@ -216,30 +216,30 @@ test('primitive: should rerender when keys used', async () => {
   expect(result[self].keys).toEqual(undefined);
 });
 
-// test('primitive: should not rerender unused', async () => {
-//   let renderTimes = 0;
-//   let result: State<number> = {} as any;
-//   const wrapper = mount({
-//       setup() {
-//           result = useState(0);
-//           return () => {
-//               ++renderTimes;
-//               return h(
-//                   "div",
-//                   result.map((x) => x.value)
-//               );
-//           };
-//       },
-//   });
-//   expect(renderTimes).toStrictEqual(1);
+test.skip('primitive: should not rerender unused', async () => {
+  let renderTimes = 0;
+  let result: State<number> = {} as any;
+  const wrapper = mount({
+      setup() {
+          result = useState(0);
+          return () => {
+              ++renderTimes;
+              return h(
+                  "div",
+                  result.map((x) => x.value)
+              );
+          };
+      },
+  });
+  expect(renderTimes).toStrictEqual(1);
 
-//   result[self].set(p => p + 1);
-//   //await nextTick();
-//   expect(renderTimes).toStrictEqual(1);
-//   expect(result[self].get()).toStrictEqual(1);
-//   expect(() => result[self]['non-existing']).toThrow('Error: HOOKSTATE-107 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-107');
-//   expect(() => result[self][0]).toThrow('Error: HOOKSTATE-107 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-107');
-// });
+  result[self].set(p => p + 1);
+  await nextTick();
+  expect(renderTimes).toStrictEqual(1);
+  expect(result[self].get()).toStrictEqual(1);
+  expect(() => result[self]['non-existing']).toThrow('Error: HOOKSTATE-107 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-107');
+  expect(() => result[self][0]).toThrow('Error: HOOKSTATE-107 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-107');
+});
 
 test('primitive: global state', async () => {
 
