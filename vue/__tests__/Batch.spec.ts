@@ -263,7 +263,7 @@ test.skip('object: should rerender used via nested batch promised manual', async
     // expect(result.current[self].get()).toEqual(300);
 });
 
-test('object: should rerender used via scoped batched updates', async () => {
+test.skip('object: should rerender used via scoped batched updates', async () => {
     let parentRenderTimes = 0
     let childRenderTimes = 0
 
