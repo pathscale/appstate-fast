@@ -41,10 +41,7 @@ test("error: should not allow set to another state value", async () => {
     );
 });
 
-test("error: should not allow create state from another state value", async () => {
-    console.log(
-        "need to do: Error: should not allow create state from another state value"
-    );
+test.skip("error: should not allow create state from another state value", async () => {
     // let state1: State<{ prop1: [number, number] }> = {} as any;
     // const wrapper = mount({
     //     setup() {
@@ -80,11 +77,9 @@ test("error: should not allow create state from another state value", async () =
     //     );
 });
 
-it.todo(
-    "error: should not allow create state from another state value (nested)"
-);
+test.skip("error: should not allow create state from another state value (nested)", async () =>{});
 
-test("error: should not allow serialization of statelink", async () => {
+test.skip("error: should not allow serialization of statelink", async () => {
     console.log(
         "need to do: Error: should not allow serialization of statelink"
     );
