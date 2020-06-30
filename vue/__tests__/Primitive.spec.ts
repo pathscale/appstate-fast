@@ -293,55 +293,79 @@ test('primitive: global state created locally', async () => {
   expect(result[self].get()).toStrictEqual(1);
 });
 
-// test('primitive: stale state should auto refresh', async () => {
-//   let renderTimes = 0
-//   let result: State<number> = null as any;
-//   const wrapper = mount({
-//     setup() {
-//       const r = useState(0)
-//       return () => {        
-//         watchEffect(async () => {
-//           ++renderTimes;
-//           // simulated subscription, long running process
-//           const timer = setInterval(async() => {
-//               // intentionally use value coming from cache
-//               // which should be the latest
-//               // even if the effect is not rerun on rerender              
-//               r[self].set(r.get() + 1) // 1 + 1
-//               await nextTick();
-//           }, 100)
-//           return () => clearInterval(timer)
-//         })
-//         result = r;
-//         return h(
-//             "div",
-//             result[self]
-//         );
-//       };
-//     },
-//   });
+test.skip('primitive: stale state should auto refresh', async () => {
+    //NEED TO CONVERT THIS TO VUE NOT SURE IF IT'S THE WAY TO GO...
+  let renderTimes = 0
+  let result: State<number> = null as any;
+  const wrapper = mount({
+    setup() {
+      const r = useState(0)
+      return () => {        
+        watchEffect(async () => {
+          ++renderTimes;
+          // simulated subscription, long running process
+          const timer = setInterval(async() => {
+              // intentionally use value coming from cache
+              // which should be the latest
+              // even if the effect is not rerun on rerender              
+              r[self].set(r.get() + 1) // 1 + 1
+              await nextTick();
+          }, 100)
+          return () => clearInterval(timer)
+        })
+        result = r;
+        return h(
+            "div",
+            result[self]
+        );
+      };
+    },
+  });
 
-//   // this also marks it as used,
-//   // although it was not used during rendering
-//   result[self].set(result[self].get() + 1); // 0 + 1
-//   await nextTick();
+  // this also marks it as used,
+  // although it was not used during rendering
+  result[self].set(result[self].get() + 1); // 0 + 1
+  await nextTick();
   
-//   expect(renderTimes).toStrictEqual(2);
-//   expect(result[self].get()).toStrictEqual(1);
+  expect(renderTimes).toStrictEqual(2);
+  expect(result[self].get()).toStrictEqual(1);
   
-//   await new Promise(resolve => setTimeout(() => resolve(), 110));
+  await new Promise(resolve => setTimeout(() => resolve(), 110));
 
-//   expect(renderTimes).toStrictEqual(3);
-//   expect(result[self].get()).toStrictEqual(2);
+  expect(renderTimes).toStrictEqual(3);
+  expect(result[self].get()).toStrictEqual(2);
   
-//   result[self].set(p => p + 1);
-//   await nextTick();
+  result[self].set(p => p + 1);
+  await nextTick();
 
-//   expect(renderTimes).toStrictEqual(4);
-//   expect(result[self].get()).toStrictEqual(3);
-// });
+  expect(renderTimes).toStrictEqual(4);
+  expect(result[self].get()).toStrictEqual(3);
+});
 
-// test('primitive: state value should be the latest', async () => {
+test.skip('primitive: state value should be the latest', async () => {
+    let renderTimes = 0;
+    let result: any = {} as any;
+    let r: any = 0 as any;
+    const wrapper = mount({
+        setup() {
+            result = useState(0);
+            return () => {
+                ++renderTimes;
+                watchEffect(async () => {
+                    r[self].set(r.get() + 1) // 0 + 1
+                    r[self].set(r.get() + 1) // 1 + 1
+
+                    await nextTick();
+                })
+                result = r
+                return h(
+                    "div",
+                    result
+                );
+            };
+        },
+    });
+    //TODO -- CONVERT THIS REACT CODE TO VUE
 //   let renderTimes = 0
 //   const { result } = renderHook(() => {
 //       renderTimes += 1;
@@ -354,13 +378,13 @@ test('primitive: global state created locally', async () => {
 //       }, [])
 //       return r
 //   });
-//   expect(renderTimes).toStrictEqual(2);
-//   expect(result.current.get()).toStrictEqual(2);
+    expect(renderTimes).toStrictEqual(2);
+    expect(result[self].get()).toStrictEqual(2);
 
-//   act(() => {
-//       result.current.set(p => p + 1); // 2 + 1
-//   });
-//   expect(renderTimes).toStrictEqual(3);
-//   expect(result.current.get()).toStrictEqual(3);
-// });
+    result[self].set((p:any) => p + 1); // 2 + 1
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(3);
+    expect(result[self].get()).toStrictEqual(3);
+});
 
