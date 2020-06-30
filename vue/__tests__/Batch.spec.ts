@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { useState, self, State, none} from "../src";
+import { useState, self, State} from "../src";
 import { h, nextTick } from "vue";
 
 test('object: should rerender used via nested batch update', async () => {
