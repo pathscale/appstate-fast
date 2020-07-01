@@ -3,7 +3,7 @@ import { useState, self, State} from "../src";
 import { h, nextTick } from "vue";
 
 
-test.skip('primitive: should rerender used on promise resolve', async () => {
+test('primitive: should rerender used on promise resolve', async () => {
   let renderTimes = 0;
 
   let result: State<number> = {} as any;
@@ -28,14 +28,15 @@ test.skip('primitive: should rerender used on promise resolve', async () => {
   }, 500))
 
   result[self].set(promise);
+  await nextTick();
 
   expect(renderTimes).toStrictEqual(2);
   expect(result[self].map(() => false, () => true)).toStrictEqual(true);
   expect(result[self].map()).toStrictEqual([true, undefined, undefined]);
   expect(() => result[self].map(() => false, (s) => s[self].keys, e => e))
-      .toThrow('Error: HOOKSTATE-103 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-103');
+      .toThrow('Error: APPSTATE-FAST-103 [path: /]. See https://vue3.dev/docs/exceptions#appastate-fast-103');
   expect(() => result[self].get())
-      .toThrow('Error: HOOKSTATE-103 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-103');
+      .toThrow('Error: APPSTATE-FAST-103 [path: /]. See https://vue3.dev/docs/exceptions#appastate-fast-103');
 
   expect(() => result[self].set(200))
       .toThrow('Error: HOOKSTATE-104 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-104')
