@@ -472,7 +472,7 @@ test('object: should set to null', async () => {
   let renderTimes = 0
   let result: State<{} | null> = {} as any;
   
-  const wrapper = mount({      
+  const wrapper = mount({
       setup() {            
           result = useState<{} | null>({})
           return () => {
