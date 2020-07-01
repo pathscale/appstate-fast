@@ -39,7 +39,7 @@ test('primitive: should rerender used on promise resolve', async () => {
       .toThrow('Error: APPSTATE-FAST-103 [path: /]. See https://vue3.dev/docs/exceptions#appastate-fast-103');
 
   expect(() => result[self].set(200))
-      .toThrow('Error: HOOKSTATE-104 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-104')
+      .toThrow('Error: APPSTATE-FAST-104 [path: /]. See https://vue3.dev/docs/exceptions#appastate-fast-104')
       
   await promise;
 
