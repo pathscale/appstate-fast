@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { useState, self, State, createState} from "../src";
+import { useState, self, State, createState, none} from "../src";
 import { h, nextTick } from "vue";
 
 
@@ -146,7 +146,7 @@ import { h, nextTick } from "vue";
 //     expect(result[self].get()).toEqual([100]);
 // });
 
-test('array: should rerender used on promise resolve (global promise)', async () => {
+test.skip('array: should rerender used on promise resolve (global promise)', async () => {
     let renderTimes = 0;    
     let result: State<number[]> = {} as any;
     const state = createState(new Promise<number[]>(resolve => setTimeout(() => {
@@ -178,28 +178,38 @@ test('array: should rerender used on promise resolve (global promise)', async ()
         .toThrow('Error: APPSTATE-FAST-104 [path: /]. See https://vue3.dev/docs/exceptions#appastate-fast-104')
 });
 
-// test('primitive: should rerender used on promise resolve manual', async () => {
-//   let renderTimes = 0
-//   const { result } = renderHook(() => {
-//       renderTimes += 1;
-//       return useState(none)
-//   });
-//   expect(renderTimes).toStrictEqual(1);
-//   expect(result.current[self].map(() => false, () => true)).toStrictEqual(true);
-//   expect(() => result.current[self].map(() => false, (s) => s[self].value, e => e))
-//       .toThrow('Error: HOOKSTATE-103 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-103');
-//   expect(() => result.current[self].get())
-//       .toThrow('Error: HOOKSTATE-103 [path: /]. See https://hookstate.js.org/docs/exceptions#hookstate-103');
+test.skip('primitive: should rerender used on promise resolve manual', async () => {
+    let renderTimes = 0;    
+    let result: any = {} as any;
 
-//   act(() => {
-//       result.current[self].set(100);
-//   });
+    const wrapper = mount({
+        setup() {
+            result = useState(none);
+            return () => {
+                ++renderTimes;
+                return h(
+                    "div",
+                    result
+                );
+            };
+        },
+    });
 
-//   expect(renderTimes).toStrictEqual(2);
-//   expect(result.current[self].map(() => false, () => true)).toStrictEqual(false);
-//   expect(result.current[self].map(() => false, (s) => s[self].value, e => e)).toEqual(false);
-//   expect(result.current[self].get()).toEqual(100);
-// });
+    expect(renderTimes).toStrictEqual(1);
+    expect(result[self].map(() => false, () => true)).toStrictEqual(true);
+    expect(() => result[self].map(() => false, (s:any) => s[self].value, (e:any) => e))
+        .toThrow('Error: APPSTATE-FAST-103 [path: /]. See https://vue3.dev/docs/exceptions#appastate-fast-103');
+    expect(() => result[self].get())
+        .toThrow('Error: APPSTATE-FAST-103 [path: /]. See https://vue3.dev/docs/exceptions#appastate-fast-103');
+
+    result[self].set(100);
+    await nextTick();
+
+    expect(renderTimes).toStrictEqual(2);
+    expect(result[self].map(() => false, () => true)).toStrictEqual(false);
+    expect(result[self].map(() => false, (s:any) => s[self].value, (e:any) => e)).toEqual(false);
+    expect(result[self].get()).toEqual(100);
+});
 
 test.skip('primitive: should rerender used on promise resolve second', async () => {
 //   let renderTimes = 0
