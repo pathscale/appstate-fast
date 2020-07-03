@@ -180,7 +180,7 @@ test('array: should rerender used on promise resolve (global promise)', async ()
 
 test('primitive: should rerender used on promise resolve manual', async () => {
     let renderTimes = 0;    
-    let result: any = {} as any;
+    let result: any = none as any;
 
     const wrapper = mount({
         setup() {
