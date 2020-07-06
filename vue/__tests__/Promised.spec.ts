@@ -430,7 +430,7 @@ test('primitive: should rerender used on promise resolve init global', async () 
     const stateInf = createState(new Promise<number>(resolve => setTimeout(() => {
         resolve(100)
     }, 500)))
-    let result: any = {} as any;
+    let result: State<number> = {} as any;
     const wrapper = mount({
         setup() {
             result = useState(stateInf)
