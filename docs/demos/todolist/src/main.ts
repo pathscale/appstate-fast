@@ -1,9 +1,10 @@
-import { createApp } from "vue";
-import { router } from "./router";
-import { stateSymbol, state } from "./state";
-import App from "./App"; //need to check
-import "./assets/styles/index.css";
-import "@pathscale/bulma-pull-2981-css-var-only/css/bulma.css";
-import "@pathscale/bulma-extensions-css-var/css/bulma-extensions-css-var.css";
+import Vue from 'vue'
+import App from './App.vue'
+import router from './router'
 
-createApp(App).provide(stateSymbol, state).use(router).mount("#app");
+Vue.config.productionTip = false
+
+new Vue({
+  router,
+  render: h => h(App)
+}).$mount('#app')
