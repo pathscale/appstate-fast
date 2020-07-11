@@ -1,18 +1,27 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    {{ state }}
+    <!-- <button @click="increment">
+      Count is: {{ state.count }}, double is: {{ state.double }}
+    </button> -->
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import { reactive, computed, ref } from 'vue'
+import React from 'react';
+import { createState, useState } from '@hookstate/core';
 
 export default {
-  name: 'Home',
-  components: {
-    HelloWorld
+  setup() {
+
+    const state = reactive({
+      global: useState(createState(0))
+    })
+
+    return {
+      state
+    }
   }
 }
 </script>
