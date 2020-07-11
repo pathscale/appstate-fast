@@ -1,6 +1,6 @@
 <template>
   <div>
-    {{ state }}
+    {{state}}
     <!-- <button @click="increment">
       Count is: {{ state.count }}, double is: {{ state.double }}
     </button> -->
@@ -8,17 +8,15 @@
 </template>
 
 <script>
-import { reactive, computed, ref } from 'vue'
-import React from 'react';
-import { createState, useState } from '@hookstate/core';
+import { reactive, computed, ref, onMounted, onCreated } from 'vue'
+import { createState, useState } from "@hookstate/vue";
 
 export default {
   setup() {
-
-    const state = reactive({
-      global: useState(createState(0))
+    onMounted(() => {
+      console.log('component is mounted!')
     })
-
+    const state = useState(createState(50));
     return {
       state
     }
