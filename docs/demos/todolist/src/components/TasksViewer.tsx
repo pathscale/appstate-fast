@@ -38,13 +38,14 @@ function TaskEditor(props: { task: State<Task> }) {
     const isEditing = useState(false);
 
     // This is the trick to obtain different color on every run of this function
-    var colors = ["#ff0000", "#00ff00", "#0000ff"];
+    // var colors = ["#ff0000", "#00ff00", "#0000ff"];
+    const colors = ["#ff0000", "#00ff00", "#0000ff"];
     // const color = React.useRef(0);
     const color = ref(0);
     // color.current += 1;
     color.value += 1;
     // var nextColor = colors[color.current % colors.length];
-    var nextColor = colors[color.value % colors.length];
+    const nextColor = colors[color.value % colors.length];
 
     return (
         <div

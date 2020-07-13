@@ -12,10 +12,10 @@ export function TasksTotal() {
     const settingsState = useSettingsState();
 
     // This is the trick to obtain different color on every run of this function
-    var colors = ["#ff0000", "#00ff00", "#0000ff"];
+    const colors = ["#ff0000", "#00ff00", "#0000ff"];
     let color = ref(0);
     color.value += 1;
-    var nextColor = colors[color.value % colors.length];
+    const nextColor = colors[color.value % colors.length];
 
     return (
         <div
