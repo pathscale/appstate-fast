@@ -1,6 +1,6 @@
 import { useSettingsState } from "./SettingsState";
 
-export function SettingsViewer() {
+export function SettingsViewer(): JSX.Element {
     const settingsState = useSettingsState();
 
     return (

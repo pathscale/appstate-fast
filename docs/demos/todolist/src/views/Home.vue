@@ -38,13 +38,13 @@
 </template>
 
 <script>
-import { onMounted } from "vue";
+import { onMounted, defineComponent } from "vue";
 import { createState, useState } from "@hookstate/vue";
 import { TasksViewer } from "../components/TasksViewer";
 import { SettingsViewer } from "../components/SettingsViewer";
 import { TasksTotal } from "../components/TasksTotal";
 
-export default {
+export default defineComponent({
   components: {
     TasksViewer,
     SettingsViewer,
@@ -65,7 +65,7 @@ export default {
       state
     };
   }
-};
+});
 </script>
 
 <style scoped>

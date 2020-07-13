@@ -1,4 +1,4 @@
-import { createState, useState, self } from "@hookstate/vue";
+import { createState, useState, self, State } from "@hookstate/vue";
 
 export interface Task {
     id: string;
@@ -35,7 +35,7 @@ const state = createState<Task[]>(
     })
 );
 
-export function useTasksState() {
+export function useTasksState(): State<Task[]> {
     // This function exposes the state directly.
     // i.e. the state link is accessible directly outside of this module.
     // The state for settings in SettingsState.ts wraps the state by an interface.

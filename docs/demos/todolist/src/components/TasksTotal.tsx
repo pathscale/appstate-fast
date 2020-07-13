@@ -3,7 +3,7 @@ import { useTasksState } from "./TasksState";
 import { useSettingsState } from "./SettingsState";
 import { self } from "@hookstate/vue";
 
-export function TasksTotal() {
+export function TasksTotal(): JSX.Element {
     // Use both global stores in the same component.
     // Note: in fact, it it could be even one state object
     // with functions accessing different nested segments of the state data.
@@ -13,7 +13,7 @@ export function TasksTotal() {
 
     // This is the trick to obtain different color on every run of this function
     const colors = ["#ff0000", "#00ff00", "#0000ff"];
-    let color = ref(0);
+    const color = ref(0);
     color.value += 1;
     const nextColor = colors[color.value % colors.length];
 

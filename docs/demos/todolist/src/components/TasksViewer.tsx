@@ -4,7 +4,7 @@ import { useTasksState, Task } from "./TasksState";
 import { State, useState, none, self } from "@hookstate/vue";
 import { useSettingsState } from "./SettingsState";
 
-function TaskEditor(props: { task: State<Task> }) {
+function TaskEditor(props: { task: State<Task> }): JSX.Element {
     // The next hook is *global state* link of the global state wrapped by an interface.
     // In the case of large scale arrays,
     // it would be more efficient if settings were obtained by the parent
@@ -99,7 +99,7 @@ function TaskEditor(props: { task: State<Task> }) {
                                 ? "line-through"
                                 : "none"
                         }}
-                        readOnly={
+                        readonly={
                             !(settingsState.isEditableInline || isEditing.get())
                         }
                         value={
@@ -110,10 +110,14 @@ function TaskEditor(props: { task: State<Task> }) {
                         onChange={e => {
                             if (settingsState.isEditableInline) {
                                 // taskNameGlobal.set(e.target.value);
-                                taskNameGlobal.set(e.target?.value);
+                                taskNameGlobal.set(
+                                    (e.target as HTMLInputElement)?.value
+                                );
                             }
                             // taskNameLocal.set(e.target.value);
-                            taskNameLocal.set(e.target?.value);
+                            taskNameLocal.set(
+                                (e.target as HTMLInputElement)?.value
+                            );
                         }}
                     />
                 </div>
@@ -171,7 +175,7 @@ function TaskEditor(props: { task: State<Task> }) {
     );
 }
 
-export function TasksViewer() {
+export function TasksViewer(): JSX.Element {
     const tasksState = useTasksState();
     const [loading] = tasksState[self].map();
 
@@ -185,7 +189,7 @@ export function TasksViewer() {
 
     return (
         <div key="" style={{ textAlign: "left", marginBottom: 50 }}>
-            {tasksState.map((task, i) => (
+            {tasksState.map(task => (
                 <TaskEditor key={task.id.value} task={task} />
             ))}
             <div style={{ textAlign: "right" }}>
@@ -210,8 +214,7 @@ function Button(props: {
     onClick?: () => void;
     borderColor?: string;
     text: string;
-    // style?: React.CSSProperties;
-    style?: {};
+    style?: Record<string, string | number>;
 }) {
     return (
         <button
