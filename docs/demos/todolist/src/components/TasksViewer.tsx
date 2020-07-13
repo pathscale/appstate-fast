@@ -1,6 +1,7 @@
+// import React from "react";
 import { ref } from "vue";
 import { useTasksState, Task } from "./TasksState";
-import { State, useState, none, self } from "@hookstate/core";
+import { State, useState, none, self } from "@hookstate/vue";
 import { useSettingsState } from "./SettingsState";
 
 function TaskEditor(props: { task: State<Task> }) {
@@ -38,9 +39,12 @@ function TaskEditor(props: { task: State<Task> }) {
 
     // This is the trick to obtain different color on every run of this function
     var colors = ["#ff0000", "#00ff00", "#0000ff"];
+    // const color = React.useRef(0);
     const color = ref(0);
-    color.current += 1;
-    var nextColor = colors[color.current % colors.length];
+    // color.current += 1;
+    color.value += 1;
+    // var nextColor = colors[color.current % colors.length];
+    var nextColor = colors[color.value % colors.length];
 
     return (
         <div
@@ -104,9 +108,11 @@ function TaskEditor(props: { task: State<Task> }) {
                         }
                         onChange={e => {
                             if (settingsState.isEditableInline) {
-                                taskNameGlobal.set(e.target.value);
+                                // taskNameGlobal.set(e.target.value);
+                                taskNameGlobal.set(e.target?.value);
                             }
-                            taskNameLocal.set(e.target.value);
+                            // taskNameLocal.set(e.target.value);
+                            taskNameLocal.set(e.target?.value);
                         }}
                     />
                 </div>
@@ -203,7 +209,8 @@ function Button(props: {
     onClick?: () => void;
     borderColor?: string;
     text: string;
-    style?: React.CSSProperties;
+    // style?: React.CSSProperties;
+    style?: {};
 }) {
     return (
         <button
