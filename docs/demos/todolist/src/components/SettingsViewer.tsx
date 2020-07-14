@@ -1,6 +1,7 @@
+import { defineComponent } from "vue";
 import { useSettingsState } from "./SettingsState";
 
-export function SettingsViewer(): JSX.Element {
+export const SettingsViewer = defineComponent(() => {
     const settingsState = useSettingsState();
 
     return (
@@ -61,4 +62,4 @@ export function SettingsViewer(): JSX.Element {
             </div>
         </div>
     );
-}
+});

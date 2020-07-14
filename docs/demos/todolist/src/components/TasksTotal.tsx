@@ -1,9 +1,9 @@
-import { ref } from "vue";
+import { ref, defineComponent } from "vue";
 import { useTasksState } from "./TasksState";
 import { useSettingsState } from "./SettingsState";
 import { self } from "@hookstate/vue";
 
-export function TasksTotal(): JSX.Element {
+export const TasksTotal = defineComponent(() => {
     // Use both global stores in the same component.
     // Note: in fact, it it could be even one state object
     // with functions accessing different nested segments of the state data.
@@ -57,4 +57,4 @@ export function TasksTotal(): JSX.Element {
             )}
         </div>
     );
-}
+});

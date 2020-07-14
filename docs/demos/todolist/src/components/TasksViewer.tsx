@@ -1,10 +1,10 @@
 // import React from "react";
-import { ref } from "vue";
+import { ref, defineComponent } from "vue";
 import { useTasksState, Task } from "./TasksState";
 import { State, useState, none, self } from "@hookstate/vue";
 import { useSettingsState } from "./SettingsState";
 
-function TaskEditor(props: { task: State<Task> }): JSX.Element {
+const TaskEditor = defineComponent((props: { task: State<Task> }) => {
     // The next hook is *global state* link of the global state wrapped by an interface.
     // In the case of large scale arrays,
     // it would be more efficient if settings were obtained by the parent
@@ -173,9 +173,9 @@ function TaskEditor(props: { task: State<Task> }): JSX.Element {
             </div>
         </div>
     );
-}
+});
 
-export function TasksViewer(): JSX.Element {
+export const TasksViewer = defineComponent(() => {
     const tasksState = useTasksState();
     const [loading] = tasksState[self].map();
 
@@ -208,30 +208,32 @@ export function TasksViewer(): JSX.Element {
             </div>
         </div>
     );
-}
+});
 
-function Button(props: {
-    onClick?: () => void;
-    borderColor?: string;
-    text: string;
-    style?: Record<string, string | number>;
-}) {
-    return (
-        <button
-            style={{
-                fontSize: "1em",
-                border: "solid",
-                borderWidth: 1,
-                borderColor: props.borderColor || "grey",
-                color: "white",
-                background: "none",
-                padding: 10,
-                minWidth: 110,
-                ...props.style
-            }}
-            onClick={() => props.onClick && props.onClick()}
-        >
-            {props.text}
-        </button>
-    );
-}
+const Button = defineComponent(
+    (props: {
+        onClick?: () => void;
+        borderColor?: string;
+        text: string;
+        style?: Record<string, string | number>;
+    }) => {
+        return (
+            <button
+                style={{
+                    fontSize: "1em",
+                    border: "solid",
+                    borderWidth: 1,
+                    borderColor: props.borderColor || "grey",
+                    color: "white",
+                    background: "none",
+                    padding: 10,
+                    minWidth: 110,
+                    ...props.style
+                }}
+                onClick={() => props.onClick && props.onClick()}
+            >
+                {props.text}
+            </button>
+        );
+    }
+);
