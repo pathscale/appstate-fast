@@ -1,0 +1,12 @@
+dist
+node_modules
+
+/tmp
+/.cache
+/.vscode
+/coverage
+/docs
+/__tests__/fixtures/dist
+/__tests__/fixtures/**/*.d.ts
+/pnpm-lock.yaml
+/CHANGELOG.md

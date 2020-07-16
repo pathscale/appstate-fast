@@ -5,4 +5,3 @@
 Plugin for @hookstate/core, which allows to assign a label / name / alias for a state.
 
 [Learn more...](https://hookstate.js.org/docs/extensions-labelled)
-

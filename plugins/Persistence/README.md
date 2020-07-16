@@ -5,4 +5,3 @@
 Plugin for @hookstate/core to enable persistence of managed data states to browser's local storage.
 
 [Learn more...](https://hookstate.js.org/docs/extensions-persistence)
-

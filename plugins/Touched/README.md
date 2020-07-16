@@ -5,4 +5,3 @@
 Plugin for @hookstate/core to enable tracking of touched data (form) fields.
 
 [Learn more...](https://hookstate.js.org/docs/extensions-touched)
-

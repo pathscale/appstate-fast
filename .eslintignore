@@ -1,0 +1,11 @@
+dist
+node_modules
+
+/plugins
+/tmp
+/.cache
+/.vscode
+/coverage
+/docs
+/__tests__/fixtures
+.eslintrc.js

@@ -5,4 +5,3 @@
 Plugin for @hookstate/core to enable logging.
 
 [Learn more...](https://hookstate.js.org/docs/extensions-overview)
-
