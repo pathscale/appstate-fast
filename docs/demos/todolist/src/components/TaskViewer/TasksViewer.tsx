@@ -1,7 +1,7 @@
 // import React from "react";
 import { ref, defineComponent } from "vue";
 import { useTasksState, Task } from "../TasksState";
-import { State, useState, none, self } from "@hookstate/vue";
+import { State, useState, none } from "../../../../../../dist";
 import { useSettingsState } from "../SettingsState";
 
 const TaskEditor = defineComponent((props: { task: State<Task> }) => {
@@ -99,7 +99,7 @@ const TaskEditor = defineComponent((props: { task: State<Task> }) => {
                                 ? "line-through"
                                 : "none"
                         }}
-                        readonly={
+                        readOnly={
                             !(settingsState.isEditableInline || isEditing.get())
                         }
                         value={

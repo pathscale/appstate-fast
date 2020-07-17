@@ -1,4 +1,4 @@
-import { createState, useState, self, State } from "@hookstate/vue";
+import { createState, useState,  State } from "../../../../../dist";
 
 export interface Task {
     id: string;
@@ -49,7 +49,7 @@ export function useTasksState(): State<Task[]> {
 // for example purposes, let's update the state outside of a React component
 setTimeout(
     () =>
-        state[state.length][self].set({
+        state[state.length].set({
             id: "100",
             name: "Spread few words about Hookstate",
             done: false

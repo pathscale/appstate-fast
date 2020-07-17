@@ -1,10 +1,10 @@
-import { createState, useState, self } from "@hookstate/vue";
+import { createState, useState } from "../../../../../dist";
 
 export const useSettingsState = createState({
     isEditableInline: true,
     isScopedUpdateEnabled: true,
     isHighlightUpdateEnabled: true
-})[self].map(s => () => {
+}).batch(s => () => {
     const state = useState(s);
 
     // This function wraps the state by an interface,
