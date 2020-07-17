@@ -215,7 +215,7 @@ function isNoProxyInititializer() {
         var used = new Proxy({}, {});
         return false;
     }
-    catch (e) {
+    catch (_a) {
         return true;
     }
 }
@@ -240,7 +240,7 @@ var Store = /** @class */ (function () {
             this._value = none;
         }
         else if (_value === none) {
-            this._promised = this.createPromised(undefined);
+            this._promised = this.createPromised();
         }
     }
     Store.prototype.createPromised = function (newValue) {
@@ -248,7 +248,7 @@ var Store = /** @class */ (function () {
         var promised = new Promised(newValue ? Promise.resolve(newValue) : undefined, function (r) {
             if (_this.promised === promised && _this.edition !== DestroyedEdition) {
                 _this._promised = undefined;
-                _this.set(RootPath, r, undefined);
+                _this.set(RootPath, r);
                 _this.update([RootPath]);
             }
         }, function () {
@@ -305,7 +305,7 @@ var Store = /** @class */ (function () {
                 merged: mergeValue,
             };
             if (value === none) {
-                this._promised = this.createPromised(undefined);
+                this._promised = this.createPromised();
                 delete onSetArg.value;
                 delete onSetArg.state;
             }
@@ -391,8 +391,9 @@ var Store = /** @class */ (function () {
         return path;
     };
     Store.prototype.update = function (paths) {
+        var _a;
         if (this._batches) {
-            this._batchesPendingPaths = this._batchesPendingPaths || [];
+            this._batchesPendingPaths = (_a = this._batchesPendingPaths) !== null && _a !== void 0 ? _a : [];
             this._batchesPendingPaths = this._batchesPendingPaths.concat(paths);
             return;
         }
@@ -440,7 +441,8 @@ var Store = /** @class */ (function () {
         }
     };
     Store.prototype.postponeBatch = function (action) {
-        this._batchesPendingActions = this._batchesPendingActions || [];
+        var _a;
+        this._batchesPendingActions = (_a = this._batchesPendingActions) !== null && _a !== void 0 ? _a : [];
         this._batchesPendingActions.push(action);
     };
     Store.prototype.getPlugin = function (pluginId) {
@@ -501,9 +503,9 @@ var Promised = /** @class */ (function () {
                 onResolve(r);
             }
         })
-            .catch(function (err) {
+            .catch(function (error) {
             _this.fullfilled = true;
-            _this.error = err;
+            _this.error = error;
             onReject();
         })
             .then(function () { return onPostResolve(); });
@@ -711,7 +713,7 @@ var StateMethodsImpl = /** @class */ (function () {
                 }
                 else {
                     var firstChildValue = _this.childrenCache && _this.childrenCache[firstChildKey];
-                    if (firstChildValue && firstChildValue.onSet(paths, actions)) {
+                    if (firstChildValue === null || firstChildValue === void 0 ? void 0 : firstChildValue.onSet(paths, actions)) {
                         return true;
                     }
                 }
@@ -743,10 +745,11 @@ var StateMethodsImpl = /** @class */ (function () {
         configurable: true
     });
     StateMethodsImpl.prototype.child = function (key) {
+        var _a;
         // if this state is not mounted to a hook,
         // we do not cache children to avoid unnecessary memory leaks
         if (this.isMounted) {
-            this.childrenCache = this.childrenCache || {};
+            this.childrenCache = (_a = this.childrenCache) !== null && _a !== void 0 ? _a : {};
             var cachehit = this.childrenCache[key];
             if (cachehit) {
                 return cachehit;
@@ -783,7 +786,7 @@ var StateMethodsImpl = /** @class */ (function () {
             }
             var index = Number(key);
             if (!Number.isInteger(index)) {
-                return undefined;
+                return;
             }
             return _this.child(index).get();
         }, function (target, key, value) {
@@ -830,7 +833,7 @@ var StateMethodsImpl = /** @class */ (function () {
                     return _this;
                 }
                 if (typeof key === 'symbol') {
-                    return undefined;
+                    return;
                 }
                 if (key === 'toJSON') {
                     throw new StateInvalidUsageError(_this.path, ErrorId.ToJson_State);
@@ -887,7 +890,7 @@ var StateMethodsImpl = /** @class */ (function () {
                     }
                     var index = Number(key);
                     if (!Number.isInteger(index)) {
-                        return undefined;
+                        return;
                     }
                     return _this.nested(index);
                 }
@@ -959,7 +962,7 @@ var StateMethodsImpl = /** @class */ (function () {
                 }
                 this.get(); // will throw 'read while promised' exception
             }
-            return undefined;
+            return;
         },
         enumerable: false,
         configurable: true
@@ -991,6 +994,7 @@ var StateMethodsImpl = /** @class */ (function () {
         configurable: true
     });
     StateMethodsImpl.prototype.attach = function (p) {
+        var _a;
         if (typeof p === 'function') {
             var pluginMeta = p();
             if (pluginMeta.id === DowngradedID) {
@@ -1002,8 +1006,7 @@ var StateMethodsImpl = /** @class */ (function () {
         }
         else {
             return [
-                this.state.getPlugin(p) ||
-                    new StateInvalidUsageError(this.path, ErrorId.GetUnknownPlugin, p.toString()),
+                (_a = this.state.getPlugin(p)) !== null && _a !== void 0 ? _a : new StateInvalidUsageError(this.path, ErrorId.GetUnknownPlugin, p.toString()),
                 this,
             ];
         }
@@ -1050,7 +1053,7 @@ propertySetter, isValueProxy) {
         getOwnPropertyDescriptor: function (target, p) {
             var targetReal = targetGetter();
             if (targetReal === undefined || targetReal === null) {
-                return undefined;
+                return;
             }
             var origin = Object.getOwnPropertyDescriptor(targetReal, p);
             if (origin && Array.isArray(targetReal) && p in Array.prototype) {

@@ -1,4 +1,4 @@
-import React from 'react'
+import { onUnmounted, reactive, onMounted } from 'vue'
 
 ///
 /// EXPOTED SYMBOLS (LIBRARY INTERFACE)
@@ -37,7 +37,7 @@ export type SetPartialStateAction<S> = S extends ReadonlyArray<infer U>
   ? ReadonlyArray<U> | Record<number, U> | ((prevValue: S) => ReadonlyArray<U> | Record<number, U>)
   : S extends object | string
   ? Partial<S> | ((prevValue: S) => Partial<S>)
-  : React.SetStateAction<S>
+  : S | ((prevState: S) => S)
 
 /**
  * Type of an argument of [createState](#createstate) and [useState](#usestate).
@@ -500,87 +500,24 @@ export function useState<S>(source: SetInitialStateAction<S> | State<S>): State<
   if (parentMethods) {
     if (parentMethods.isMounted) {
       // Scoped state mount
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [, setValue] = React.useState({})
-      return useSubscribedStateMethods<S>(
-        parentMethods.state,
-        parentMethods.path,
-        () => setValue({}),
-        parentMethods,
-      ).self
+      return useSubscribedStateMethods<S>(parentMethods.state, parentMethods.path, parentMethods)
+        .self
     } else {
       // Global state mount or destroyed link
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [value, setValue] = React.useState({ state: parentMethods.state })
-      return useSubscribedStateMethods<S>(
-        value.state,
-        parentMethods.path,
-        () => setValue({ state: value.state }),
-        value.state,
-      ).self
+      const value = reactive({ state: parentMethods.state })
+      return useSubscribedStateMethods<S>(value.state as Store, parentMethods.path, value.state)
+        .self
     }
   } else {
     // Local state mount
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [value, setValue] = React.useState(() => ({ state: createStore(source) }))
-    const result = useSubscribedStateMethods<S>(
-      value.state,
-      RootPath,
-      () => setValue({ state: value.state }),
-      value.state,
-    )
-    React.useEffect(() => () => value.state.destroy(), [])
+    const value = reactive({ state: createStore(source) })
+    const result = useSubscribedStateMethods<S>(value.state as Store, RootPath, value.state)
+    onUnmounted(() => value.state.destroy())
     const devtools = useState[DevToolsID]
     if (devtools) {
       result.attach(devtools)
     }
     return result.self
-  }
-}
-
-/**
- * Allows to use a state without defining a functional react component.
- * It can be also used in class-based React components. It is also
- * particularly usefull for creating *scoped* states.
- *
- * [Learn more...](https://hookstate.js.org/docs/using-without-statehook)
- *
- * @typeparam S Type of a value of a state
- */
-export function StateFragment<S>(props: {
-  state: State<S>
-  children: (state: State<S>) => React.ReactElement
-}): React.ReactElement
-/**
- * Allows to use a state without defining a functional react component.
- * See more at [StateFragment](#statefragment)
- *
- * [Learn more...](https://hookstate.js.org/docs/using-without-statehook)
- *
- * @typeparam S Type of a value of a state
- */
-export function StateFragment<S>(props: {
-  state: SetInitialStateAction<S>
-  children: (state: State<S>) => React.ReactElement
-}): React.ReactElement
-export function StateFragment<S>(props: {
-  state: State<S> | SetInitialStateAction<S>
-  children: (state: State<S>) => React.ReactElement
-}): React.ReactElement {
-  const scoped = useState(props.state as State<S>)
-  return props.children(scoped)
-}
-
-/**
- * A plugin which allows to opt-out from usage of Javascript proxies for
- * state usage tracking. It is useful for performance tuning.
- *
- * [Learn more...](https://hookstate.js.org/docs/performance-managed-rendering#downgraded-plugin)
- */
-export function Downgraded(): Plugin {
-  // tslint:disable-line: function-name
-  return {
-    id: DowngradedID,
   }
 }
 
@@ -693,17 +630,6 @@ interface Subscribable {
   unsubscribe(l: Subscriber): void
 }
 
-function isNoProxyInititializer() {
-  try {
-    const used = new Proxy({}, {})
-    return false
-  } catch {
-    return true
-  }
-}
-const IsNoProxy = isNoProxyInititializer()
-
-const DowngradedID = Symbol('Downgraded')
 const SelfMethodsID = Symbol('ProxyMarker')
 
 const RootPath: Path = []
@@ -988,13 +914,7 @@ class Store implements Subscribable {
   }
 
   toMethods() {
-    return new StateMethodsImpl<StateValueAtRoot>(
-      this,
-      RootPath,
-      this.get(RootPath),
-      this.edition,
-      OnSetUsedNoAction,
-    )
+    return new StateMethodsImpl<StateValueAtRoot>(this, RootPath, this.get(RootPath), this.edition)
   }
 
   subscribe(l: Subscriber) {
@@ -1060,9 +980,8 @@ OnSetUsedNoAction[UnmountedMarker] = true
 
 class StateMethodsImpl<S>
   implements StateMethods<S>, StateMethodsDestroy, Subscribable, Subscriber {
+  isMounted: boolean
   private subscribers: Set<Subscriber> | undefined
-
-  private isDowngraded: boolean | undefined
   private childrenCache: Record<string | number, StateMethodsImpl<StateValueAtPath>> | undefined
   private selfCache: State<S> | undefined
   private valueCache: StateValueAtPath = ValueUnusedMarker
@@ -1072,8 +991,11 @@ class StateMethodsImpl<S>
     public readonly path: Path,
     private valueSource: S,
     private valueEdition: number,
-    private readonly onSetUsed: () => void,
-  ) {}
+  ) {
+    this.isMounted = false
+    onMounted(() => (this.isMounted = true))
+    onUnmounted(() => (this.isMounted = false))
+  }
 
   getUntracked(allowPromised?: boolean) {
     if (this.valueEdition !== this.state.edition) {
@@ -1115,9 +1037,7 @@ class StateMethodsImpl<S>
   get(allowPromised?: boolean) {
     const currentValue = this.getUntracked(allowPromised)
     if (this.valueCache === ValueUnusedMarker) {
-      if (this.isDowngraded) {
-        this.valueCache = currentValue
-      } else if (Array.isArray(currentValue)) {
+      if (Array.isArray(currentValue)) {
         this.valueCache = this.valueArrayImpl(currentValue)
       } else if (typeof currentValue === 'object' && currentValue !== null) {
         this.valueCache = this.valueObjectImpl((currentValue as unknown) as object)
@@ -1233,25 +1153,12 @@ class StateMethodsImpl<S>
     this.subscribers!.delete(l)
   }
 
-  get isMounted(): boolean {
-    return !this.onSetUsed[UnmountedMarker]
-  }
-
-  onUnmount() {
-    this.onSetUsed[UnmountedMarker] = true
-  }
-
   onSet(paths: Path[], actions: (() => void)[]): boolean {
     const update = () => {
-      if (this.isDowngraded && this.valueCache !== ValueUnusedMarker) {
-        actions.push(this.onSetUsed)
-        return true
-      }
       for (const path of paths) {
         const firstChildKey = path[this.path.length]
         if (firstChildKey === undefined) {
           if (this.valueCache !== ValueUnusedMarker) {
-            actions.push(this.onSetUsed)
             return true
           }
         } else {
@@ -1292,31 +1199,24 @@ class StateMethodsImpl<S>
     if (this.isMounted) {
       this.childrenCache = this.childrenCache ?? {}
       const cachehit = this.childrenCache[key]
-      if (cachehit) {
-        return cachehit
-      }
+      if (cachehit) return cachehit
     }
+
     const r = new StateMethodsImpl(
       this.state,
       this.path.slice().concat(key),
       this.valueSource[key],
       this.valueEdition,
-      this.onSetUsed,
     )
-    if (this.isDowngraded) {
-      r.isDowngraded = true
-    }
+
     if (this.childrenCache) {
       this.childrenCache[key] = r
     }
+
     return r
   }
 
   private valueArrayImpl(currentValue: StateValueAtPath[]): S {
-    if (IsNoProxy) {
-      this.isDowngraded = true
-      return (currentValue as unknown) as S
-    }
     return (proxyWrap(
       this.path,
       currentValue,
@@ -1354,10 +1254,6 @@ class StateMethodsImpl<S>
   }
 
   private valueObjectImpl(currentValue: object): S {
-    if (IsNoProxy) {
-      this.isDowngraded = true
-      return (currentValue as unknown) as S
-    }
     return (proxyWrap(
       this.path,
       currentValue,
@@ -1434,9 +1330,7 @@ class StateMethodsImpl<S>
         // fall down
       }
 
-      const currentDowngraded = this.isDowngraded // relevant for IE11 only
-      const currentValue = this.get() // IE11 marks this as downgraded
-      this.isDowngraded = currentDowngraded // relevant for IE11 only
+      const currentValue = this.get()
       if (
         // if currentValue is primitive type
         (typeof currentValue !== 'object' || currentValue === null) &&
@@ -1460,42 +1354,6 @@ class StateMethodsImpl<S>
         return this.nested(index as keyof S)
       }
       return this.nested(key.toString() as keyof S)
-    }
-
-    if (IsNoProxy) {
-      // minimal support for IE11
-      const result = (Array.isArray(this.valueSource) ? [] : {}) as State<S>
-      ;[
-        self,
-        'toJSON',
-        'path',
-        'keys',
-        'value',
-        'ornull',
-        'promised',
-        'error',
-        'get',
-        'set',
-        'merge',
-        'nested',
-        'batch',
-        'attach',
-        'destroy',
-      ].forEach(key => {
-        Object.defineProperty(result, key, {
-          get: () => getter(result, key),
-        })
-      })
-      if (typeof this.valueSource === 'object' && this.valueSource !== null) {
-        Object.keys(this.valueSource).forEach(key => {
-          Object.defineProperty(result, key, {
-            enumerable: true,
-            get: () => getter(result, key),
-          })
-        })
-      }
-      this.selfCache = result
-      return this.selfCache
     }
 
     this.selfCache = (proxyWrap(
@@ -1560,10 +1418,6 @@ class StateMethodsImpl<S>
   attach(p: (() => Plugin) | symbol): State<S> | [PluginCallbacks | Error, PluginStateControl<S>] {
     if (typeof p === 'function') {
       const pluginMeta = p()
-      if (pluginMeta.id === DowngradedID) {
-        this.isDowngraded = true
-        return this.self
-      }
       this.state.register(pluginMeta)
       return this.self
     } else {
@@ -1604,7 +1458,7 @@ function proxyWrap(
       }
       return Object.getPrototypeOf(targetReal)
     },
-    setPrototypeOf: (target, v) => {
+    setPrototypeOf: () => {
       return onInvalidUsage(
         isValueProxy ? ErrorId.SetPrototypeOf_State : ErrorId.SetPrototypeOf_Value,
       )
@@ -1615,12 +1469,12 @@ function proxyWrap(
       return true // required to satisfy the invariants of the getPrototypeOf
       // return Object.isExtensible(target);
     },
-    preventExtensions: target => {
+    preventExtensions: () => {
       return onInvalidUsage(
         isValueProxy ? ErrorId.PreventExtensions_State : ErrorId.PreventExtensions_Value,
       )
     },
-    getOwnPropertyDescriptor: (target, p) => {
+    getOwnPropertyDescriptor: (_, p) => {
       const targetReal = targetGetter()
       if (targetReal === undefined || targetReal === null) {
         return
@@ -1638,7 +1492,7 @@ function proxyWrap(
         }
       )
     },
-    has: (target, p) => {
+    has: (_, p) => {
       if (typeof p === 'symbol') {
         return false
       }
@@ -1650,17 +1504,17 @@ function proxyWrap(
     },
     get: propertyGetter,
     set: propertySetter,
-    deleteProperty: (target, p) => {
+    deleteProperty: () => {
       return onInvalidUsage(
         isValueProxy ? ErrorId.DeleteProperty_State : ErrorId.DeleteProperty_Value,
       )
     },
-    defineProperty: (target, p, attributes) => {
+    defineProperty: () => {
       return onInvalidUsage(
         isValueProxy ? ErrorId.DefineProperty_State : ErrorId.DefineProperty_Value,
       )
     },
-    enumerate: target => {
+    enumerate: () => {
       const targetReal = targetGetter()
       if (Array.isArray(targetReal)) {
         return Object.keys(targetReal).concat('length')
@@ -1670,7 +1524,7 @@ function proxyWrap(
       }
       return Object.keys(targetReal)
     },
-    ownKeys: target => {
+    ownKeys: () => {
       const targetReal = targetGetter()
       if (Array.isArray(targetReal)) {
         return Object.keys(targetReal).concat('length')
@@ -1680,10 +1534,10 @@ function proxyWrap(
       }
       return Object.keys(targetReal)
     },
-    apply: (target, thisArg, argArray?) => {
+    apply: () => {
       return onInvalidUsage(isValueProxy ? ErrorId.Apply_State : ErrorId.Apply_Value)
     },
-    construct: (target, argArray, newTarget?) => {
+    construct: () => {
       return onInvalidUsage(isValueProxy ? ErrorId.Construct_State : ErrorId.Construct_Value)
     },
   })
@@ -1700,19 +1554,9 @@ function createStore<S>(initial: SetInitialStateAction<S>): Store {
   return new Store(initialValue)
 }
 
-function useSubscribedStateMethods<S>(
-  state: Store,
-  path: Path,
-  update: () => void,
-  subscribeTarget: Subscribable,
-) {
-  const link = new StateMethodsImpl<S>(state, path, state.get(path), state.edition, update)
-  React.useEffect(() => {
-    subscribeTarget.subscribe(link)
-    return () => {
-      link.onUnmount()
-      subscribeTarget.unsubscribe(link)
-    }
-  })
+function useSubscribedStateMethods<S>(state: Store, path: Path, subscribeTarget: Subscribable) {
+  const link = new StateMethodsImpl<S>(state, path, state.get(path), state.edition)
+  onMounted(() => subscribeTarget.subscribe(link))
+  onUnmounted(() => subscribeTarget.unsubscribe(link))
   return link
 }
