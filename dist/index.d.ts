@@ -1,4 +1,3 @@
-import React from 'react';
 /**
  * 'JSON path' from root of a state object to a nested property.
  * Return type of [StateMethod.path](#readonly-path).
@@ -14,50 +13,50 @@ import React from 'react';
  * - `['a', 1, 1000]`
  * - `['a', 2]`
  */
-export declare type Path = ReadonlyArray<string | number>;
+type Path = ReadonlyArray<string | number>;
 /**
  * Type of an argument of [StateMethods.set](#set).
  *
  * @typeparam S Type of a value of a state
  */
-export declare type SetStateAction<S> = (S | Promise<S>) | ((prevState: S) => S | Promise<S>);
+type SetStateAction<S> = (S | Promise<S>) | ((prevState: S) => S | Promise<S>);
 /**
  * Type of an argument of [StateMethods.merge](#merge).
  *
  * @typeparam S Type of a value of a state
  */
-export declare type SetPartialStateAction<S> = S extends ReadonlyArray<infer U> ? ReadonlyArray<U> | Record<number, U> | ((prevValue: S) => ReadonlyArray<U> | Record<number, U>) : S extends object | string ? Partial<S> | ((prevValue: S) => Partial<S>) : React.SetStateAction<S>;
+type SetPartialStateAction<S> = S extends ReadonlyArray<infer U> ? ReadonlyArray<U> | Record<number, U> | ((prevValue: S) => ReadonlyArray<U> | Record<number, U>) : S extends object | string ? Partial<S> | ((prevValue: S) => Partial<S>) : S | ((prevState: S) => S);
 /**
  * Type of an argument of [createState](#createstate) and [useState](#usestate).
  *
  * @typeparam S Type of a value of a state
  */
-export declare type SetInitialStateAction<S> = S | Promise<S> | (() => S | Promise<S>);
+type SetInitialStateAction<S> = S | Promise<S> | (() => S | Promise<S>);
 /**
  * Special symbol which might be returned by onPromised callback of [StateMethods.map](#map) function.
  *
  * [Learn more...](https://hookstate.js.org/docs/asynchronous-state#executing-an-action-when-state-is-loaded)
  */
-export declare const postpone: unique symbol;
+declare const postpone: unique symbol;
 /**
  * Special symbol which might be used to delete properties
  * from an object calling [StateMethods.set](#set) or [StateMethods.merge](#merge).
  *
  * [Learn more...](https://hookstate.js.org/docs/nested-state#deleting-existing-element)
  */
-export declare const none: any;
+declare const none: any;
 /**
  * Return type of [StateMethods.keys](#readonly-keys).
  *
  * @typeparam S Type of a value of a state
  */
-export declare type InferredStateKeysType<S> = S extends ReadonlyArray<infer _> ? ReadonlyArray<number> : S extends null ? undefined : S extends object ? ReadonlyArray<keyof S> : undefined;
+type InferredStateKeysType<S> = S extends ReadonlyArray<infer _> ? ReadonlyArray<number> : S extends null ? undefined : S extends object ? ReadonlyArray<keyof S> : undefined;
 /**
  * Return type of [StateMethods.map()](#map).
  *
  * @typeparam S Type of a value of a state
  */
-export declare type InferredStateOrnullType<S> = S extends undefined ? undefined : S extends null ? null : State<S>;
+type InferredStateOrnullType<S> = S extends undefined ? undefined : S extends null ? null : State<S>;
 /**
  * For plugin developers only.
  * An instance to manipulate the state in more controlled way.
@@ -66,7 +65,7 @@ export declare type InferredStateOrnullType<S> = S extends undefined ? undefined
  *
  * [Learn more...](https://hookstate.js.org/docs/writing-plugin)
  */
-export interface PluginStateControl<S> {
+interface PluginStateControl<S> {
     /**
      * Get state value, but do not leave the traces of reading it.
      */
@@ -95,7 +94,7 @@ export interface PluginStateControl<S> {
  *
  * @typeparam S Type of a value of a state
  */
-export interface StateMethods<S> {
+interface StateMethods<S> {
     /**
      * 'Javascript' object 'path' to an element relative to the root object
      * in the state. For example:
@@ -234,7 +233,7 @@ export interface StateMethods<S> {
  * Mixin for the [StateMethods](#interfacesstatemethodsmd) for a [State](#state),
  * which can be destroyed by a client.
  */
-export interface StateMethodsDestroy {
+interface StateMethodsDestroy {
     /**
      * Destroys an instance of a state, so
      * it can clear the allocated native resources (if any)
@@ -251,7 +250,7 @@ export interface StateMethodsDestroy {
  * [Learn more about local states...](https://hookstate.js.org/docs/local-state)
  * [Learn more about nested states...](https://hookstate.js.org/docs/nested-state)
  */
-export declare type State<S> = StateMethods<S> & (S extends ReadonlyArray<infer U> ? ReadonlyArray<State<U>> : S extends object ? Omit<{
+type State<S> = StateMethods<S> & (S extends ReadonlyArray<infer U> ? ReadonlyArray<State<U>> : S extends object ? Omit<{
     readonly [K in keyof Required<S>]: State<S[K]>;
 }, keyof StateMethods<S> | keyof StateMethodsDestroy> : {});
 /**
@@ -261,7 +260,7 @@ export declare type State<S> = StateMethods<S> & (S extends ReadonlyArray<infer 
  * @hidden
  * @ignore
  */
-export declare type StateValueAtRoot = any;
+type StateValueAtRoot = any;
 /**
  * For plugin developers only.
  * Type alias to highlight the places where we are dealing with nested state value.
@@ -269,7 +268,7 @@ export declare type StateValueAtRoot = any;
  * @hidden
  * @ignore
  */
-export declare type StateValueAtPath = any;
+type StateValueAtPath = any;
 /**
  * For plugin developers only.
  * Type alias to highlight the places where we are dealing with state error.
@@ -277,7 +276,7 @@ export declare type StateValueAtPath = any;
  * @hidden
  * @ignore
  */
-export declare type StateErrorAtRoot = any;
+type StateErrorAtRoot = any;
 /**
  * For plugin developers only.
  * Type alias to highlight the places where we are dealing with context value.
@@ -285,12 +284,12 @@ export declare type StateErrorAtRoot = any;
  * @hidden
  * @ignore
  */
-export declare type AnyContext = any;
+type AnyContext = any;
 /**
  * For plugin developers only.
  * PluginCallbacks.onSet argument type.
  */
-export interface PluginCallbacksOnSetArgument {
+interface PluginCallbacksOnSetArgument {
     readonly path: Path;
     readonly state?: StateValueAtRoot;
     readonly previous?: StateValueAtPath;
@@ -301,14 +300,14 @@ export interface PluginCallbacksOnSetArgument {
  * For plugin developers only.
  * PluginCallbacks.onDestroy argument type.
  */
-export interface PluginCallbacksOnDestroyArgument {
+interface PluginCallbacksOnDestroyArgument {
     readonly state?: StateValueAtRoot;
 }
 /**
  * For plugin developers only.
  * PluginCallbacks.onBatchStart/Finish argument type.
  */
-export interface PluginCallbacksOnBatchArgument {
+interface PluginCallbacksOnBatchArgument {
     readonly path: Path;
     readonly state?: StateValueAtRoot;
     readonly context?: AnyContext;
@@ -319,7 +318,7 @@ export interface PluginCallbacksOnBatchArgument {
  *
  * [Learn more...](https://hookstate.js.org/docs/writing-plugin)
  */
-export interface PluginCallbacks {
+interface PluginCallbacks {
     readonly onSet?: (arg: PluginCallbacksOnSetArgument) => void;
     readonly onDestroy?: (arg: PluginCallbacksOnDestroyArgument) => void;
     readonly onBatchStart?: (arg: PluginCallbacksOnBatchArgument) => void;
@@ -331,7 +330,7 @@ export interface PluginCallbacks {
  *
  * [Learn more...](https://hookstate.js.org/docs/writing-plugin)
  */
-export interface Plugin {
+interface Plugin {
     /**
      * Unique identifier of a plugin.
      */
@@ -372,7 +371,7 @@ export interface Plugin {
  * pass the created state to [useState](#usestate) function and
  * use the returned result in the component's logic.
  */
-export declare function createState<S>(initial: SetInitialStateAction<S>): State<S> & StateMethodsDestroy;
+declare function createState<S>(initial: SetInitialStateAction<S>): State<S> & StateMethodsDestroy;
 /**
  * Enables a functional React component to use a state,
  * either created by [createState](#createstate) (*global* state) or
@@ -400,7 +399,7 @@ export declare function createState<S>(initial: SetInitialStateAction<S>): State
  * which **must be** used within the component (during rendering
  * or in effects) or it's children.
  */
-export declare function useState<S>(source: State<S>): State<S>;
+declare function useState<S>(source: State<S>): State<S>;
 /**
  * This function enables a functional React component to use a state,
  * created per component by [useState](#usestate) (*local* state).
@@ -428,39 +427,7 @@ export declare function useState<S>(source: State<S>): State<S>;
  * which **must be** used within the component (during rendering
  * or in effects) or it's children.
  */
-export declare function useState<S>(source: SetInitialStateAction<S>): State<S>;
-/**
- * Allows to use a state without defining a functional react component.
- * It can be also used in class-based React components. It is also
- * particularly usefull for creating *scoped* states.
- *
- * [Learn more...](https://hookstate.js.org/docs/using-without-statehook)
- *
- * @typeparam S Type of a value of a state
- */
-export declare function StateFragment<S>(props: {
-    state: State<S>;
-    children: (state: State<S>) => React.ReactElement;
-}): React.ReactElement;
-/**
- * Allows to use a state without defining a functional react component.
- * See more at [StateFragment](#statefragment)
- *
- * [Learn more...](https://hookstate.js.org/docs/using-without-statehook)
- *
- * @typeparam S Type of a value of a state
- */
-export declare function StateFragment<S>(props: {
-    state: SetInitialStateAction<S>;
-    children: (state: State<S>) => React.ReactElement;
-}): React.ReactElement;
-/**
- * A plugin which allows to opt-out from usage of Javascript proxies for
- * state usage tracking. It is useful for performance tuning.
- *
- * [Learn more...](https://hookstate.js.org/docs/performance-managed-rendering#downgraded-plugin)
- */
-export declare function Downgraded(): Plugin;
+declare function useState<S>(source: SetInitialStateAction<S>): State<S>;
 /**
  * For plugin developers only.
  * Reserved plugin ID for developers tools extension.
@@ -468,11 +435,11 @@ export declare function Downgraded(): Plugin;
  * @hidden
  * @ignore
  */
-export declare const DevToolsID: unique symbol;
+declare const DevToolsID: unique symbol;
 /**
  * Return type of [DevTools](#devtools).
  */
-export interface DevToolsExtensions {
+interface DevToolsExtensions {
     /**
      * Assigns custom label to identify the state in the development tools
      * @param name label for development tools
@@ -498,4 +465,5 @@ export interface DevToolsExtensions {
  *
  * @typeparam S Type of a value of a state
  */
-export declare function DevTools<S>(state: State<S>): DevToolsExtensions;
+declare function DevTools<S>(state: State<S>): DevToolsExtensions;
+export { Path, SetStateAction, SetPartialStateAction, SetInitialStateAction, postpone, none, InferredStateKeysType, InferredStateOrnullType, PluginStateControl, StateMethods, StateMethodsDestroy, State, StateValueAtRoot, StateValueAtPath, StateErrorAtRoot, AnyContext, PluginCallbacksOnSetArgument, PluginCallbacksOnDestroyArgument, PluginCallbacksOnBatchArgument, PluginCallbacks, Plugin, createState, useState, DevToolsID, DevToolsExtensions, DevTools };

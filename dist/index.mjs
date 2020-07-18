@@ -1,47 +1,18 @@
-import React from 'react';
-
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation.
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */
-/* global Reflect, Promise */
-
-var extendStatics = function(d, b) {
-    extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return extendStatics(d, b);
-};
-
-function __extends(d, b) {
-    extendStatics(d, b);
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-}
+import { reactive, onUnmounted, onMounted } from 'vue';
 
 /**
  * Special symbol which might be returned by onPromised callback of [StateMethods.map](#map) function.
  *
  * [Learn more...](https://hookstate.js.org/docs/asynchronous-state#executing-an-action-when-state-is-loaded)
  */
-var postpone = Symbol('postpone');
+const postpone = Symbol('postpone');
 /**
  * Special symbol which might be used to delete properties
  * from an object calling [StateMethods.set](#set) or [StateMethods.merge](#merge).
  *
  * [Learn more...](https://hookstate.js.org/docs/nested-state#deleting-existing-element)
  */
-var none = Symbol('none');
+const none = Symbol('none');
 /**
  * Creates new state and returns it.
  *
@@ -74,59 +45,41 @@ var none = Symbol('none');
  * use the returned result in the component's logic.
  */
 function createState(initial) {
-    var methods = createStore(initial).toMethods();
-    var devtools = createState[DevToolsID];
+    const methods = createStore(initial).toMethods();
+    const devtools = createState[DevToolsID];
     if (devtools) {
         methods.attach(devtools);
     }
     return methods.self;
 }
 function useState(source) {
-    var parentMethods = typeof source === 'object' && source !== null
+    const parentMethods = typeof source === 'object' && source !== null
         ? source[self]
         : undefined;
     if (parentMethods) {
         if (parentMethods.isMounted) {
             // Scoped state mount
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            var _a = React.useState({}), setValue_1 = _a[1];
-            return useSubscribedStateMethods(parentMethods.state, parentMethods.path, function () { return setValue_1({}); }, parentMethods).self;
+            return useSubscribedStateMethods(parentMethods.state, parentMethods.path, parentMethods)
+                .self;
         }
         else {
             // Global state mount or destroyed link
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            var _b = React.useState({ state: parentMethods.state }), value_1 = _b[0], setValue_2 = _b[1];
-            return useSubscribedStateMethods(value_1.state, parentMethods.path, function () { return setValue_2({ state: value_1.state }); }, value_1.state).self;
+            const value = reactive({ state: parentMethods.state });
+            return useSubscribedStateMethods(value.state, parentMethods.path, value.state)
+                .self;
         }
     }
     else {
         // Local state mount
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        var _c = React.useState(function () { return ({ state: createStore(source) }); }), value_2 = _c[0], setValue_3 = _c[1];
-        var result = useSubscribedStateMethods(value_2.state, RootPath, function () { return setValue_3({ state: value_2.state }); }, value_2.state);
-        React.useEffect(function () { return function () { return value_2.state.destroy(); }; }, []);
-        var devtools = useState[DevToolsID];
+        const value = reactive({ state: createStore(source) });
+        const result = useSubscribedStateMethods(value.state, RootPath, value.state);
+        onUnmounted(() => value.state.destroy());
+        const devtools = useState[DevToolsID];
         if (devtools) {
             result.attach(devtools);
         }
         return result.self;
     }
-}
-function StateFragment(props) {
-    var scoped = useState(props.state);
-    return props.children(scoped);
-}
-/**
- * A plugin which allows to opt-out from usage of Javascript proxies for
- * state usage tracking. It is useful for performance tuning.
- *
- * [Learn more...](https://hookstate.js.org/docs/performance-managed-rendering#downgraded-plugin)
- */
-function Downgraded() {
-    // tslint:disable-line: function-name
-    return {
-        id: DowngradedID,
-    };
 }
 /**
  * For plugin developers only.
@@ -135,7 +88,7 @@ function Downgraded() {
  * @hidden
  * @ignore
  */
-var DevToolsID = Symbol('DevTools');
+const DevToolsID = Symbol('DevTools');
 /**
  * Returns access to the development tools for a given state.
  * Development tools are delivered as optional plugins.
@@ -152,7 +105,7 @@ var DevToolsID = Symbol('DevTools');
  * @typeparam S Type of a value of a state
  */
 function DevTools(state) {
-    var plugin = state.attach(DevToolsID);
+    const plugin = state.attach(DevToolsID);
     if (plugin[0] instanceof Error) {
         return EmptyDevToolsExtensions;
     }
@@ -161,12 +114,12 @@ function DevTools(state) {
 ///
 /// INTERNAL SYMBOLS (LIBRARY IMPLEMENTATION)
 ///
-var self = Symbol('self');
-var EmptyDevToolsExtensions = {
-    label: function () {
+const self = Symbol('self');
+const EmptyDevToolsExtensions = {
+    label() {
         /* */
     },
-    log: function () {
+    log() {
         /* */
     },
 };
@@ -197,29 +150,16 @@ var ErrorId;
     ErrorId[ErrorId["Apply_State"] = 213] = "Apply_State";
     ErrorId[ErrorId["Apply_Value"] = 214] = "Apply_Value";
 })(ErrorId || (ErrorId = {}));
-var StateInvalidUsageError = /** @class */ (function (_super) {
-    __extends(StateInvalidUsageError, _super);
-    function StateInvalidUsageError(path, id, details) {
-        return _super.call(this, "Error: HOOKSTATE-" + id + " [path: /" + path.join('/') + (details ? ", details: " + details : '') + "]. " + ("See https://hookstate.js.org/docs/exceptions#hookstate-" + id)) || this;
-    }
-    return StateInvalidUsageError;
-}(Error));
-function isNoProxyInititializer() {
-    try {
-        var used = new Proxy({}, {});
-        return false;
-    }
-    catch (_a) {
-        return true;
+class StateInvalidUsageError extends Error {
+    constructor(path, id, details) {
+        super(`Error: HOOKSTATE-${id} [path: /${path.join('/')}${details ? `, details: ${details}` : ''}]. ` + `See https://hookstate.js.org/docs/exceptions#hookstate-${id}`);
     }
 }
-var IsNoProxy = isNoProxyInititializer();
-var DowngradedID = Symbol('Downgraded');
-var SelfMethodsID = Symbol('ProxyMarker');
-var RootPath = [];
-var DestroyedEdition = -1;
-var Store = /** @class */ (function () {
-    function Store(_value) {
+const SelfMethodsID = Symbol('ProxyMarker');
+const RootPath = [];
+const DestroyedEdition = -1;
+class Store {
+    constructor(_value) {
         this._value = _value;
         this._edition = 0;
         this._subscribers = new Set();
@@ -237,61 +177,52 @@ var Store = /** @class */ (function () {
             this._promised = this.createPromised();
         }
     }
-    Store.prototype.createPromised = function (newValue) {
-        var _this = this;
-        var promised = new Promised(newValue ? Promise.resolve(newValue) : undefined, function (r) {
-            if (_this.promised === promised && _this.edition !== DestroyedEdition) {
-                _this._promised = undefined;
-                _this.set(RootPath, r);
-                _this.update([RootPath]);
+    createPromised(newValue) {
+        const promised = new Promised(newValue ? Promise.resolve(newValue) : undefined, (r) => {
+            if (this.promised === promised && this.edition !== DestroyedEdition) {
+                this._promised = undefined;
+                this.set(RootPath, r);
+                this.update([RootPath]);
             }
-        }, function () {
-            if (_this.promised === promised && _this.edition !== DestroyedEdition) {
-                _this._edition += 1;
-                _this.update([RootPath]);
+        }, () => {
+            if (this.promised === promised && this.edition !== DestroyedEdition) {
+                this._edition += 1;
+                this.update([RootPath]);
             }
-        }, function () {
-            if (_this._batchesPendingActions &&
-                _this._value !== none &&
-                _this.edition !== DestroyedEdition) {
-                var actions = _this._batchesPendingActions;
-                _this._batchesPendingActions = undefined;
-                actions.forEach(function (a) { return a(); });
+        }, () => {
+            if (this._batchesPendingActions &&
+                this._value !== none &&
+                this.edition !== DestroyedEdition) {
+                const actions = this._batchesPendingActions;
+                this._batchesPendingActions = undefined;
+                actions.forEach(a => a());
             }
         });
         return promised;
-    };
-    Object.defineProperty(Store.prototype, "edition", {
-        get: function () {
-            return this._edition;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Store.prototype, "promised", {
-        get: function () {
-            return this._promised;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Store.prototype.get = function (path) {
-        var result = this._value;
+    }
+    get edition() {
+        return this._edition;
+    }
+    get promised() {
+        return this._promised;
+    }
+    get(path) {
+        let result = this._value;
         if (result === none) {
             return result;
         }
-        path.forEach(function (p) {
+        path.forEach(p => {
             result = result[p];
         });
         return result;
-    };
-    Store.prototype.set = function (path, value, mergeValue) {
+    }
+    set(path, value, mergeValue) {
         if (this._edition < 0) {
             throw new StateInvalidUsageError(path, ErrorId.SetStateWhenDestroyed);
         }
         if (path.length === 0) {
             // Root value UPDATE case,
-            var onSetArg = {
+            const onSetArg = {
                 path: path,
                 state: value,
                 value: value,
@@ -312,7 +243,7 @@ var Store = /** @class */ (function () {
             else if (this._promised && !this._promised.resolver && !this._promised.fullfilled) {
                 throw new StateInvalidUsageError(path, ErrorId.SetStateWhenPromised);
             }
-            var prevValue = this._value;
+            const prevValue = this._value;
             if (prevValue === none) {
                 delete onSetArg.previous;
             }
@@ -326,15 +257,15 @@ var Store = /** @class */ (function () {
         if (typeof value === 'object' && Promise.resolve(value) === value) {
             throw new StateInvalidUsageError(path, ErrorId.SetStateNestedToPromised);
         }
-        var target = this._value;
-        for (var i = 0; i < path.length - 1; i += 1) {
+        let target = this._value;
+        for (let i = 0; i < path.length - 1; i += 1) {
             target = target[path[i]];
         }
-        var p = path[path.length - 1];
+        const p = path[path.length - 1];
         if (p in target) {
             if (value !== none) {
                 // Property UPDATE case
-                var prevValue = target[p];
+                const prevValue = target[p];
                 target[p] = value;
                 this.afterSet({
                     path: path,
@@ -347,7 +278,7 @@ var Store = /** @class */ (function () {
             }
             else {
                 // Property DELETE case
-                var prevValue = target[p];
+                const prevValue = target[p];
                 if (Array.isArray(target) && typeof p === 'number') {
                     target.splice(p, 1);
                 }
@@ -383,27 +314,27 @@ var Store = /** @class */ (function () {
         // Non-existing property DELETE case
         // no-op
         return path;
-    };
-    Store.prototype.update = function (paths) {
+    }
+    update(paths) {
         var _a;
         if (this._batches) {
             this._batchesPendingPaths = (_a = this._batchesPendingPaths) !== null && _a !== void 0 ? _a : [];
             this._batchesPendingPaths = this._batchesPendingPaths.concat(paths);
             return;
         }
-        var actions = [];
-        this._subscribers.forEach(function (s) { return s.onSet(paths, actions); });
-        actions.forEach(function (a) { return a(); });
-    };
-    Store.prototype.afterSet = function (params) {
+        const actions = [];
+        this._subscribers.forEach(s => s.onSet(paths, actions));
+        actions.forEach(a => a());
+    }
+    afterSet(params) {
         if (this._edition !== DestroyedEdition) {
             this._edition += 1;
-            this._setSubscribers.forEach(function (cb) { return cb(params); });
+            this._setSubscribers.forEach(cb => cb(params));
         }
-    };
-    Store.prototype.startBatch = function (path, options) {
+    }
+    startBatch(path, options) {
         this._batches += 1;
-        var cbArgument = {
+        const cbArgument = {
             path: path,
         };
         if (options && 'context' in options) {
@@ -412,10 +343,10 @@ var Store = /** @class */ (function () {
         if (this._value !== none) {
             cbArgument.state = this._value;
         }
-        this._batchStartSubscribers.forEach(function (cb) { return cb(cbArgument); });
-    };
-    Store.prototype.finishBatch = function (path, options) {
-        var cbArgument = {
+        this._batchStartSubscribers.forEach(cb => cb(cbArgument));
+    }
+    finishBatch(path, options) {
+        const cbArgument = {
             path: path,
         };
         if (options && 'context' in options) {
@@ -424,106 +355,98 @@ var Store = /** @class */ (function () {
         if (this._value !== none) {
             cbArgument.state = this._value;
         }
-        this._batchFinishSubscribers.forEach(function (cb) { return cb(cbArgument); });
+        this._batchFinishSubscribers.forEach(cb => cb(cbArgument));
         this._batches -= 1;
         if (this._batches === 0) {
             if (this._batchesPendingPaths) {
-                var paths = this._batchesPendingPaths;
+                const paths = this._batchesPendingPaths;
                 this._batchesPendingPaths = undefined;
                 this.update(paths);
             }
         }
-    };
-    Store.prototype.postponeBatch = function (action) {
+    }
+    postponeBatch(action) {
         var _a;
         this._batchesPendingActions = (_a = this._batchesPendingActions) !== null && _a !== void 0 ? _a : [];
         this._batchesPendingActions.push(action);
-    };
-    Store.prototype.getPlugin = function (pluginId) {
+    }
+    getPlugin(pluginId) {
         return this._plugins.get(pluginId);
-    };
-    Store.prototype.register = function (plugin) {
-        var existingInstance = this._plugins.get(plugin.id);
+    }
+    register(plugin) {
+        const existingInstance = this._plugins.get(plugin.id);
         if (existingInstance) {
             return;
         }
-        var pluginCallbacks = plugin.init ? plugin.init(this.toMethods().self) : {};
+        const pluginCallbacks = plugin.init ? plugin.init(this.toMethods().self) : {};
         this._plugins.set(plugin.id, pluginCallbacks);
         if (pluginCallbacks.onSet) {
-            this._setSubscribers.add(function (p) { return pluginCallbacks.onSet(p); });
+            this._setSubscribers.add(p => pluginCallbacks.onSet(p));
         }
         if (pluginCallbacks.onDestroy) {
-            this._destroySubscribers.add(function (p) { return pluginCallbacks.onDestroy(p); });
+            this._destroySubscribers.add(p => pluginCallbacks.onDestroy(p));
         }
         if (pluginCallbacks.onBatchStart) {
-            this._batchStartSubscribers.add(function (p) { return pluginCallbacks.onBatchStart(p); });
+            this._batchStartSubscribers.add(p => pluginCallbacks.onBatchStart(p));
         }
         if (pluginCallbacks.onBatchFinish) {
-            this._batchFinishSubscribers.add(function (p) { return pluginCallbacks.onBatchFinish(p); });
+            this._batchFinishSubscribers.add(p => pluginCallbacks.onBatchFinish(p));
         }
-    };
-    Store.prototype.toMethods = function () {
-        return new StateMethodsImpl(this, RootPath, this.get(RootPath), this.edition, OnSetUsedNoAction);
-    };
-    Store.prototype.subscribe = function (l) {
+    }
+    toMethods() {
+        return new StateMethodsImpl(this, RootPath, this.get(RootPath), this.edition);
+    }
+    subscribe(l) {
         this._subscribers.add(l);
-    };
-    Store.prototype.unsubscribe = function (l) {
+    }
+    unsubscribe(l) {
         this._subscribers.delete(l);
-    };
-    Store.prototype.destroy = function () {
-        var _this = this;
-        this._destroySubscribers.forEach(function (cb) { return cb(_this._value !== none ? { state: _this._value } : {}); });
+    }
+    destroy() {
+        this._destroySubscribers.forEach(cb => cb(this._value !== none ? { state: this._value } : {}));
         this._edition = DestroyedEdition;
-    };
-    Store.prototype.toJSON = function () {
+    }
+    toJSON() {
         throw new StateInvalidUsageError(RootPath, ErrorId.ToJson_Value);
-    };
-    return Store;
-}());
-var Promised = /** @class */ (function () {
-    function Promised(promise, onResolve, onReject, onPostResolve) {
-        var _this = this;
+    }
+}
+class Promised {
+    constructor(promise, onResolve, onReject, onPostResolve) {
         this.promise = promise;
         if (!promise) {
-            promise = new Promise(function (resolve) {
-                _this.resolver = resolve;
+            promise = new Promise(resolve => {
+                this.resolver = resolve;
             });
         }
         this.promise = promise
-            .then(function (r) {
-            _this.fullfilled = true;
-            if (!_this.resolver) {
+            .then(r => {
+            this.fullfilled = true;
+            if (!this.resolver) {
                 onResolve(r);
             }
         })
-            .catch(function (error) {
-            _this.fullfilled = true;
-            _this.error = error;
+            .catch(error => {
+            this.fullfilled = true;
+            this.error = error;
             onReject();
         })
-            .then(function () { return onPostResolve(); });
+            .then(() => onPostResolve());
     }
-    return Promised;
-}());
-// use symbol property to allow for easier reference finding
-var ValueUnusedMarker = Symbol('ValueUnusedMarker');
-function OnSetUsedNoAction() {
-    /** no action callback */
 }
-// use symbol to mark that a function has no effect anymore
-var UnmountedMarker = Symbol('UnmountedMarker');
-OnSetUsedNoAction[UnmountedMarker] = true;
-var StateMethodsImpl = /** @class */ (function () {
-    function StateMethodsImpl(state, path, valueSource, valueEdition, onSetUsed) {
+// use symbol property to allow for easier reference finding
+const ValueUnusedMarker = Symbol('ValueUnusedMarker');
+class StateMethodsImpl {
+    constructor(state, path, valueSource, valueEdition) {
         this.state = state;
         this.path = path;
         this.valueSource = valueSource;
         this.valueEdition = valueEdition;
-        this.onSetUsed = onSetUsed;
         this.valueCache = ValueUnusedMarker;
+        this.isMounted = false;
+        onMounted(() => (this.isMounted = true));
+        onUnmounted(() => (this.isMounted = false));
     }
-    StateMethodsImpl.prototype.getUntracked = function (allowPromised) {
+    getUntracked(allowPromised) {
         if (this.valueEdition !== this.state.edition) {
             this.valueSource = this.state.get(this.path);
             this.valueEdition = this.state.edition;
@@ -558,14 +481,11 @@ var StateMethodsImpl = /** @class */ (function () {
             throw new StateInvalidUsageError(this.path, ErrorId.GetStateWhenPromised);
         }
         return this.valueSource;
-    };
-    StateMethodsImpl.prototype.get = function (allowPromised) {
-        var currentValue = this.getUntracked(allowPromised);
+    }
+    get(allowPromised) {
+        const currentValue = this.getUntracked(allowPromised);
         if (this.valueCache === ValueUnusedMarker) {
-            if (this.isDowngraded) {
-                this.valueCache = currentValue;
-            }
-            else if (Array.isArray(currentValue)) {
+            if (Array.isArray(currentValue)) {
                 this.valueCache = this.valueArrayImpl(currentValue);
             }
             else if (typeof currentValue === 'object' && currentValue !== null) {
@@ -576,15 +496,11 @@ var StateMethodsImpl = /** @class */ (function () {
             }
         }
         return this.valueCache;
-    };
-    Object.defineProperty(StateMethodsImpl.prototype, "value", {
-        get: function () {
-            return this.get();
-        },
-        enumerable: false,
-        configurable: true
-    });
-    StateMethodsImpl.prototype.setUntracked = function (newValue, mergeValue) {
+    }
+    get value() {
+        return this.get();
+    }
+    setUntracked(newValue, mergeValue) {
         if (typeof newValue === 'function') {
             newValue = newValue(this.getUntracked());
         }
@@ -592,31 +508,31 @@ var StateMethodsImpl = /** @class */ (function () {
             throw new StateInvalidUsageError(this.path, ErrorId.SetStateToValueFromState);
         }
         return [this.state.set(this.path, newValue, mergeValue)];
-    };
-    StateMethodsImpl.prototype.set = function (newValue) {
+    }
+    set(newValue) {
         this.state.update(this.setUntracked(newValue));
-    };
-    StateMethodsImpl.prototype.mergeUntracked = function (sourceValue) {
-        var currentValue = this.getUntracked();
+    }
+    mergeUntracked(sourceValue) {
+        const currentValue = this.getUntracked();
         if (typeof sourceValue === 'function') {
             sourceValue = sourceValue(currentValue);
         }
-        var updatedPaths;
-        var deletedOrInsertedProps = false;
+        let updatedPaths;
+        let deletedOrInsertedProps = false;
         if (Array.isArray(currentValue)) {
             if (Array.isArray(sourceValue)) {
                 return this.setUntracked(currentValue.concat(sourceValue), sourceValue);
             }
             else {
-                var deletedIndexes_1 = [];
+                const deletedIndexes = [];
                 Object.keys(sourceValue)
                     .sort()
-                    .forEach(function (i) {
-                    var index = Number(i);
-                    var newPropValue = sourceValue[index];
+                    .forEach(i => {
+                    const index = Number(i);
+                    const newPropValue = sourceValue[index];
                     if (newPropValue === none) {
                         deletedOrInsertedProps = true;
-                        deletedIndexes_1.push(index);
+                        deletedIndexes.push(index);
                     }
                     else {
                         deletedOrInsertedProps = deletedOrInsertedProps || !(index in currentValue);
@@ -626,15 +542,15 @@ var StateMethodsImpl = /** @class */ (function () {
                 // indexes are ascending sorted as per above
                 // so, delete one by one from the end
                 // this way index positions do not change
-                deletedIndexes_1.reverse().forEach(function (p) {
+                deletedIndexes.reverse().forEach(p => {
                     currentValue.splice(p, 1);
                 });
                 updatedPaths = this.setUntracked(currentValue, sourceValue);
             }
         }
         else if (typeof currentValue === 'object' && currentValue !== null) {
-            Object.keys(sourceValue).forEach(function (key) {
-                var newPropValue = sourceValue[key];
+            Object.keys(sourceValue).forEach(key => {
+                const newPropValue = sourceValue[key];
                 if (newPropValue === none) {
                     deletedOrInsertedProps = true;
                     delete currentValue[key];
@@ -655,58 +571,41 @@ var StateMethodsImpl = /** @class */ (function () {
         if (updatedPaths.length !== 1 || updatedPaths[0] !== this.path || deletedOrInsertedProps) {
             return updatedPaths;
         }
-        var updatedPath = updatedPaths[0];
-        return Object.keys(sourceValue).map(function (p) { return updatedPath.slice().concat(p); });
-    };
-    StateMethodsImpl.prototype.merge = function (sourceValue) {
+        const updatedPath = updatedPaths[0];
+        return Object.keys(sourceValue).map(p => updatedPath.slice().concat(p));
+    }
+    merge(sourceValue) {
         this.state.update(this.mergeUntracked(sourceValue));
-    };
-    StateMethodsImpl.prototype.nested = function (key) {
+    }
+    nested(key) {
         return this.child(key).self;
-    };
-    StateMethodsImpl.prototype.rerender = function (paths) {
+    }
+    rerender(paths) {
         this.state.update(paths);
-    };
-    StateMethodsImpl.prototype.destroy = function () {
+    }
+    destroy() {
         this.state.destroy();
-    };
-    StateMethodsImpl.prototype.subscribe = function (l) {
+    }
+    subscribe(l) {
         if (this.subscribers === undefined) {
             this.subscribers = new Set();
         }
         this.subscribers.add(l);
-    };
-    StateMethodsImpl.prototype.unsubscribe = function (l) {
+    }
+    unsubscribe(l) {
         this.subscribers.delete(l);
-    };
-    Object.defineProperty(StateMethodsImpl.prototype, "isMounted", {
-        get: function () {
-            return !this.onSetUsed[UnmountedMarker];
-        },
-        enumerable: false,
-        configurable: true
-    });
-    StateMethodsImpl.prototype.onUnmount = function () {
-        this.onSetUsed[UnmountedMarker] = true;
-    };
-    StateMethodsImpl.prototype.onSet = function (paths, actions) {
-        var _this = this;
-        var update = function () {
-            if (_this.isDowngraded && _this.valueCache !== ValueUnusedMarker) {
-                actions.push(_this.onSetUsed);
-                return true;
-            }
-            for (var _i = 0, paths_1 = paths; _i < paths_1.length; _i++) {
-                var path = paths_1[_i];
-                var firstChildKey = path[_this.path.length];
+    }
+    onSet(paths, actions) {
+        const update = () => {
+            for (const path of paths) {
+                const firstChildKey = path[this.path.length];
                 if (firstChildKey === undefined) {
-                    if (_this.valueCache !== ValueUnusedMarker) {
-                        actions.push(_this.onSetUsed);
+                    if (this.valueCache !== ValueUnusedMarker) {
                         return true;
                     }
                 }
                 else {
-                    var firstChildValue = _this.childrenCache && _this.childrenCache[firstChildKey];
+                    const firstChildValue = this.childrenCache && this.childrenCache[firstChildKey];
                     if (firstChildValue === null || firstChildValue === void 0 ? void 0 : firstChildValue.onSet(paths, actions)) {
                         return true;
                     }
@@ -714,57 +613,44 @@ var StateMethodsImpl = /** @class */ (function () {
             }
             return false;
         };
-        var updated = update();
+        const updated = update();
         if (!updated && this.subscribers !== undefined) {
-            this.subscribers.forEach(function (s) {
+            this.subscribers.forEach(s => {
                 s.onSet(paths, actions);
             });
         }
         return updated;
-    };
-    Object.defineProperty(StateMethodsImpl.prototype, "keys", {
-        get: function () {
-            var value = this.get();
-            if (Array.isArray(value)) {
-                return Object.keys(value)
-                    .map(function (i) { return Number(i); })
-                    .filter(function (i) { return Number.isInteger(i); });
-            }
-            if (typeof value === 'object' && value !== null) {
-                return Object.keys(value);
-            }
-            return undefined;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    StateMethodsImpl.prototype.child = function (key) {
+    }
+    get keys() {
+        const value = this.get();
+        if (Array.isArray(value)) {
+            return Object.keys(value)
+                .map(i => Number(i))
+                .filter(i => Number.isInteger(i));
+        }
+        if (typeof value === 'object' && value !== null) {
+            return Object.keys(value);
+        }
+        return undefined;
+    }
+    child(key) {
         var _a;
         // if this state is not mounted to a hook,
         // we do not cache children to avoid unnecessary memory leaks
         if (this.isMounted) {
             this.childrenCache = (_a = this.childrenCache) !== null && _a !== void 0 ? _a : {};
-            var cachehit = this.childrenCache[key];
-            if (cachehit) {
+            const cachehit = this.childrenCache[key];
+            if (cachehit)
                 return cachehit;
-            }
         }
-        var r = new StateMethodsImpl(this.state, this.path.slice().concat(key), this.valueSource[key], this.valueEdition, this.onSetUsed);
-        if (this.isDowngraded) {
-            r.isDowngraded = true;
-        }
+        const r = new StateMethodsImpl(this.state, this.path.slice().concat(key), this.valueSource[key], this.valueEdition);
         if (this.childrenCache) {
             this.childrenCache[key] = r;
         }
         return r;
-    };
-    StateMethodsImpl.prototype.valueArrayImpl = function (currentValue) {
-        var _this = this;
-        if (IsNoProxy) {
-            this.isDowngraded = true;
-            return currentValue;
-        }
-        return proxyWrap(this.path, currentValue, function () { return currentValue; }, function (target, key) {
+    }
+    valueArrayImpl(currentValue) {
+        return proxyWrap(this.path, currentValue, () => currentValue, (target, key) => {
             if (key === 'length') {
                 return target.length;
             }
@@ -772,229 +658,163 @@ var StateMethodsImpl = /** @class */ (function () {
                 return Array.prototype[key];
             }
             if (key === SelfMethodsID) {
-                return _this;
+                return this;
             }
             if (typeof key === 'symbol') {
                 // allow clients to associate hidden cache with state values
                 return target[key];
             }
-            var index = Number(key);
+            const index = Number(key);
             if (!Number.isInteger(index)) {
                 return;
             }
-            return _this.child(index).get();
-        }, function (target, key, value) {
+            return this.child(index).get();
+        }, (target, key, value) => {
             if (typeof key === 'symbol') {
                 // allow clients to associate hidden cache with state values
                 target[key] = value;
                 return true;
             }
-            throw new StateInvalidUsageError(_this.path, ErrorId.SetProperty_Value);
+            throw new StateInvalidUsageError(this.path, ErrorId.SetProperty_Value);
         }, true);
-    };
-    StateMethodsImpl.prototype.valueObjectImpl = function (currentValue) {
-        var _this = this;
-        if (IsNoProxy) {
-            this.isDowngraded = true;
-            return currentValue;
-        }
-        return proxyWrap(this.path, currentValue, function () { return currentValue; }, function (target, key) {
+    }
+    valueObjectImpl(currentValue) {
+        return proxyWrap(this.path, currentValue, () => currentValue, (target, key) => {
             if (key === SelfMethodsID) {
-                return _this;
+                return this;
             }
             if (typeof key === 'symbol') {
                 // allow clients to associate hidden cache with state values
                 return target[key];
             }
-            return _this.child(key).get();
-        }, function (target, key, value) {
+            return this.child(key).get();
+        }, (target, key, value) => {
             if (typeof key === 'symbol') {
                 // allow clients to associate hidden cache with state values
                 target[key] = value;
                 return true;
             }
-            throw new StateInvalidUsageError(_this.path, ErrorId.SetProperty_Value);
+            throw new StateInvalidUsageError(this.path, ErrorId.SetProperty_Value);
         }, true);
-    };
-    Object.defineProperty(StateMethodsImpl.prototype, "self", {
-        get: function () {
-            var _this = this;
-            if (this.selfCache) {
-                return this.selfCache;
+    }
+    get self() {
+        if (this.selfCache) {
+            return this.selfCache;
+        }
+        const getter = (_, key) => {
+            if (key === self) {
+                return this;
             }
-            var getter = function (_, key) {
-                if (key === self) {
-                    return _this;
+            if (typeof key === 'symbol') {
+                return;
+            }
+            if (key === 'toJSON') {
+                throw new StateInvalidUsageError(this.path, ErrorId.ToJson_State);
+            }
+            switch (key) {
+                case 'path':
+                    return this.path;
+                case 'keys':
+                    return this.keys;
+                case 'value':
+                    return this.value;
+                case 'ornull':
+                    return this.ornull;
+                case 'promised':
+                    return this.promised;
+                case 'error':
+                    return this.error;
+                case 'get':
+                    return () => this.get();
+                case 'set':
+                    return (p) => this.set(p);
+                case 'merge':
+                    return (p) => this.merge(p);
+                case 'nested':
+                    return (p) => this.nested(p);
+                case 'batch':
+                    // tslint:disable-next-line: no-any
+                    return (action, context) => this.batch(action, context);
+                case 'attach':
+                    return (p) => this.attach(p);
+                case 'destroy': {
+                    return () => this.destroy();
                 }
-                if (typeof key === 'symbol') {
+                // fall down
+            }
+            const currentValue = this.get();
+            if (
+            // if currentValue is primitive type
+            (typeof currentValue !== 'object' || currentValue === null) &&
+                // if promised, it will be none
+                currentValue !== none) {
+                throw new StateInvalidUsageError(this.path, ErrorId.GetStatePropertyWhenPrimitive);
+            }
+            if (Array.isArray(currentValue)) {
+                if (key === 'length') {
+                    return currentValue.length;
+                }
+                if (key in Array.prototype) {
+                    return Array.prototype[key];
+                }
+                const index = Number(key);
+                if (!Number.isInteger(index)) {
                     return;
                 }
-                if (key === 'toJSON') {
-                    throw new StateInvalidUsageError(_this.path, ErrorId.ToJson_State);
-                }
-                switch (key) {
-                    case 'path':
-                        return _this.path;
-                    case 'keys':
-                        return _this.keys;
-                    case 'value':
-                        return _this.value;
-                    case 'ornull':
-                        return _this.ornull;
-                    case 'promised':
-                        return _this.promised;
-                    case 'error':
-                        return _this.error;
-                    case 'get':
-                        return function () { return _this.get(); };
-                    case 'set':
-                        return function (p) { return _this.set(p); };
-                    case 'merge':
-                        return function (p) { return _this.merge(p); };
-                    case 'nested':
-                        return function (p) { return _this.nested(p); };
-                    case 'batch':
-                        // tslint:disable-next-line: no-any
-                        return function (action, context) {
-                            return _this.batch(action, context);
-                        };
-                    case 'attach':
-                        return function (p) { return _this.attach(p); };
-                    case 'destroy': {
-                        return function () { return _this.destroy(); };
-                    }
-                    // fall down
-                }
-                var currentDowngraded = _this.isDowngraded; // relevant for IE11 only
-                var currentValue = _this.get(); // IE11 marks this as downgraded
-                _this.isDowngraded = currentDowngraded; // relevant for IE11 only
-                if (
-                // if currentValue is primitive type
-                (typeof currentValue !== 'object' || currentValue === null) &&
-                    // if promised, it will be none
-                    currentValue !== none) {
-                    throw new StateInvalidUsageError(_this.path, ErrorId.GetStatePropertyWhenPrimitive);
-                }
-                if (Array.isArray(currentValue)) {
-                    if (key === 'length') {
-                        return currentValue.length;
-                    }
-                    if (key in Array.prototype) {
-                        return Array.prototype[key];
-                    }
-                    var index = Number(key);
-                    if (!Number.isInteger(index)) {
-                        return;
-                    }
-                    return _this.nested(index);
-                }
-                return _this.nested(key.toString());
-            };
-            if (IsNoProxy) {
-                // minimal support for IE11
-                var result_1 = (Array.isArray(this.valueSource) ? [] : {});
-                [
-                    self,
-                    'toJSON',
-                    'path',
-                    'keys',
-                    'value',
-                    'ornull',
-                    'promised',
-                    'error',
-                    'get',
-                    'set',
-                    'merge',
-                    'nested',
-                    'batch',
-                    'attach',
-                    'destroy',
-                ].forEach(function (key) {
-                    Object.defineProperty(result_1, key, {
-                        get: function () { return getter(result_1, key); },
-                    });
-                });
-                if (typeof this.valueSource === 'object' && this.valueSource !== null) {
-                    Object.keys(this.valueSource).forEach(function (key) {
-                        Object.defineProperty(result_1, key, {
-                            enumerable: true,
-                            get: function () { return getter(result_1, key); },
-                        });
-                    });
-                }
-                this.selfCache = result_1;
-                return this.selfCache;
+                return this.nested(index);
             }
-            this.selfCache = proxyWrap(this.path, this.valueSource, function () {
-                _this.get(); // get latest & mark used
-                return _this.valueSource;
-            }, getter, function (_, key, value) {
-                throw new StateInvalidUsageError(_this.path, ErrorId.SetProperty_State);
-            }, false);
-            return this.selfCache;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(StateMethodsImpl.prototype, "promised", {
-        get: function () {
-            var currentValue = this.get(true); // marks used
-            if (currentValue === none && this.state.promised && !this.state.promised.fullfilled) {
-                return true;
+            return this.nested(key.toString());
+        };
+        this.selfCache = proxyWrap(this.path, this.valueSource, () => {
+            this.get(); // get latest & mark used
+            return this.valueSource;
+        }, getter, (_, key, value) => {
+            throw new StateInvalidUsageError(this.path, ErrorId.SetProperty_State);
+        }, false);
+        return this.selfCache;
+    }
+    get promised() {
+        const currentValue = this.get(true); // marks used
+        if (currentValue === none && this.state.promised && !this.state.promised.fullfilled) {
+            return true;
+        }
+        return false;
+    }
+    get error() {
+        const currentValue = this.get(true); // marks used
+        if (currentValue === none) {
+            if (this.state.promised && this.state.promised.fullfilled) {
+                return this.state.promised.error;
             }
-            return false;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(StateMethodsImpl.prototype, "error", {
-        get: function () {
-            var currentValue = this.get(true); // marks used
-            if (currentValue === none) {
-                if (this.state.promised && this.state.promised.fullfilled) {
-                    return this.state.promised.error;
-                }
-                this.get(); // will throw 'read while promised' exception
-            }
-            return;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    StateMethodsImpl.prototype.batch = function (action, context) {
-        var _this = this;
-        var opts = { context: context };
+            this.get(); // will throw 'read while promised' exception
+        }
+        return;
+    }
+    batch(action, context) {
+        const opts = { context: context };
         try {
             this.state.startBatch(this.path, opts);
-            var result = action(this.self);
+            const result = action(this.self);
             if (result === postpone) {
-                this.state.postponeBatch(function () { return _this.batch(action, context); });
+                this.state.postponeBatch(() => this.batch(action, context));
             }
             return result;
         }
         finally {
             this.state.finishBatch(this.path, opts);
         }
-    };
-    Object.defineProperty(StateMethodsImpl.prototype, "ornull", {
-        get: function () {
-            var value = this.get();
-            if (value === null || value === undefined) {
-                return value;
-            }
-            return this.self;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    StateMethodsImpl.prototype.attach = function (p) {
+    }
+    get ornull() {
+        const value = this.get();
+        if (value === null || value === undefined) {
+            return value;
+        }
+        return this.self;
+    }
+    attach(p) {
         var _a;
         if (typeof p === 'function') {
-            var pluginMeta = p();
-            if (pluginMeta.id === DowngradedID) {
-                this.isDowngraded = true;
-                return this.self;
-            }
+            const pluginMeta = p();
             this.state.register(pluginMeta);
             return this.self;
         }
@@ -1004,9 +824,8 @@ var StateMethodsImpl = /** @class */ (function () {
                 this,
             ];
         }
-    };
-    return StateMethodsImpl;
-}());
+    }
+}
 function proxyWrap(path, 
 // tslint:disable-next-line: no-any
 targetBootstrap, 
@@ -1016,55 +835,55 @@ targetGetter,
 propertyGetter, 
 // tslint:disable-next-line: no-any
 propertySetter, isValueProxy) {
-    var onInvalidUsage = function (op) {
+    const onInvalidUsage = (op) => {
         throw new StateInvalidUsageError(path, op);
     };
     if (typeof targetBootstrap !== 'object' || targetBootstrap === null) {
         targetBootstrap = {};
     }
     return new Proxy(targetBootstrap, {
-        getPrototypeOf: function (target) {
+        getPrototypeOf: target => {
             // should satisfy the invariants:
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/getPrototypeOf#Invariants
-            var targetReal = targetGetter();
+            const targetReal = targetGetter();
             if (targetReal === undefined || targetReal === null) {
                 return null;
             }
             return Object.getPrototypeOf(targetReal);
         },
-        setPrototypeOf: function (target, v) {
+        setPrototypeOf: () => {
             return onInvalidUsage(isValueProxy ? ErrorId.SetPrototypeOf_State : ErrorId.SetPrototypeOf_Value);
         },
-        isExtensible: function (target) {
+        isExtensible: target => {
             // should satisfy the invariants:
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/isExtensible#Invariants
             return true; // required to satisfy the invariants of the getPrototypeOf
             // return Object.isExtensible(target);
         },
-        preventExtensions: function (target) {
+        preventExtensions: () => {
             return onInvalidUsage(isValueProxy ? ErrorId.PreventExtensions_State : ErrorId.PreventExtensions_Value);
         },
-        getOwnPropertyDescriptor: function (target, p) {
-            var targetReal = targetGetter();
+        getOwnPropertyDescriptor: (_, p) => {
+            const targetReal = targetGetter();
             if (targetReal === undefined || targetReal === null) {
                 return;
             }
-            var origin = Object.getOwnPropertyDescriptor(targetReal, p);
+            const origin = Object.getOwnPropertyDescriptor(targetReal, p);
             if (origin && Array.isArray(targetReal) && p in Array.prototype) {
                 return origin;
             }
             return (origin && {
                 configurable: true,
                 enumerable: origin.enumerable,
-                get: function () { return propertyGetter(targetReal, p); },
+                get: () => propertyGetter(targetReal, p),
                 set: undefined,
             });
         },
-        has: function (target, p) {
+        has: (_, p) => {
             if (typeof p === 'symbol') {
                 return false;
             }
-            var targetReal = targetGetter();
+            const targetReal = targetGetter();
             if (typeof targetReal === 'object' && targetReal !== null) {
                 return p in targetReal;
             }
@@ -1072,14 +891,14 @@ propertySetter, isValueProxy) {
         },
         get: propertyGetter,
         set: propertySetter,
-        deleteProperty: function (target, p) {
+        deleteProperty: () => {
             return onInvalidUsage(isValueProxy ? ErrorId.DeleteProperty_State : ErrorId.DeleteProperty_Value);
         },
-        defineProperty: function (target, p, attributes) {
+        defineProperty: () => {
             return onInvalidUsage(isValueProxy ? ErrorId.DefineProperty_State : ErrorId.DefineProperty_Value);
         },
-        enumerate: function (target) {
-            var targetReal = targetGetter();
+        enumerate: () => {
+            const targetReal = targetGetter();
             if (Array.isArray(targetReal)) {
                 return Object.keys(targetReal).concat('length');
             }
@@ -1088,8 +907,8 @@ propertySetter, isValueProxy) {
             }
             return Object.keys(targetReal);
         },
-        ownKeys: function (target) {
-            var targetReal = targetGetter();
+        ownKeys: () => {
+            const targetReal = targetGetter();
             if (Array.isArray(targetReal)) {
                 return Object.keys(targetReal).concat('length');
             }
@@ -1098,16 +917,16 @@ propertySetter, isValueProxy) {
             }
             return Object.keys(targetReal);
         },
-        apply: function (target, thisArg, argArray) {
+        apply: () => {
             return onInvalidUsage(isValueProxy ? ErrorId.Apply_State : ErrorId.Apply_Value);
         },
-        construct: function (target, argArray, newTarget) {
+        construct: () => {
             return onInvalidUsage(isValueProxy ? ErrorId.Construct_State : ErrorId.Construct_Value);
         },
     });
 }
 function createStore(initial) {
-    var initialValue = initial;
+    let initialValue = initial;
     if (typeof initial === 'function') {
         initialValue = initial();
     }
@@ -1116,17 +935,12 @@ function createStore(initial) {
     }
     return new Store(initialValue);
 }
-function useSubscribedStateMethods(state, path, update, subscribeTarget) {
-    var link = new StateMethodsImpl(state, path, state.get(path), state.edition, update);
-    React.useEffect(function () {
-        subscribeTarget.subscribe(link);
-        return function () {
-            link.onUnmount();
-            subscribeTarget.unsubscribe(link);
-        };
-    });
+function useSubscribedStateMethods(state, path, subscribeTarget) {
+    const link = new StateMethodsImpl(state, path, state.get(path), state.edition);
+    onMounted(() => subscribeTarget.subscribe(link));
+    onUnmounted(() => subscribeTarget.unsubscribe(link));
     return link;
 }
 
-export { DevTools, DevToolsID, Downgraded, StateFragment, createState, none, postpone, useState };
+export { DevTools, DevToolsID, createState, none, postpone, useState };
 //# sourceMappingURL=index.mjs.map

@@ -1,9 +1,9 @@
 /* eslint node/no-unsupported-features/es-syntax: ["error", { ignores: ["modules"] }] */
 
-import typescript from 'rollup-plugin-typescript2'
 import commonjs from '@rollup/plugin-commonjs'
-import external from 'rollup-plugin-peer-deps-external'
+import externals from 'rollup-plugin-node-externals'
 import resolve from '@rollup/plugin-node-resolve'
+import ts from '@wessberg/rollup-plugin-ts'
 import url from '@rollup/plugin-url'
 
 import pkg from './package.json'
@@ -24,15 +24,5 @@ export default {
       sourcemap: true,
     },
   ],
-  plugins: [
-    external(),
-    url(),
-    resolve(),
-    typescript({
-      tsconfig: 'tsconfig.prod.json',
-      rollupCommonJSResolveHack: true,
-      clean: true,
-    }),
-    commonjs(),
-  ],
+  plugins: [externals({ deps: true }), url(), resolve({ preferBuiltins: true }), commonjs(), ts()],
 }
