@@ -3,9 +3,11 @@
 
 import commonjs from '@rollup/plugin-commonjs'
 import resolve from '@rollup/plugin-node-resolve'
-import ts from '@wessberg/rollup-plugin-ts'
+import ts from '@rollup/plugin-typescript'
 import vue from 'rollup-plugin-vue'
 import styles from 'rollup-plugin-styles'
+import html from '@rollup/plugin-html'
+import replace from '@rollup/plugin-replace'
 
 const extensions = ['.ts', '.mjs', '.js', '.json', '.vue']
 
@@ -14,6 +16,18 @@ export default {
   output: {
     file: 'dist/index.js',
     format: 'es',
+    sourcemap: true,
   },
-  plugins: [resolve({ preferBuiltins: true, extensions }), commonjs(), vue(), styles(), ts()],
+  plugins: [
+    replace({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+      'process.env.BASE_URL': JSON.stringify(process.env.BASE_URL ?? '/'),
+    }),
+    resolve({ preferBuiltins: true, extensions }),
+    commonjs(),
+    vue(),
+    styles(),
+    ts(),
+    html(),
+  ],
 }
