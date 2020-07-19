@@ -35,7 +35,7 @@ export type SetStateAction<S> = (S | Promise<S>) | ((prevState: S) => S | Promis
  */
 export type SetPartialStateAction<S> = S extends ReadonlyArray<infer U>
   ? ReadonlyArray<U> | Record<number, U> | ((prevValue: S) => ReadonlyArray<U> | Record<number, U>)
-  : S extends object | string
+  : S extends Record<string, unknown> | string
   ? Partial<S> | ((prevValue: S) => Partial<S>)
   : S | ((prevState: S) => S)
 
@@ -70,7 +70,7 @@ export type InferredStateKeysType<S> = S extends ReadonlyArray<infer _>
   ? ReadonlyArray<number>
   : S extends null
   ? undefined
-  : S extends object
+  : S extends Record<string, unknown>
   ? ReadonlyArray<keyof S>
   : undefined
 
@@ -241,6 +241,8 @@ export interface StateMethods<S> {
    *
    * @param context custom user's value, which is passed to plugins
    */
+  // TODO: Figure out function types
+  // eslint-disable-next-line @typescript-eslint/ban-types
   batch<R, C>(action: (s: State<S>) => R, context?: Exclude<C, Function>): R
 
   /**
@@ -296,12 +298,12 @@ export interface StateMethodsDestroy {
 export type State<S> = StateMethods<S> &
   (S extends ReadonlyArray<infer U>
     ? ReadonlyArray<State<U>>
-    : S extends object
+    : S extends Record<string, unknown>
     ? Omit<
         { readonly [K in keyof Required<S>]: State<S[K]> },
         keyof StateMethods<S> | keyof StateMethodsDestroy
       >
-    : {})
+    : Record<string, unknown>)
 
 /**
  * For plugin developers only.
@@ -310,7 +312,8 @@ export type State<S> = StateMethods<S> &
  * @hidden
  * @ignore
  */
-export type StateValueAtRoot = any //tslint:disable-line: no-any
+// TODO: Enumerate all possible types
+export type StateValueAtRoot = unknown
 /**
  * For plugin developers only.
  * Type alias to highlight the places where we are dealing with nested state value.
@@ -318,7 +321,8 @@ export type StateValueAtRoot = any //tslint:disable-line: no-any
  * @hidden
  * @ignore
  */
-export type StateValueAtPath = any //tslint:disable-line: no-any
+// TODO: Enumerate all possible types
+export type StateValueAtPath = unknown
 /**
  * For plugin developers only.
  * Type alias to highlight the places where we are dealing with state error.
@@ -326,7 +330,8 @@ export type StateValueAtPath = any //tslint:disable-line: no-any
  * @hidden
  * @ignore
  */
-export type StateErrorAtRoot = any //tslint:disable-line: no-any
+// TODO: Enumerate all possible types
+export type StateErrorAtRoot = unknown
 /**
  * For plugin developers only.
  * Type alias to highlight the places where we are dealing with context value.
@@ -334,7 +339,8 @@ export type StateErrorAtRoot = any //tslint:disable-line: no-any
  * @hidden
  * @ignore
  */
-export type AnyContext = any //tslint:disable-line: no-any
+// TODO: Enumerate all possible types
+export type AnyContext = unknown
 
 /**
  * For plugin developers only.
@@ -429,10 +435,10 @@ export interface Plugin {
  */
 export function createState<S>(initial: SetInitialStateAction<S>): State<S> & StateMethodsDestroy {
   const methods = createStore(initial).toMethods()
-  const devtools = createState[DevToolsID]
-  if (devtools) {
-    methods.attach(devtools)
-  }
+  // TODO: Figure out how this part works
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const devtools = createState[devToolsID]
+  if (devtools) methods.attach(devtools)
   return methods.self as State<S> & StateMethodsDestroy
 }
 
@@ -491,7 +497,6 @@ export function useState<S>(source: State<S>): State<S>
  * which **must be** used within the component (during rendering
  * or in effects) or it's children.
  */
-export function useState<S>(source: SetInitialStateAction<S>): State<S>
 export function useState<S>(source: SetInitialStateAction<S> | State<S>): State<S> {
   const parentMethods =
     typeof source === 'object' && source !== null
@@ -511,9 +516,11 @@ export function useState<S>(source: SetInitialStateAction<S> | State<S>): State<
   } else {
     // Local state mount
     const value = reactive({ state: createStore(source) })
-    const result = useSubscribedStateMethods<S>(value.state as Store, RootPath, value.state)
+    const result = useSubscribedStateMethods<S>(value.state as Store, rootPath, value.state)
     onUnmounted(() => value.state.destroy())
-    const devtools = useState[DevToolsID]
+    // TODO: Figure out how this part works
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const devtools = useState[devToolsID]
     if (devtools) {
       result.attach(devtools)
     }
@@ -528,7 +535,7 @@ export function useState<S>(source: SetInitialStateAction<S> | State<S>): State<
  * @hidden
  * @ignore
  */
-export const DevToolsID = Symbol('DevTools')
+export const devToolsID = Symbol('devTools')
 
 /**
  * Return type of [DevTools](#devtools).
@@ -542,7 +549,7 @@ export interface DevToolsExtensions {
   /**
    * Logs to the development tools
    */
-  log(str: string, data?: any): void // tslint:disable-line: no-any
+  log(str: string, data?: unknown): void
 }
 
 /**
@@ -560,11 +567,9 @@ export interface DevToolsExtensions {
  *
  * @typeparam S Type of a value of a state
  */
-export function DevTools<S>(state: State<S>): DevToolsExtensions {
-  const plugin = state.attach(DevToolsID)
-  if (plugin[0] instanceof Error) {
-    return EmptyDevToolsExtensions
-  }
+export function devTools<S>(state: State<S>): DevToolsExtensions {
+  const plugin = state.attach(devToolsID)
+  if (plugin[0] instanceof Error) return emptyDevToolsExtensions
   return plugin[0] as DevToolsExtensions
 }
 
@@ -574,7 +579,7 @@ export function DevTools<S>(state: State<S>): DevToolsExtensions {
 
 const self = Symbol('self')
 
-const EmptyDevToolsExtensions: DevToolsExtensions = {
+const emptyDevToolsExtensions: DevToolsExtensions = {
   label() {
     /* */
   },
@@ -583,6 +588,7 @@ const EmptyDevToolsExtensions: DevToolsExtensions = {
   },
 }
 
+/* eslint-disable @typescript-eslint/naming-convention */
 enum ErrorId {
   InitStateToValueFromState = 101,
   SetStateToValueFromState = 102,
@@ -610,6 +616,7 @@ enum ErrorId {
   Apply_State = 213,
   Apply_Value = 214,
 }
+/* eslint-enable @typescript-eslint/naming-convention */
 
 class StateInvalidUsageError extends Error {
   constructor(path: Path, id: ErrorId, details?: string) {
@@ -630,10 +637,10 @@ interface Subscribable {
   unsubscribe(l: Subscriber): void
 }
 
-const SelfMethodsID = Symbol('ProxyMarker')
+const selfMethodsID = Symbol('ProxyMarker')
 
-const RootPath: Path = []
-const DestroyedEdition = -1
+const rootPath: Path = []
+const destroyedEdition = -1
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] }
 
@@ -650,7 +657,7 @@ class Store implements Subscribable {
     Required<PluginCallbacks>['onBatchFinish']
   > = new Set()
 
-  private readonly _plugins: Map<symbol, PluginCallbacks> = new Map()
+  private readonly _plugins = new Map<symbol, PluginCallbacks>()
 
   private _promised?: Promised
 
@@ -671,23 +678,23 @@ class Store implements Subscribable {
     const promised = new Promised(
       newValue ? Promise.resolve(newValue) : undefined,
       (r: StateValueAtPath) => {
-        if (this.promised === promised && this.edition !== DestroyedEdition) {
+        if (this.promised === promised && this.edition !== destroyedEdition) {
           this._promised = undefined
-          this.set(RootPath, r)
-          this.update([RootPath])
+          this.set(rootPath, r)
+          this.update([rootPath])
         }
       },
       () => {
-        if (this.promised === promised && this.edition !== DestroyedEdition) {
+        if (this.promised === promised && this.edition !== destroyedEdition) {
           this._edition += 1
-          this.update([RootPath])
+          this.update([rootPath])
         }
       },
       () => {
         if (
           this._batchesPendingActions &&
           this._value !== none &&
-          this.edition !== DestroyedEdition
+          this.edition !== destroyedEdition
         ) {
           const actions = this._batchesPendingActions
           this._batchesPendingActions = undefined
@@ -708,12 +715,8 @@ class Store implements Subscribable {
 
   get(path: Path) {
     let result = this._value
-    if (result === none) {
-      return result
-    }
-    path.forEach(p => {
-      result = result[p]
-    })
+    if (result === none) return result
+    for (const p of path) result = (result as Record<string, unknown>)[p]
     return result
   }
 
@@ -763,9 +766,9 @@ class Store implements Subscribable {
       throw new StateInvalidUsageError(path, ErrorId.SetStateNestedToPromised)
     }
 
-    let target = this._value
+    let target = this._value as Record<string, unknown>
     for (let i = 0; i < path.length - 1; i += 1) {
-      target = target[path[i]]
+      target = target[path[i]] as Record<string, unknown>
     }
 
     const p = path[path.length - 1]
@@ -839,7 +842,7 @@ class Store implements Subscribable {
   }
 
   afterSet(params: PluginCallbacksOnSetArgument) {
-    if (this._edition !== DestroyedEdition) {
+    if (this._edition !== destroyedEdition) {
       this._edition += 1
       this._setSubscribers.forEach(cb => cb(params))
     }
@@ -900,21 +903,21 @@ class Store implements Subscribable {
     const pluginCallbacks = plugin.init ? plugin.init(this.toMethods().self) : {}
     this._plugins.set(plugin.id, pluginCallbacks)
     if (pluginCallbacks.onSet) {
-      this._setSubscribers.add(p => pluginCallbacks.onSet!(p))
+      this._setSubscribers.add(p => pluginCallbacks.onSet?.(p))
     }
     if (pluginCallbacks.onDestroy) {
-      this._destroySubscribers.add(p => pluginCallbacks.onDestroy!(p))
+      this._destroySubscribers.add(p => pluginCallbacks.onDestroy?.(p))
     }
     if (pluginCallbacks.onBatchStart) {
-      this._batchStartSubscribers.add(p => pluginCallbacks.onBatchStart!(p))
+      this._batchStartSubscribers.add(p => pluginCallbacks.onBatchStart?.(p))
     }
     if (pluginCallbacks.onBatchFinish) {
-      this._batchFinishSubscribers.add(p => pluginCallbacks.onBatchFinish!(p))
+      this._batchFinishSubscribers.add(p => pluginCallbacks.onBatchFinish?.(p))
     }
   }
 
   toMethods() {
-    return new StateMethodsImpl<StateValueAtRoot>(this, RootPath, this.get(RootPath), this.edition)
+    return new StateMethodsImpl<StateValueAtRoot>(this, rootPath, this.get(rootPath), this.edition)
   }
 
   subscribe(l: Subscriber) {
@@ -927,11 +930,11 @@ class Store implements Subscribable {
 
   destroy() {
     this._destroySubscribers.forEach(cb => cb(this._value !== none ? { state: this._value } : {}))
-    this._edition = DestroyedEdition
+    this._edition = destroyedEdition
   }
 
   toJSON() {
-    throw new StateInvalidUsageError(RootPath, ErrorId.ToJson_Value)
+    throw new StateInvalidUsageError(rootPath, ErrorId.ToJson_Value)
   }
 }
 
@@ -960,7 +963,7 @@ class Promised {
       })
       .catch(error => {
         this.fullfilled = true
-        this.error = error
+        this.error = error as Error
         onReject()
       })
       .then(() => onPostResolve())
@@ -968,15 +971,15 @@ class Promised {
 }
 
 // use symbol property to allow for easier reference finding
-const ValueUnusedMarker = Symbol('ValueUnusedMarker')
+const valueUnusedMarker = Symbol('valueUnusedMarker')
 
-function OnSetUsedNoAction() {
+function onSetUsedNoAction() {
   /** no action callback */
 }
 
 // use symbol to mark that a function has no effect anymore
-const UnmountedMarker = Symbol('UnmountedMarker')
-OnSetUsedNoAction[UnmountedMarker] = true
+const unmountedMarker = Symbol('unmountedMarker')
+onSetUsedNoAction[unmountedMarker] = true
 
 class StateMethodsImpl<S>
   implements StateMethods<S>, StateMethodsDestroy, Subscribable, Subscriber {
@@ -984,7 +987,7 @@ class StateMethodsImpl<S>
   private subscribers: Set<Subscriber> | undefined
   private childrenCache: Record<string | number, StateMethodsImpl<StateValueAtPath>> | undefined
   private selfCache: State<S> | undefined
-  private valueCache: StateValueAtPath = ValueUnusedMarker
+  private valueCache: StateValueAtPath = valueUnusedMarker
 
   constructor(
     public readonly state: Store,
@@ -999,15 +1002,15 @@ class StateMethodsImpl<S>
 
   getUntracked(allowPromised?: boolean) {
     if (this.valueEdition !== this.state.edition) {
-      this.valueSource = this.state.get(this.path)
+      this.valueSource = this.state.get(this.path) as S
       this.valueEdition = this.state.edition
 
       if (this.isMounted) {
         // this link is still mounted to a component
         // populate cache again to ensure correct tracking of usage
         // when React scans which states to rerender on update
-        if (this.valueCache !== ValueUnusedMarker) {
-          this.valueCache = ValueUnusedMarker
+        if (this.valueCache !== valueUnusedMarker) {
+          this.valueCache = valueUnusedMarker
           this.get(true) // renew cache to keep it marked used
         }
       } else {
@@ -1020,15 +1023,13 @@ class StateMethodsImpl<S>
         // when a component unmounted.
         // We take this opportunity to clean up caches
         // to avoid memory leaks via stale children states cache.
-        this.valueCache = ValueUnusedMarker
+        this.valueCache = valueUnusedMarker
         delete this.childrenCache
         delete this.selfCache
       }
     }
     if (this.valueSource === none && !allowPromised) {
-      if (this.state.promised && this.state.promised.error) {
-        throw this.state.promised.error
-      }
+      if (this.state.promised?.error) throw this.state.promised.error
       throw new StateInvalidUsageError(this.path, ErrorId.GetStateWhenPromised)
     }
     return this.valueSource
@@ -1036,11 +1037,11 @@ class StateMethodsImpl<S>
 
   get(allowPromised?: boolean) {
     const currentValue = this.getUntracked(allowPromised)
-    if (this.valueCache === ValueUnusedMarker) {
+    if (this.valueCache === valueUnusedMarker) {
       if (Array.isArray(currentValue)) {
         this.valueCache = this.valueArrayImpl(currentValue)
       } else if (typeof currentValue === 'object' && currentValue !== null) {
-        this.valueCache = this.valueObjectImpl((currentValue as unknown) as object)
+        this.valueCache = this.valueObjectImpl(currentValue as Record<string, unknown>)
       } else {
         this.valueCache = currentValue
       }
@@ -1056,7 +1057,7 @@ class StateMethodsImpl<S>
     if (typeof newValue === 'function') {
       newValue = (newValue as (prevValue: S) => S)(this.getUntracked())
     }
-    if (typeof newValue === 'object' && newValue !== null && newValue[SelfMethodsID]) {
+    if (typeof newValue === 'object' && newValue !== null && newValue[selfMethodsID]) {
       throw new StateInvalidUsageError(this.path, ErrorId.SetStateToValueFromState)
     }
     return [this.state.set(this.path, newValue, mergeValue)]
@@ -1068,9 +1069,10 @@ class StateMethodsImpl<S>
 
   mergeUntracked(sourceValue: SetPartialStateAction<S>): Path[] {
     const currentValue = this.getUntracked()
-    if (typeof sourceValue === 'function') {
-      sourceValue = (sourceValue as Function)(currentValue)
-    }
+
+    if (typeof sourceValue === 'function')
+      // TODO: Proper types
+      sourceValue = sourceValue(currentValue) as SetPartialStateAction<S>
 
     let updatedPaths: [Path]
     let deletedOrInsertedProps = false
@@ -1084,7 +1086,8 @@ class StateMethodsImpl<S>
           .sort()
           .forEach(i => {
             const index = Number(i)
-            const newPropValue = sourceValue[index]
+            // TODO: Proper types
+            const newPropValue = sourceValue[index] as unknown
             if (newPropValue === none) {
               deletedOrInsertedProps = true
               deletedIndexes.push(index)
@@ -1103,7 +1106,8 @@ class StateMethodsImpl<S>
       }
     } else if (typeof currentValue === 'object' && currentValue !== null) {
       Object.keys(sourceValue).forEach(key => {
-        const newPropValue = sourceValue[key]
+        // TODO: Proper types
+        const newPropValue = sourceValue[key] as unknown
         if (newPropValue === none) {
           deletedOrInsertedProps = true
           delete currentValue[key]
@@ -1150,7 +1154,7 @@ class StateMethodsImpl<S>
   }
 
   unsubscribe(l: Subscriber) {
-    this.subscribers!.delete(l)
+    this.subscribers?.delete(l)
   }
 
   onSet(paths: Path[], actions: (() => void)[]): boolean {
@@ -1158,11 +1162,11 @@ class StateMethodsImpl<S>
       for (const path of paths) {
         const firstChildKey = path[this.path.length]
         if (firstChildKey === undefined) {
-          if (this.valueCache !== ValueUnusedMarker) {
+          if (this.valueCache !== valueUnusedMarker) {
             return true
           }
         } else {
-          const firstChildValue = this.childrenCache && this.childrenCache[firstChildKey]
+          const firstChildValue = this.childrenCache?.[firstChildKey]
           if (firstChildValue?.onSet(paths, actions)) {
             return true
           }
@@ -1210,30 +1214,26 @@ class StateMethodsImpl<S>
     )
 
     if (this.childrenCache) {
-      this.childrenCache[key] = r
+      this.childrenCache[key] = r as StateMethodsImpl<unknown>
     }
 
-    return r
+    return r as StateMethodsImpl<unknown>
   }
 
   private valueArrayImpl(currentValue: StateValueAtPath[]): S {
     return (proxyWrap(
       this.path,
-      currentValue,
+      currentValue as Record<symbol, unknown>,
       () => currentValue,
-      (target: object, key: PropertyKey) => {
-        if (key === 'length') {
-          return (target as []).length
-        }
-        if (key in Array.prototype) {
-          return Array.prototype[key]
-        }
-        if (key === SelfMethodsID) {
-          return this
-        }
+      (target: unknown, key: PropertyKey) => {
+        if (key === 'length') return (target as []).length
+        if (key in Array.prototype) return Array.prototype[key] as unknown
+        if (key === selfMethodsID) return this
+
         if (typeof key === 'symbol') {
           // allow clients to associate hidden cache with state values
-          return target[key]
+          // TODO: Figure out symbol indexing
+          return (target as Record<symbol, unknown>)[key] as unknown
         }
         const index = Number(key)
         if (!Number.isInteger(index)) {
@@ -1241,10 +1241,11 @@ class StateMethodsImpl<S>
         }
         return this.child(index).get()
       },
-      (target: object, key: PropertyKey, value: StateValueAtPath) => {
+      (target: unknown, key: PropertyKey, value: StateValueAtPath) => {
         if (typeof key === 'symbol') {
           // allow clients to associate hidden cache with state values
-          target[key] = value
+          // TODO: Figure out symbol indexing
+          ;(target as Record<symbol, unknown>)[key] = value
           return true
         }
         throw new StateInvalidUsageError(this.path, ErrorId.SetProperty_Value)
@@ -1253,25 +1254,26 @@ class StateMethodsImpl<S>
     ) as unknown) as S
   }
 
-  private valueObjectImpl(currentValue: object): S {
+  private valueObjectImpl(currentValue: Record<string, unknown>): S {
     return (proxyWrap(
       this.path,
       currentValue,
       () => currentValue,
-      (target: object, key: PropertyKey) => {
-        if (key === SelfMethodsID) {
-          return this
-        }
+      (target: unknown, key: PropertyKey) => {
+        if (key === selfMethodsID) return this
+
         if (typeof key === 'symbol') {
           // allow clients to associate hidden cache with state values
-          return target[key]
+          // TODO: Figure out symbol indexing
+          return (target as Record<symbol, unknown>)[key] as unknown
         }
         return this.child(key).get()
       },
-      (target: object, key: PropertyKey, value: StateValueAtPath) => {
+      (target: unknown, key: PropertyKey, value: StateValueAtPath) => {
         if (typeof key === 'symbol') {
           // allow clients to associate hidden cache with state values
-          target[key] = value
+          // TODO: Figure out symbol indexing
+          ;(target as Record<symbol, unknown>)[key] = value
           return true
         }
         throw new StateInvalidUsageError(this.path, ErrorId.SetProperty_Value)
@@ -1285,7 +1287,7 @@ class StateMethodsImpl<S>
       return this.selfCache
     }
 
-    const getter = (_: object, key: PropertyKey) => {
+    const getter = (_: unknown, key: PropertyKey) => {
       if (key === self) {
         return this
       }
@@ -1318,7 +1320,8 @@ class StateMethodsImpl<S>
         case 'nested':
           return (p: keyof S) => this.nested(p)
         case 'batch':
-          // tslint:disable-next-line: no-any
+          // TODO: Figure out function types
+          // eslint-disable-next-line @typescript-eslint/ban-types
           return <R, C>(action: () => R, context: Exclude<C, Function>) =>
             this.batch(action, context)
         case 'attach':
@@ -1341,16 +1344,10 @@ class StateMethodsImpl<S>
       }
 
       if (Array.isArray(currentValue)) {
-        if (key === 'length') {
-          return currentValue.length
-        }
-        if (key in Array.prototype) {
-          return Array.prototype[key]
-        }
+        if (key === 'length') return currentValue.length
+        if (key in Array.prototype) return Array.prototype[key] as unknown
         const index = Number(key)
-        if (!Number.isInteger(index)) {
-          return
-        }
+        if (!Number.isInteger(index)) return
         return this.nested(index as keyof S)
       }
       return this.nested(key.toString() as keyof S)
@@ -1358,13 +1355,13 @@ class StateMethodsImpl<S>
 
     this.selfCache = (proxyWrap(
       this.path,
-      this.valueSource,
+      this.valueSource as Record<string, unknown>,
       () => {
         this.get() // get latest & mark used
         return this.valueSource
       },
       getter,
-      (_, key, value) => {
+      () => {
         throw new StateInvalidUsageError(this.path, ErrorId.SetProperty_State)
       },
       false,
@@ -1383,7 +1380,7 @@ class StateMethodsImpl<S>
   get error(): StateErrorAtRoot | undefined {
     const currentValue = this.get(true) // marks used
     if (currentValue === none) {
-      if (this.state.promised && this.state.promised.fullfilled) {
+      if (this.state.promised?.fullfilled) {
         return this.state.promised.error
       }
       this.get() // will throw 'read while promised' exception
@@ -1391,6 +1388,8 @@ class StateMethodsImpl<S>
     return
   }
 
+  // TODO: Figure out function types
+  // eslint-disable-next-line @typescript-eslint/ban-types
   batch<R, C>(action: (s: State<S>) => R, context?: Exclude<C, Function>): R {
     const opts = { context: context }
     try {
@@ -1432,14 +1431,10 @@ class StateMethodsImpl<S>
 
 function proxyWrap(
   path: Path,
-  // tslint:disable-next-line: no-any
-  targetBootstrap: any,
-  // tslint:disable-next-line: no-any
-  targetGetter: () => any,
-  // tslint:disable-next-line: no-any
-  propertyGetter: (unused: any, key: PropertyKey) => any,
-  // tslint:disable-next-line: no-any
-  propertySetter: (unused: any, p: PropertyKey, value: any, receiver: any) => boolean,
+  targetBootstrap: Record<string, unknown>,
+  targetGetter: () => unknown,
+  propertyGetter: (unused: unknown, key: PropertyKey) => unknown,
+  propertySetter: (unused: unknown, p: PropertyKey, value: unknown, receiver: unknown) => boolean,
   isValueProxy: boolean,
 ) {
   const onInvalidUsage = (op: ErrorId) => {
@@ -1448,22 +1443,24 @@ function proxyWrap(
   if (typeof targetBootstrap !== 'object' || targetBootstrap === null) {
     targetBootstrap = {}
   }
+
+  // TODO: Figure out proxy types
   return new Proxy(targetBootstrap, {
-    getPrototypeOf: target => {
+    getPrototypeOf: () => {
       // should satisfy the invariants:
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/getPrototypeOf#Invariants
       const targetReal = targetGetter()
       if (targetReal === undefined || targetReal === null) {
         return null
       }
-      return Object.getPrototypeOf(targetReal)
+      return Object.getPrototypeOf(targetReal) as Record<string, unknown>
     },
     setPrototypeOf: () => {
       return onInvalidUsage(
         isValueProxy ? ErrorId.SetPrototypeOf_State : ErrorId.SetPrototypeOf_Value,
       )
     },
-    isExtensible: target => {
+    isExtensible: () => {
       // should satisfy the invariants:
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/isExtensible#Invariants
       return true // required to satisfy the invariants of the getPrototypeOf
@@ -1522,7 +1519,7 @@ function proxyWrap(
       if (targetReal === undefined || targetReal === null) {
         return []
       }
-      return Object.keys(targetReal)
+      return Object.keys(targetReal as Record<string, unknown>)
     },
     ownKeys: () => {
       const targetReal = targetGetter()
@@ -1532,7 +1529,7 @@ function proxyWrap(
       if (targetReal === undefined || targetReal === null) {
         return []
       }
-      return Object.keys(targetReal)
+      return Object.keys(targetReal as Record<string, unknown>)
     },
     apply: () => {
       return onInvalidUsage(isValueProxy ? ErrorId.Apply_State : ErrorId.Apply_Value)
@@ -1548,14 +1545,14 @@ function createStore<S>(initial: SetInitialStateAction<S>): Store {
   if (typeof initial === 'function') {
     initialValue = (initial as () => S | Promise<S>)()
   }
-  if (typeof initialValue === 'object' && initialValue !== null && initialValue[SelfMethodsID]) {
-    throw new StateInvalidUsageError(RootPath, ErrorId.InitStateToValueFromState)
+  if (typeof initialValue === 'object' && initialValue !== null && initialValue[selfMethodsID]) {
+    throw new StateInvalidUsageError(rootPath, ErrorId.InitStateToValueFromState)
   }
   return new Store(initialValue)
 }
 
 function useSubscribedStateMethods<S>(state: Store, path: Path, subscribeTarget: Subscribable) {
-  const link = new StateMethodsImpl<S>(state, path, state.get(path), state.edition)
+  const link = new StateMethodsImpl<S>(state, path, state.get(path) as S, state.edition)
   onMounted(() => subscribeTarget.subscribe(link))
   onUnmounted(() => subscribeTarget.unsubscribe(link))
   return link
