@@ -4,50 +4,12 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 var vue = require('vue');
 
-/**
- * Special symbol which might be returned by onPromised callback of [StateMethods.map](#map) function.
- *
- * [Learn more...](https://hookstate.js.org/docs/asynchronous-state#executing-an-action-when-state-is-loaded)
- */
+const self = Symbol('self');
+const selfMethodsID = Symbol('ProxyMarker');
+const valueUnusedMarker = Symbol('valueUnusedMarker');
 const postpone = Symbol('postpone');
-/**
- * Special symbol which might be used to delete properties
- * from an object calling [StateMethods.set](#set) or [StateMethods.merge](#merge).
- *
- * [Learn more...](https://hookstate.js.org/docs/nested-state#deleting-existing-element)
- */
 const none = Symbol('none');
-/**
- * Creates new state and returns it.
- *
- * You can create as many global states as you need.
- *
- * When you the state is not needed anymore,
- * it should be destroyed by calling
- * `destroy()` method of the returned instance.
- * This is necessary for some plugins,
- * which allocate native resources,
- * like subscription to databases, broadcast channels, etc.
- * In most cases, a global state is used during
- * whole life time of an application and would not require
- * destruction. However, if you have got, for example,
- * a catalog of dynamically created and destroyed global states,
- * the states should be destroyed as advised above.
- *
- * @param initial Initial value of the state.
- * It can be a value OR a promise,
- * which asynchronously resolves to a value,
- * OR a function returning a value or a promise.
- *
- * @typeparam S Type of a value of the state
- *
- * @returns [State](#state) instance,
- * which can be used directly to get and set state value
- * outside of React components.
- * When you need to use the state in a functional `React` component,
- * pass the created state to [useState](#usestate) function and
- * use the returned result in the component's logic.
- */
+const devToolsID = Symbol('devTools');
 function createState(initial) {
     const methods = createStore(initial).toMethods();
     // TODO: Figure out how this part works
@@ -57,33 +19,6 @@ function createState(initial) {
         methods.attach(devtools);
     return methods.self;
 }
-/**
- * This function enables a functional React component to use a state,
- * created per component by [useState](#usestate) (*local* state).
- * In this case `useState` behaves similarly to `React.useState`,
- * but the returned instance of [State](#state)
- * has got more features.
- *
- * When a state is used by only one component, and maybe it's children,
- * it is recommended to use *local* state instead of *global*,
- * which is created by [createState](#createstate).
- *
- * *Local* (per component) state is created when a component is mounted
- * and automatically destroyed when a component is unmounted.
- *
- * The same as with the usage of a *global* state,
- * `useState` forces a component to rerender when:
- * - a segment/part of the state data is updated *AND only if*
- * - this segement was **used** by the component during or after the latest rendering.
- *
- * You can use as many local states within the same component as you need.
- *
- * @param source An initial value state.
- *
- * @returns an instance of [State](#state),
- * which **must be** used within the component (during rendering
- * or in effects) or it's children.
- */
 function useState(source) {
     const parentMethods = typeof source === 'object' && source !== null
         ? source[self]
@@ -96,16 +31,16 @@ function useState(source) {
         }
         else {
             // Global state mount or destroyed link
-            const value = vue.reactive({ state: parentMethods.state });
-            return useSubscribedStateMethods(value.state, parentMethods.path, value.state)
+            const state = vue.ref(parentMethods.state);
+            return useSubscribedStateMethods(state.value, parentMethods.path, state.value)
                 .self;
         }
     }
     else {
         // Local state mount
-        const value = vue.reactive({ state: createStore(source) });
-        const result = useSubscribedStateMethods(value.state, rootPath, value.state);
-        vue.onUnmounted(() => value.state.destroy());
+        const state = vue.ref(createStore(source));
+        const result = useSubscribedStateMethods(state.value, rootPath, state.value);
+        vue.onUnmounted(() => state.value.destroy());
         // TODO: Figure out how this part works
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const devtools = useState[devToolsID];
@@ -115,39 +50,12 @@ function useState(source) {
         return result.self;
     }
 }
-/**
- * For plugin developers only.
- * Reserved plugin ID for developers tools extension.
- *
- * @hidden
- * @ignore
- */
-const devToolsID = Symbol('devTools');
-/**
- * Returns access to the development tools for a given state.
- * Development tools are delivered as optional plugins.
- * You can activate development tools from `@hookstate/devtools`package,
- * for example. If no development tools are activated,
- * it returns an instance of dummy tools, which do nothing, when called.
- *
- * [Learn more...](https://hookstate.js.org/docs/devtools)
- *
- * @param state A state to relate to the extension.
- *
- * @returns Interface to interact with the development tools for a given state.
- *
- * @typeparam S Type of a value of a state
- */
 function devTools(state) {
     const plugin = state.attach(devToolsID);
     if (plugin[0] instanceof Error)
         return emptyDevToolsExtensions;
     return plugin[0];
 }
-///
-/// INTERNAL SYMBOLS (LIBRARY IMPLEMENTATION)
-///
-const self = Symbol('self');
 const emptyDevToolsExtensions = {
     label() {
         /* */
@@ -156,6 +64,7 @@ const emptyDevToolsExtensions = {
         /* */
     },
 };
+// TODO: Fix error names
 /* eslint-disable @typescript-eslint/naming-convention */
 var ErrorId;
 (function (ErrorId) {
@@ -190,7 +99,6 @@ class StateInvalidUsageError extends Error {
         super(`Error: HOOKSTATE-${id} [path: /${path.join('/')}${details ? `, details: ${details}` : ''}]. ` + `See https://hookstate.js.org/docs/exceptions#hookstate-${id}`);
     }
 }
-const selfMethodsID = Symbol('ProxyMarker');
 const rootPath = [];
 const destroyedEdition = -1;
 class Store {
@@ -443,6 +351,7 @@ class Store {
         throw new StateInvalidUsageError(rootPath, ErrorId.ToJson_Value);
     }
 }
+// TODO: Replace with hooks and refs
 class Promised {
     constructor(promise, onResolve, onReject, onPostResolve) {
         this.promise = promise;
@@ -454,9 +363,8 @@ class Promised {
         this.promise = promise
             .then(r => {
             this.fullfilled = true;
-            if (!this.resolver) {
+            if (!this.resolver)
                 onResolve(r);
-            }
         })
             .catch(error => {
             this.fullfilled = true;
@@ -466,8 +374,6 @@ class Promised {
             .then(() => onPostResolve());
     }
 }
-// use symbol property to allow for easier reference finding
-const valueUnusedMarker = Symbol('valueUnusedMarker');
 class StateMethodsImpl {
     constructor(state, path, valueSource, valueEdition) {
         this.state = state;
