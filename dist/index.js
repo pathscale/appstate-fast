@@ -779,9 +779,8 @@ function proxyWrap(path, targetBootstrap, targetGetter, propertyGetter, property
             // should satisfy the invariants:
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/getPrototypeOf#Invariants
             const targetReal = targetGetter();
-            if (targetReal === undefined || targetReal === null) {
+            if (targetReal === undefined || targetReal === null)
                 return null;
-            }
             return Object.getPrototypeOf(targetReal);
         },
         setPrototypeOf: () => {
@@ -813,9 +812,8 @@ function proxyWrap(path, targetBootstrap, targetGetter, propertyGetter, property
             });
         },
         has: (_, p) => {
-            if (typeof p === 'symbol') {
+            if (typeof p === 'symbol')
                 return false;
-            }
             const targetReal = targetGetter();
             if (typeof targetReal === 'object' && targetReal !== null) {
                 return p in targetReal;
@@ -860,9 +858,8 @@ function proxyWrap(path, targetBootstrap, targetGetter, propertyGetter, property
 }
 function createStore(initial) {
     let initialValue = initial;
-    if (typeof initial === 'function') {
+    if (typeof initial === 'function')
         initialValue = initial();
-    }
     if (typeof initialValue === 'object' && initialValue !== null && initialValue[selfMethodsID]) {
         throw new StateInvalidUsageError(rootPath, ErrorId.InitStateToValueFromState);
     }

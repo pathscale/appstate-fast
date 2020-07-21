@@ -126,6 +126,7 @@ export function useState<S>(source: SetInitialStateAction<S> | State<S>): State<
     typeof source === 'object' && source !== null
       ? (source[self] as StateMethodsImpl<S> | undefined)
       : undefined
+
   if (parentMethods) {
     if (parentMethods.isMounted) {
       // Scoped state mount
@@ -142,12 +143,11 @@ export function useState<S>(source: SetInitialStateAction<S> | State<S>): State<
     const state = ref(createStore(source))
     const result = useSubscribedStateMethods<S>(state.value as Store, rootPath, state.value)
     onUnmounted(() => state.value.destroy())
-    // TODO: Figure out how this part works
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const devtools = useState[devToolsID]
-    if (devtools) {
-      result.attach(devtools)
-    }
+    if (devtools) result.attach(devtools)
+
     return result.self
   }
 }
@@ -233,9 +233,11 @@ class Store implements Subscribable {
   private readonly _subscribers: Set<Subscriber> = new Set()
   private readonly _setSubscribers: Set<Required<PluginCallbacks>['onSet']> = new Set()
   private readonly _destroySubscribers: Set<Required<PluginCallbacks>['onDestroy']> = new Set()
+
   private readonly _batchStartSubscribers: Set<
     Required<PluginCallbacks>['onBatchStart']
   > = new Set()
+
   private readonly _batchFinishSubscribers: Set<
     Required<PluginCallbacks>['onBatchFinish']
   > = new Set()
@@ -260,6 +262,7 @@ class Store implements Subscribable {
   createPromised(newValue?: StateValueAtPath) {
     const promised = new Promised(
       newValue ? Promise.resolve(newValue) : undefined,
+
       (r: StateValueAtPath) => {
         if (this.promised === promised && this.edition !== destroyedEdition) {
           this._promised = undefined
@@ -267,12 +270,14 @@ class Store implements Subscribable {
           this.update([rootPath])
         }
       },
+
       () => {
         if (this.promised === promised && this.edition !== destroyedEdition) {
           this._edition += 1
           this.update([rootPath])
         }
       },
+
       () => {
         if (
           this._batchesPendingActions &&
@@ -285,6 +290,7 @@ class Store implements Subscribable {
         }
       },
     )
+
     return promised
   }
 
@@ -304,9 +310,7 @@ class Store implements Subscribable {
   }
 
   set(path: Path, value: StateValueAtPath, mergeValue?: Partial<StateValueAtPath>): Path {
-    if (this._edition < 0) {
-      throw new StateInvalidUsageError(path, ErrorId.SetStateWhenDestroyed)
-    }
+    if (this._edition < 0) throw new StateInvalidUsageError(path, ErrorId.SetStateWhenDestroyed)
 
     if (path.length === 0) {
       // Root value UPDATE case,
@@ -318,6 +322,7 @@ class Store implements Subscribable {
         previous: this._value,
         merged: mergeValue,
       }
+
       if (value === none) {
         this._promised = this.createPromised()
         delete onSetArg.value
@@ -332,27 +337,22 @@ class Store implements Subscribable {
       }
 
       const prevValue = this._value
-      if (prevValue === none) {
-        delete onSetArg.previous
-      }
+      if (prevValue === none) delete onSetArg.previous
+
       this._value = value
       this.afterSet(onSetArg)
 
-      if (prevValue === none && this._value !== none && this.promised && this.promised.resolver) {
+      if (prevValue === none && this._value !== none && this.promised && this.promised.resolver)
         this.promised.resolver()
-      }
 
       return path
     }
 
-    if (typeof value === 'object' && Promise.resolve(value) === value) {
+    if (typeof value === 'object' && Promise.resolve(value) === value)
       throw new StateInvalidUsageError(path, ErrorId.SetStateNestedToPromised)
-    }
 
     let target = this._value as Record<string, unknown>
-    for (let i = 0; i < path.length - 1; i += 1) {
-      target = target[path[i]] as Record<string, unknown>
-    }
+    for (let i = 0; i < path.length - 1; i += 1) target = target[path[i]] as Record<string, unknown>
 
     const p = path[path.length - 1]
     if (p in target) {
@@ -394,13 +394,7 @@ class Store implements Subscribable {
     if (value !== none) {
       // Property INSERT case
       target[p] = value
-      this.afterSet({
-        path: path,
-        state: this._value,
-        value: value,
-        merged: mergeValue,
-      })
-
+      this.afterSet({ path, state: this._value, value, merged: mergeValue })
       // if an array of object is about to be extended by new property
       // we consider it is the whole object is changed
       // which is identified by upper path
@@ -427,7 +421,7 @@ class Store implements Subscribable {
   afterSet(params: PluginCallbacksOnSetArgument) {
     if (this._edition !== destroyedEdition) {
       this._edition += 1
-      this._setSubscribers.forEach(cb => cb(params))
+      for (const cb of this._setSubscribers) cb(params)
     }
   }
 
@@ -437,12 +431,11 @@ class Store implements Subscribable {
     const cbArgument: Writeable<PluginCallbacksOnBatchArgument> = {
       path: path,
     }
-    if (options && 'context' in options) {
-      cbArgument.context = options.context
-    }
-    if (this._value !== none) {
-      cbArgument.state = this._value
-    }
+
+    if (options && 'context' in options) cbArgument.context = options.context
+
+    if (this._value !== none) cbArgument.state = this._value
+
     this._batchStartSubscribers.forEach(cb => cb(cbArgument))
   }
 
@@ -450,12 +443,11 @@ class Store implements Subscribable {
     const cbArgument: Writeable<PluginCallbacksOnBatchArgument> = {
       path: path,
     }
-    if (options && 'context' in options) {
-      cbArgument.context = options.context
-    }
-    if (this._value !== none) {
-      cbArgument.state = this._value
-    }
+
+    if (options && 'context' in options) cbArgument.context = options.context
+
+    if (this._value !== none) cbArgument.state = this._value
+
     this._batchFinishSubscribers.forEach(cb => cb(cbArgument))
 
     this._batches -= 1
@@ -479,24 +471,20 @@ class Store implements Subscribable {
 
   register(plugin: Plugin) {
     const existingInstance = this._plugins.get(plugin.id)
-    if (existingInstance) {
-      return
-    }
+    if (existingInstance) return
 
     const pluginCallbacks = plugin.init ? plugin.init(this.toMethods().self) : {}
     this._plugins.set(plugin.id, pluginCallbacks)
-    if (pluginCallbacks.onSet) {
-      this._setSubscribers.add(p => pluginCallbacks.onSet?.(p))
-    }
-    if (pluginCallbacks.onDestroy) {
-      this._destroySubscribers.add(p => pluginCallbacks.onDestroy?.(p))
-    }
-    if (pluginCallbacks.onBatchStart) {
+
+    if (pluginCallbacks.onSet) this._setSubscribers.add(p => pluginCallbacks.onSet?.(p))
+
+    if (pluginCallbacks.onDestroy) this._destroySubscribers.add(p => pluginCallbacks.onDestroy?.(p))
+
+    if (pluginCallbacks.onBatchStart)
       this._batchStartSubscribers.add(p => pluginCallbacks.onBatchStart?.(p))
-    }
-    if (pluginCallbacks.onBatchFinish) {
+
+    if (pluginCallbacks.onBatchFinish)
       this._batchFinishSubscribers.add(p => pluginCallbacks.onBatchFinish?.(p))
-    }
   }
 
   toMethods() {
@@ -631,12 +619,12 @@ class StateMethodsImpl<S>
   }
 
   setUntracked(newValue: SetStateAction<S>, mergeValue?: Partial<StateValueAtPath>): [Path] {
-    if (typeof newValue === 'function') {
+    if (typeof newValue === 'function')
       newValue = (newValue as (prevValue: S) => S)(this.getUntracked())
-    }
-    if (typeof newValue === 'object' && newValue !== null && newValue[selfMethodsID]) {
+
+    if (typeof newValue === 'object' && newValue !== null && newValue[selfMethodsID])
       throw new StateInvalidUsageError(this.path, ErrorId.SetStateToValueFromState)
-    }
+
     return [this.state.set(this.path, newValue, mergeValue)]
   }
 
@@ -659,26 +647,24 @@ class StateMethodsImpl<S>
         return this.setUntracked((currentValue.concat(sourceValue) as unknown) as S, sourceValue)
       } else {
         const deletedIndexes: number[] = []
-        Object.keys(sourceValue)
-          .sort()
-          .forEach(i => {
-            const index = Number(i)
-            // TODO: Proper types
-            const newPropValue = sourceValue[index] as unknown
-            if (newPropValue === none) {
-              deletedOrInsertedProps = true
-              deletedIndexes.push(index)
-            } else {
-              deletedOrInsertedProps = deletedOrInsertedProps || !(index in currentValue)
-              currentValue[index] = newPropValue
-            }
-          })
+
+        for (const i of Object.keys(sourceValue).sort()) {
+          const index = Number(i)
+          // TODO: Proper types
+          const newPropValue = sourceValue[index] as unknown
+          if (newPropValue === none) {
+            deletedOrInsertedProps = true
+            deletedIndexes.push(index)
+          } else {
+            deletedOrInsertedProps = deletedOrInsertedProps || !(index in currentValue)
+            currentValue[index] = newPropValue
+          }
+        }
+
         // indexes are ascending sorted as per above
         // so, delete one by one from the end
         // this way index positions do not change
-        deletedIndexes.reverse().forEach(p => {
-          ;((currentValue as unknown) as []).splice(p, 1)
-        })
+        for (const p of deletedIndexes.reverse()) currentValue.splice(p, 1)
         updatedPaths = this.setUntracked(currentValue, sourceValue)
       }
     } else if (typeof currentValue === 'object' && currentValue !== null) {
@@ -700,9 +686,9 @@ class StateMethodsImpl<S>
       return this.setUntracked(sourceValue as S)
     }
 
-    if (updatedPaths.length !== 1 || updatedPaths[0] !== this.path || deletedOrInsertedProps) {
+    if (updatedPaths.length !== 1 || updatedPaths[0] !== this.path || deletedOrInsertedProps)
       return updatedPaths
-    }
+
     const updatedPath = updatedPaths[0]
     return Object.keys(sourceValue).map(p => updatedPath.slice().concat(p))
   }
@@ -738,39 +724,36 @@ class StateMethodsImpl<S>
     const update = () => {
       for (const path of paths) {
         const firstChildKey = path[this.path.length]
+
         if (firstChildKey === undefined) {
-          if (this.valueCache !== valueUnusedMarker) {
-            return true
-          }
+          if (this.valueCache !== valueUnusedMarker) return true
         } else {
           const firstChildValue = this.childrenCache?.[firstChildKey]
-          if (firstChildValue?.onSet(paths, actions)) {
-            return true
-          }
+          if (firstChildValue?.onSet(paths, actions)) return true
         }
       }
+
       return false
     }
 
     const updated = update()
-    if (!updated && this.subscribers !== undefined) {
-      this.subscribers.forEach(s => {
-        s.onSet(paths, actions)
-      })
-    }
+    if (!updated && this.subscribers !== undefined)
+      for (const s of this.subscribers) s.onSet(paths, actions)
+
     return updated
   }
 
   get keys(): InferredStateKeysType<S> {
     const value = this.get()
-    if (Array.isArray(value)) {
+
+    if (Array.isArray(value))
       return (Object.keys(value)
         .map(i => Number(i))
         .filter(i => Number.isInteger(i)) as unknown) as InferredStateKeysType<S>
-    }
-    if (typeof value === 'object' && value !== null) {
+
+    if (typeof value === 'object' && value !== null)
       return (Object.keys(value) as unknown) as InferredStateKeysType<S>
-    }
+
     return undefined as InferredStateKeysType<S>
   }
 
@@ -802,6 +785,7 @@ class StateMethodsImpl<S>
       this.path,
       currentValue as Record<symbol, unknown>,
       () => currentValue,
+
       (target: unknown, key: PropertyKey) => {
         if (key === 'length') return (target as []).length
         if (key in Array.prototype) return Array.prototype[key] as unknown
@@ -812,12 +796,13 @@ class StateMethodsImpl<S>
           // TODO: Figure out symbol indexing
           return (target as Record<symbol, unknown>)[key] as unknown
         }
+
         const index = Number(key)
-        if (!Number.isInteger(index)) {
-          return
-        }
+        if (!Number.isInteger(index)) return
+
         return this.child(index).get()
       },
+
       (target: unknown, key: PropertyKey, value: StateValueAtPath) => {
         if (typeof key === 'symbol') {
           // allow clients to associate hidden cache with state values
@@ -827,6 +812,7 @@ class StateMethodsImpl<S>
         }
         throw new StateInvalidUsageError(this.path, ErrorId.SetProperty_Value)
       },
+
       true,
     ) as unknown) as S
   }
@@ -836,6 +822,7 @@ class StateMethodsImpl<S>
       this.path,
       currentValue,
       () => currentValue,
+
       (target: unknown, key: PropertyKey) => {
         if (key === selfMethodsID) return this
 
@@ -846,6 +833,7 @@ class StateMethodsImpl<S>
         }
         return this.child(key).get()
       },
+
       (target: unknown, key: PropertyKey, value: StateValueAtPath) => {
         if (typeof key === 'symbol') {
           // allow clients to associate hidden cache with state values
@@ -855,25 +843,20 @@ class StateMethodsImpl<S>
         }
         throw new StateInvalidUsageError(this.path, ErrorId.SetProperty_Value)
       },
+
       true,
     ) as unknown) as S
   }
 
   get self(): State<S> {
-    if (this.selfCache) {
-      return this.selfCache
-    }
+    if (this.selfCache) return this.selfCache
 
     const getter = (_: unknown, key: PropertyKey) => {
-      if (key === self) {
-        return this
-      }
-      if (typeof key === 'symbol') {
-        return
-      }
-      if (key === 'toJSON') {
-        throw new StateInvalidUsageError(this.path, ErrorId.ToJson_State)
-      }
+      if (key === self) return this
+
+      if (typeof key === 'symbol') return
+
+      if (key === 'toJSON') throw new StateInvalidUsageError(this.path, ErrorId.ToJson_State)
 
       switch (key) {
         case 'path':
@@ -911,14 +894,14 @@ class StateMethodsImpl<S>
       }
 
       const currentValue = this.get()
+
       if (
         // if currentValue is primitive type
         (typeof currentValue !== 'object' || currentValue === null) &&
         // if promised, it will be none
         currentValue !== none
-      ) {
+      )
         throw new StateInvalidUsageError(this.path, ErrorId.GetStatePropertyWhenPrimitive)
-      }
 
       if (Array.isArray(currentValue)) {
         if (key === 'length') return currentValue.length
@@ -927,6 +910,7 @@ class StateMethodsImpl<S>
         if (!Number.isInteger(index)) return
         return this.nested(index as keyof S)
       }
+
       return this.nested(key.toString() as keyof S)
     }
 
@@ -943,38 +927,38 @@ class StateMethodsImpl<S>
       },
       false,
     ) as unknown) as State<S>
+
     return this.selfCache
   }
 
-  get promised(): boolean {
+  get promised() {
     const currentValue = this.get(true) // marks used
-    if (currentValue === none && this.state.promised && !this.state.promised.fullfilled) {
-      return true
-    }
+    if (currentValue === none && this.state.promised && !this.state.promised.fullfilled) return true
     return false
   }
 
-  get error(): StateErrorAtRoot | undefined {
+  get error() {
     const currentValue = this.get(true) // marks used
+
     if (currentValue === none) {
-      if (this.state.promised?.fullfilled) {
-        return this.state.promised.error
-      }
+      if (this.state.promised?.fullfilled) return this.state.promised.error
       this.get() // will throw 'read while promised' exception
     }
+
     return
   }
 
   // TODO: Figure out function types
   // eslint-disable-next-line @typescript-eslint/ban-types
   batch<R, C>(action: (s: State<S>) => R, context?: Exclude<C, Function>): R {
-    const opts = { context: context }
+    const opts = { context }
     try {
       this.state.startBatch(this.path, opts)
       const result = action(this.self)
-      if (((result as unknown) as symbol) === postpone) {
+
+      if (((result as unknown) as symbol) === postpone)
         this.state.postponeBatch(() => this.batch(action, context))
-      }
+
       return result
     } finally {
       this.state.finishBatch(this.path, opts)
@@ -983,9 +967,7 @@ class StateMethodsImpl<S>
 
   get ornull(): InferredStateOrnullType<S> {
     const value = this.get()
-    if (value === null || value === undefined) {
-      return (value as unknown) as InferredStateOrnullType<S>
-    }
+    if (value === null || value === undefined) return value as InferredStateOrnullType<S>
     return this.self as InferredStateOrnullType<S>
   }
 
@@ -997,11 +979,11 @@ class StateMethodsImpl<S>
       this.state.register(pluginMeta)
       return this.self
     } else {
-      return [
+      const plugin =
         this.state.getPlugin(p) ??
-          new StateInvalidUsageError(this.path, ErrorId.GetUnknownPlugin, p.toString()),
-        this,
-      ]
+        new StateInvalidUsageError(this.path, ErrorId.GetUnknownPlugin, p.toString())
+
+      return [plugin, this]
     }
   }
 }
@@ -1017,46 +999,35 @@ function proxyWrap(
   const onInvalidUsage = (op: ErrorId) => {
     throw new StateInvalidUsageError(path, op)
   }
-  if (typeof targetBootstrap !== 'object' || targetBootstrap === null) {
-    targetBootstrap = {}
-  }
+
+  if (typeof targetBootstrap !== 'object' || targetBootstrap === null) targetBootstrap = {}
 
   // TODO: Figure out proxy types
   return new Proxy(targetBootstrap, {
+    get: propertyGetter,
+    set: propertySetter,
+
     getPrototypeOf: () => {
       // should satisfy the invariants:
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/getPrototypeOf#Invariants
       const targetReal = targetGetter()
-      if (targetReal === undefined || targetReal === null) {
-        return null
-      }
+      if (targetReal === undefined || targetReal === null) return null
       return Object.getPrototypeOf(targetReal) as Record<string, unknown>
     },
-    setPrototypeOf: () => {
-      return onInvalidUsage(
-        isValueProxy ? ErrorId.SetPrototypeOf_State : ErrorId.SetPrototypeOf_Value,
-      )
-    },
+
     isExtensible: () => {
       // should satisfy the invariants:
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/isExtensible#Invariants
       return true // required to satisfy the invariants of the getPrototypeOf
-      // return Object.isExtensible(target);
     },
-    preventExtensions: () => {
-      return onInvalidUsage(
-        isValueProxy ? ErrorId.PreventExtensions_State : ErrorId.PreventExtensions_Value,
-      )
-    },
+
     getOwnPropertyDescriptor: (_, p) => {
       const targetReal = targetGetter()
-      if (targetReal === undefined || targetReal === null) {
-        return
-      }
+      if (targetReal === undefined || targetReal === null) return
+
       const origin = Object.getOwnPropertyDescriptor(targetReal, p)
-      if (origin && Array.isArray(targetReal) && p in Array.prototype) {
-        return origin
-      }
+      if (origin && Array.isArray(targetReal) && p in Array.prototype) return origin
+
       return (
         origin && {
           configurable: true, // JSON.stringify() does not work for an object without it
@@ -1066,65 +1037,57 @@ function proxyWrap(
         }
       )
     },
+
     has: (_, p) => {
-      if (typeof p === 'symbol') {
-        return false
-      }
+      if (typeof p === 'symbol') return false
       const targetReal = targetGetter()
-      if (typeof targetReal === 'object' && targetReal !== null) {
-        return p in targetReal
-      }
+      if (typeof targetReal === 'object' && targetReal !== null) return p in targetReal
       return false
     },
-    get: propertyGetter,
-    set: propertySetter,
-    deleteProperty: () => {
-      return onInvalidUsage(
-        isValueProxy ? ErrorId.DeleteProperty_State : ErrorId.DeleteProperty_Value,
-      )
-    },
-    defineProperty: () => {
-      return onInvalidUsage(
-        isValueProxy ? ErrorId.DefineProperty_State : ErrorId.DefineProperty_Value,
-      )
-    },
+
     enumerate: () => {
       const targetReal = targetGetter()
-      if (Array.isArray(targetReal)) {
-        return Object.keys(targetReal).concat('length')
-      }
-      if (targetReal === undefined || targetReal === null) {
-        return []
-      }
+      if (Array.isArray(targetReal)) return Object.keys(targetReal).concat('length')
+      if (targetReal === undefined || targetReal === null) return []
       return Object.keys(targetReal as Record<string, unknown>)
     },
+
     ownKeys: () => {
       const targetReal = targetGetter()
-      if (Array.isArray(targetReal)) {
-        return Object.keys(targetReal).concat('length')
-      }
-      if (targetReal === undefined || targetReal === null) {
-        return []
-      }
+      if (Array.isArray(targetReal)) return Object.keys(targetReal).concat('length')
+      if (targetReal === undefined || targetReal === null) return []
       return Object.keys(targetReal as Record<string, unknown>)
     },
-    apply: () => {
-      return onInvalidUsage(isValueProxy ? ErrorId.Apply_State : ErrorId.Apply_Value)
-    },
-    construct: () => {
-      return onInvalidUsage(isValueProxy ? ErrorId.Construct_State : ErrorId.Construct_Value)
-    },
+
+    apply: () => onInvalidUsage(isValueProxy ? ErrorId.Apply_State : ErrorId.Apply_Value),
+
+    preventExtensions: () =>
+      onInvalidUsage(
+        isValueProxy ? ErrorId.PreventExtensions_State : ErrorId.PreventExtensions_Value,
+      ),
+
+    setPrototypeOf: () =>
+      onInvalidUsage(isValueProxy ? ErrorId.SetPrototypeOf_State : ErrorId.SetPrototypeOf_Value),
+
+    deleteProperty: () =>
+      onInvalidUsage(isValueProxy ? ErrorId.DeleteProperty_State : ErrorId.DeleteProperty_Value),
+
+    defineProperty: () =>
+      onInvalidUsage(isValueProxy ? ErrorId.DefineProperty_State : ErrorId.DefineProperty_Value),
+
+    construct: () =>
+      onInvalidUsage(isValueProxy ? ErrorId.Construct_State : ErrorId.Construct_Value),
   })
 }
 
 function createStore<S>(initial: SetInitialStateAction<S>): Store {
   let initialValue: S | Promise<S> = initial as S | Promise<S>
-  if (typeof initial === 'function') {
-    initialValue = (initial as () => S | Promise<S>)()
-  }
-  if (typeof initialValue === 'object' && initialValue !== null && initialValue[selfMethodsID]) {
+
+  if (typeof initial === 'function') initialValue = (initial as () => S | Promise<S>)()
+
+  if (typeof initialValue === 'object' && initialValue !== null && initialValue[selfMethodsID])
     throw new StateInvalidUsageError(rootPath, ErrorId.InitStateToValueFromState)
-  }
+
   return new Store(initialValue)
 }
 
