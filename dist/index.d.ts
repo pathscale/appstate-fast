@@ -25,7 +25,7 @@ type SetStateAction<S> = (S | Promise<S>) | ((prevState: S) => S | Promise<S>);
  *
  * @typeparam S Type of a value of a state
  */
-type SetPartialStateAction<S> = S extends ReadonlyArray<infer U> ? ReadonlyArray<U> | Record<number, U> | ((prevValue: S) => ReadonlyArray<U> | Record<number, U>) : S extends object | string ? Partial<S> | ((prevValue: S) => Partial<S>) : S | ((prevState: S) => S);
+type SetPartialStateAction<S> = S extends ReadonlyArray<infer U> ? ReadonlyArray<U> | Record<number, U> | ((prevValue: S) => ReadonlyArray<U> | Record<number, U>) : S extends Record<string, unknown> | string ? Partial<S> | ((prevValue: S) => Partial<S>) : S | ((prevState: S) => S);
 /**
  * Type of an argument of [createState](#createstate) and [useState](#usestate).
  *
@@ -44,13 +44,13 @@ declare const postpone: unique symbol;
  *
  * [Learn more...](https://hookstate.js.org/docs/nested-state#deleting-existing-element)
  */
-declare const none: any;
+declare const none: unknown;
 /**
  * Return type of [StateMethods.keys](#readonly-keys).
  *
  * @typeparam S Type of a value of a state
  */
-type InferredStateKeysType<S> = S extends ReadonlyArray<infer _> ? ReadonlyArray<number> : S extends null ? undefined : S extends object ? ReadonlyArray<keyof S> : undefined;
+type InferredStateKeysType<S> = S extends ReadonlyArray<infer _> ? ReadonlyArray<number> : S extends null ? undefined : S extends Record<string, unknown> ? ReadonlyArray<keyof S> : undefined;
 /**
  * Return type of [StateMethods.map()](#map).
  *
@@ -250,9 +250,9 @@ interface StateMethodsDestroy {
  * [Learn more about local states...](https://hookstate.js.org/docs/local-state)
  * [Learn more about nested states...](https://hookstate.js.org/docs/nested-state)
  */
-type State<S> = StateMethods<S> & (S extends ReadonlyArray<infer U> ? ReadonlyArray<State<U>> : S extends object ? Omit<{
+type State<S> = StateMethods<S> & (S extends ReadonlyArray<infer U> ? ReadonlyArray<State<U>> : S extends Record<string, unknown> ? Omit<{
     readonly [K in keyof Required<S>]: State<S[K]>;
-}, keyof StateMethods<S> | keyof StateMethodsDestroy> : {});
+}, keyof StateMethods<S> | keyof StateMethodsDestroy> : Record<string, unknown>);
 /**
  * For plugin developers only.
  * Type alias to highlight the places where we are dealing with root state value.
@@ -260,7 +260,7 @@ type State<S> = StateMethods<S> & (S extends ReadonlyArray<infer U> ? ReadonlyAr
  * @hidden
  * @ignore
  */
-type StateValueAtRoot = any;
+type StateValueAtRoot = unknown;
 /**
  * For plugin developers only.
  * Type alias to highlight the places where we are dealing with nested state value.
@@ -268,7 +268,7 @@ type StateValueAtRoot = any;
  * @hidden
  * @ignore
  */
-type StateValueAtPath = any;
+type StateValueAtPath = unknown;
 /**
  * For plugin developers only.
  * Type alias to highlight the places where we are dealing with state error.
@@ -276,7 +276,7 @@ type StateValueAtPath = any;
  * @hidden
  * @ignore
  */
-type StateErrorAtRoot = any;
+type StateErrorAtRoot = unknown;
 /**
  * For plugin developers only.
  * Type alias to highlight the places where we are dealing with context value.
@@ -284,7 +284,7 @@ type StateErrorAtRoot = any;
  * @hidden
  * @ignore
  */
-type AnyContext = any;
+type AnyContext = unknown;
 /**
  * For plugin developers only.
  * PluginCallbacks.onSet argument type.
@@ -401,41 +401,13 @@ declare function createState<S>(initial: SetInitialStateAction<S>): State<S> & S
  */
 declare function useState<S>(source: State<S>): State<S>;
 /**
- * This function enables a functional React component to use a state,
- * created per component by [useState](#usestate) (*local* state).
- * In this case `useState` behaves similarly to `React.useState`,
- * but the returned instance of [State](#state)
- * has got more features.
- *
- * When a state is used by only one component, and maybe it's children,
- * it is recommended to use *local* state instead of *global*,
- * which is created by [createState](#createstate).
- *
- * *Local* (per component) state is created when a component is mounted
- * and automatically destroyed when a component is unmounted.
- *
- * The same as with the usage of a *global* state,
- * `useState` forces a component to rerender when:
- * - a segment/part of the state data is updated *AND only if*
- * - this segement was **used** by the component during or after the latest rendering.
- *
- * You can use as many local states within the same component as you need.
- *
- * @param source An initial value state.
- *
- * @returns an instance of [State](#state),
- * which **must be** used within the component (during rendering
- * or in effects) or it's children.
- */
-declare function useState<S>(source: SetInitialStateAction<S>): State<S>;
-/**
  * For plugin developers only.
  * Reserved plugin ID for developers tools extension.
  *
  * @hidden
  * @ignore
  */
-declare const DevToolsID: unique symbol;
+declare const devToolsID: unique symbol;
 /**
  * Return type of [DevTools](#devtools).
  */
@@ -448,7 +420,7 @@ interface DevToolsExtensions {
     /**
      * Logs to the development tools
      */
-    log(str: string, data?: any): void;
+    log(str: string, data?: unknown): void;
 }
 /**
  * Returns access to the development tools for a given state.
@@ -465,5 +437,5 @@ interface DevToolsExtensions {
  *
  * @typeparam S Type of a value of a state
  */
-declare function DevTools<S>(state: State<S>): DevToolsExtensions;
-export { Path, SetStateAction, SetPartialStateAction, SetInitialStateAction, postpone, none, InferredStateKeysType, InferredStateOrnullType, PluginStateControl, StateMethods, StateMethodsDestroy, State, StateValueAtRoot, StateValueAtPath, StateErrorAtRoot, AnyContext, PluginCallbacksOnSetArgument, PluginCallbacksOnDestroyArgument, PluginCallbacksOnBatchArgument, PluginCallbacks, Plugin, createState, useState, DevToolsID, DevToolsExtensions, DevTools };
+declare function devTools<S>(state: State<S>): DevToolsExtensions;
+export { Path, SetStateAction, SetPartialStateAction, SetInitialStateAction, postpone, none, InferredStateKeysType, InferredStateOrnullType, PluginStateControl, StateMethods, StateMethodsDestroy, State, StateValueAtRoot, StateValueAtPath, StateErrorAtRoot, AnyContext, PluginCallbacksOnSetArgument, PluginCallbacksOnDestroyArgument, PluginCallbacksOnBatchArgument, PluginCallbacks, Plugin, createState, useState, devToolsID, DevToolsExtensions, devTools };

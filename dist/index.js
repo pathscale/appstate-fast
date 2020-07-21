@@ -50,12 +50,40 @@ const none = Symbol('none');
  */
 function createState(initial) {
     const methods = createStore(initial).toMethods();
-    const devtools = createState[DevToolsID];
-    if (devtools) {
+    // TODO: Figure out how this part works
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const devtools = createState[devToolsID];
+    if (devtools)
         methods.attach(devtools);
-    }
     return methods.self;
 }
+/**
+ * This function enables a functional React component to use a state,
+ * created per component by [useState](#usestate) (*local* state).
+ * In this case `useState` behaves similarly to `React.useState`,
+ * but the returned instance of [State](#state)
+ * has got more features.
+ *
+ * When a state is used by only one component, and maybe it's children,
+ * it is recommended to use *local* state instead of *global*,
+ * which is created by [createState](#createstate).
+ *
+ * *Local* (per component) state is created when a component is mounted
+ * and automatically destroyed when a component is unmounted.
+ *
+ * The same as with the usage of a *global* state,
+ * `useState` forces a component to rerender when:
+ * - a segment/part of the state data is updated *AND only if*
+ * - this segement was **used** by the component during or after the latest rendering.
+ *
+ * You can use as many local states within the same component as you need.
+ *
+ * @param source An initial value state.
+ *
+ * @returns an instance of [State](#state),
+ * which **must be** used within the component (during rendering
+ * or in effects) or it's children.
+ */
 function useState(source) {
     const parentMethods = typeof source === 'object' && source !== null
         ? source[self]
@@ -76,9 +104,11 @@ function useState(source) {
     else {
         // Local state mount
         const value = vue.reactive({ state: createStore(source) });
-        const result = useSubscribedStateMethods(value.state, RootPath, value.state);
+        const result = useSubscribedStateMethods(value.state, rootPath, value.state);
         vue.onUnmounted(() => value.state.destroy());
-        const devtools = useState[DevToolsID];
+        // TODO: Figure out how this part works
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const devtools = useState[devToolsID];
         if (devtools) {
             result.attach(devtools);
         }
@@ -92,7 +122,7 @@ function useState(source) {
  * @hidden
  * @ignore
  */
-const DevToolsID = Symbol('DevTools');
+const devToolsID = Symbol('devTools');
 /**
  * Returns access to the development tools for a given state.
  * Development tools are delivered as optional plugins.
@@ -108,18 +138,17 @@ const DevToolsID = Symbol('DevTools');
  *
  * @typeparam S Type of a value of a state
  */
-function DevTools(state) {
-    const plugin = state.attach(DevToolsID);
-    if (plugin[0] instanceof Error) {
-        return EmptyDevToolsExtensions;
-    }
+function devTools(state) {
+    const plugin = state.attach(devToolsID);
+    if (plugin[0] instanceof Error)
+        return emptyDevToolsExtensions;
     return plugin[0];
 }
 ///
 /// INTERNAL SYMBOLS (LIBRARY IMPLEMENTATION)
 ///
 const self = Symbol('self');
-const EmptyDevToolsExtensions = {
+const emptyDevToolsExtensions = {
     label() {
         /* */
     },
@@ -127,6 +156,7 @@ const EmptyDevToolsExtensions = {
         /* */
     },
 };
+/* eslint-disable @typescript-eslint/naming-convention */
 var ErrorId;
 (function (ErrorId) {
     ErrorId[ErrorId["InitStateToValueFromState"] = 101] = "InitStateToValueFromState";
@@ -154,14 +184,15 @@ var ErrorId;
     ErrorId[ErrorId["Apply_State"] = 213] = "Apply_State";
     ErrorId[ErrorId["Apply_Value"] = 214] = "Apply_Value";
 })(ErrorId || (ErrorId = {}));
+/* eslint-enable @typescript-eslint/naming-convention */
 class StateInvalidUsageError extends Error {
     constructor(path, id, details) {
         super(`Error: HOOKSTATE-${id} [path: /${path.join('/')}${details ? `, details: ${details}` : ''}]. ` + `See https://hookstate.js.org/docs/exceptions#hookstate-${id}`);
     }
 }
-const SelfMethodsID = Symbol('ProxyMarker');
-const RootPath = [];
-const DestroyedEdition = -1;
+const selfMethodsID = Symbol('ProxyMarker');
+const rootPath = [];
+const destroyedEdition = -1;
 class Store {
     constructor(_value) {
         this._value = _value;
@@ -183,20 +214,20 @@ class Store {
     }
     createPromised(newValue) {
         const promised = new Promised(newValue ? Promise.resolve(newValue) : undefined, (r) => {
-            if (this.promised === promised && this.edition !== DestroyedEdition) {
+            if (this.promised === promised && this.edition !== destroyedEdition) {
                 this._promised = undefined;
-                this.set(RootPath, r);
-                this.update([RootPath]);
+                this.set(rootPath, r);
+                this.update([rootPath]);
             }
         }, () => {
-            if (this.promised === promised && this.edition !== DestroyedEdition) {
+            if (this.promised === promised && this.edition !== destroyedEdition) {
                 this._edition += 1;
-                this.update([RootPath]);
+                this.update([rootPath]);
             }
         }, () => {
             if (this._batchesPendingActions &&
                 this._value !== none &&
-                this.edition !== DestroyedEdition) {
+                this.edition !== destroyedEdition) {
                 const actions = this._batchesPendingActions;
                 this._batchesPendingActions = undefined;
                 actions.forEach(a => a());
@@ -212,12 +243,10 @@ class Store {
     }
     get(path) {
         let result = this._value;
-        if (result === none) {
+        if (result === none)
             return result;
-        }
-        path.forEach(p => {
+        for (const p of path)
             result = result[p];
-        });
         return result;
     }
     set(path, value, mergeValue) {
@@ -331,7 +360,7 @@ class Store {
         actions.forEach(a => a());
     }
     afterSet(params) {
-        if (this._edition !== DestroyedEdition) {
+        if (this._edition !== destroyedEdition) {
             this._edition += 1;
             this._setSubscribers.forEach(cb => cb(params));
         }
@@ -385,20 +414,20 @@ class Store {
         const pluginCallbacks = plugin.init ? plugin.init(this.toMethods().self) : {};
         this._plugins.set(plugin.id, pluginCallbacks);
         if (pluginCallbacks.onSet) {
-            this._setSubscribers.add(p => pluginCallbacks.onSet(p));
+            this._setSubscribers.add(p => { var _a; return (_a = pluginCallbacks.onSet) === null || _a === void 0 ? void 0 : _a.call(pluginCallbacks, p); });
         }
         if (pluginCallbacks.onDestroy) {
-            this._destroySubscribers.add(p => pluginCallbacks.onDestroy(p));
+            this._destroySubscribers.add(p => { var _a; return (_a = pluginCallbacks.onDestroy) === null || _a === void 0 ? void 0 : _a.call(pluginCallbacks, p); });
         }
         if (pluginCallbacks.onBatchStart) {
-            this._batchStartSubscribers.add(p => pluginCallbacks.onBatchStart(p));
+            this._batchStartSubscribers.add(p => { var _a; return (_a = pluginCallbacks.onBatchStart) === null || _a === void 0 ? void 0 : _a.call(pluginCallbacks, p); });
         }
         if (pluginCallbacks.onBatchFinish) {
-            this._batchFinishSubscribers.add(p => pluginCallbacks.onBatchFinish(p));
+            this._batchFinishSubscribers.add(p => { var _a; return (_a = pluginCallbacks.onBatchFinish) === null || _a === void 0 ? void 0 : _a.call(pluginCallbacks, p); });
         }
     }
     toMethods() {
-        return new StateMethodsImpl(this, RootPath, this.get(RootPath), this.edition);
+        return new StateMethodsImpl(this, rootPath, this.get(rootPath), this.edition);
     }
     subscribe(l) {
         this._subscribers.add(l);
@@ -408,10 +437,10 @@ class Store {
     }
     destroy() {
         this._destroySubscribers.forEach(cb => cb(this._value !== none ? { state: this._value } : {}));
-        this._edition = DestroyedEdition;
+        this._edition = destroyedEdition;
     }
     toJSON() {
-        throw new StateInvalidUsageError(RootPath, ErrorId.ToJson_Value);
+        throw new StateInvalidUsageError(rootPath, ErrorId.ToJson_Value);
     }
 }
 class Promised {
@@ -438,19 +467,20 @@ class Promised {
     }
 }
 // use symbol property to allow for easier reference finding
-const ValueUnusedMarker = Symbol('ValueUnusedMarker');
+const valueUnusedMarker = Symbol('valueUnusedMarker');
 class StateMethodsImpl {
     constructor(state, path, valueSource, valueEdition) {
         this.state = state;
         this.path = path;
         this.valueSource = valueSource;
         this.valueEdition = valueEdition;
-        this.valueCache = ValueUnusedMarker;
+        this.valueCache = valueUnusedMarker;
         this.isMounted = false;
         vue.onMounted(() => (this.isMounted = true));
         vue.onUnmounted(() => (this.isMounted = false));
     }
     getUntracked(allowPromised) {
+        var _a;
         if (this.valueEdition !== this.state.edition) {
             this.valueSource = this.state.get(this.path);
             this.valueEdition = this.state.edition;
@@ -458,8 +488,8 @@ class StateMethodsImpl {
                 // this link is still mounted to a component
                 // populate cache again to ensure correct tracking of usage
                 // when React scans which states to rerender on update
-                if (this.valueCache !== ValueUnusedMarker) {
-                    this.valueCache = ValueUnusedMarker;
+                if (this.valueCache !== valueUnusedMarker) {
+                    this.valueCache = valueUnusedMarker;
                     this.get(true); // renew cache to keep it marked used
                 }
             }
@@ -473,22 +503,21 @@ class StateMethodsImpl {
                 // when a component unmounted.
                 // We take this opportunity to clean up caches
                 // to avoid memory leaks via stale children states cache.
-                this.valueCache = ValueUnusedMarker;
+                this.valueCache = valueUnusedMarker;
                 delete this.childrenCache;
                 delete this.selfCache;
             }
         }
         if (this.valueSource === none && !allowPromised) {
-            if (this.state.promised && this.state.promised.error) {
+            if ((_a = this.state.promised) === null || _a === void 0 ? void 0 : _a.error)
                 throw this.state.promised.error;
-            }
             throw new StateInvalidUsageError(this.path, ErrorId.GetStateWhenPromised);
         }
         return this.valueSource;
     }
     get(allowPromised) {
         const currentValue = this.getUntracked(allowPromised);
-        if (this.valueCache === ValueUnusedMarker) {
+        if (this.valueCache === valueUnusedMarker) {
             if (Array.isArray(currentValue)) {
                 this.valueCache = this.valueArrayImpl(currentValue);
             }
@@ -508,7 +537,7 @@ class StateMethodsImpl {
         if (typeof newValue === 'function') {
             newValue = newValue(this.getUntracked());
         }
-        if (typeof newValue === 'object' && newValue !== null && newValue[SelfMethodsID]) {
+        if (typeof newValue === 'object' && newValue !== null && newValue[selfMethodsID]) {
             throw new StateInvalidUsageError(this.path, ErrorId.SetStateToValueFromState);
         }
         return [this.state.set(this.path, newValue, mergeValue)];
@@ -518,9 +547,9 @@ class StateMethodsImpl {
     }
     mergeUntracked(sourceValue) {
         const currentValue = this.getUntracked();
-        if (typeof sourceValue === 'function') {
+        if (typeof sourceValue === 'function')
+            // TODO: Proper types
             sourceValue = sourceValue(currentValue);
-        }
         let updatedPaths;
         let deletedOrInsertedProps = false;
         if (Array.isArray(currentValue)) {
@@ -533,6 +562,7 @@ class StateMethodsImpl {
                     .sort()
                     .forEach(i => {
                     const index = Number(i);
+                    // TODO: Proper types
                     const newPropValue = sourceValue[index];
                     if (newPropValue === none) {
                         deletedOrInsertedProps = true;
@@ -554,6 +584,7 @@ class StateMethodsImpl {
         }
         else if (typeof currentValue === 'object' && currentValue !== null) {
             Object.keys(sourceValue).forEach(key => {
+                // TODO: Proper types
                 const newPropValue = sourceValue[key];
                 if (newPropValue === none) {
                     deletedOrInsertedProps = true;
@@ -597,19 +628,21 @@ class StateMethodsImpl {
         this.subscribers.add(l);
     }
     unsubscribe(l) {
-        this.subscribers.delete(l);
+        var _a;
+        (_a = this.subscribers) === null || _a === void 0 ? void 0 : _a.delete(l);
     }
     onSet(paths, actions) {
         const update = () => {
+            var _a;
             for (const path of paths) {
                 const firstChildKey = path[this.path.length];
                 if (firstChildKey === undefined) {
-                    if (this.valueCache !== ValueUnusedMarker) {
+                    if (this.valueCache !== valueUnusedMarker) {
                         return true;
                     }
                 }
                 else {
-                    const firstChildValue = this.childrenCache && this.childrenCache[firstChildKey];
+                    const firstChildValue = (_a = this.childrenCache) === null || _a === void 0 ? void 0 : _a[firstChildKey];
                     if (firstChildValue === null || firstChildValue === void 0 ? void 0 : firstChildValue.onSet(paths, actions)) {
                         return true;
                     }
@@ -655,17 +688,15 @@ class StateMethodsImpl {
     }
     valueArrayImpl(currentValue) {
         return proxyWrap(this.path, currentValue, () => currentValue, (target, key) => {
-            if (key === 'length') {
+            if (key === 'length')
                 return target.length;
-            }
-            if (key in Array.prototype) {
+            if (key in Array.prototype)
                 return Array.prototype[key];
-            }
-            if (key === SelfMethodsID) {
+            if (key === selfMethodsID)
                 return this;
-            }
             if (typeof key === 'symbol') {
                 // allow clients to associate hidden cache with state values
+                // TODO: Figure out symbol indexing
                 return target[key];
             }
             const index = Number(key);
@@ -675,7 +706,6 @@ class StateMethodsImpl {
             return this.child(index).get();
         }, (target, key, value) => {
             if (typeof key === 'symbol') {
-                // allow clients to associate hidden cache with state values
                 target[key] = value;
                 return true;
             }
@@ -684,17 +714,16 @@ class StateMethodsImpl {
     }
     valueObjectImpl(currentValue) {
         return proxyWrap(this.path, currentValue, () => currentValue, (target, key) => {
-            if (key === SelfMethodsID) {
+            if (key === selfMethodsID)
                 return this;
-            }
             if (typeof key === 'symbol') {
                 // allow clients to associate hidden cache with state values
+                // TODO: Figure out symbol indexing
                 return target[key];
             }
             return this.child(key).get();
         }, (target, key, value) => {
             if (typeof key === 'symbol') {
-                // allow clients to associate hidden cache with state values
                 target[key] = value;
                 return true;
             }
@@ -737,7 +766,8 @@ class StateMethodsImpl {
                 case 'nested':
                     return (p) => this.nested(p);
                 case 'batch':
-                    // tslint:disable-next-line: no-any
+                    // TODO: Figure out function types
+                    // eslint-disable-next-line @typescript-eslint/ban-types
                     return (action, context) => this.batch(action, context);
                 case 'attach':
                     return (p) => this.attach(p);
@@ -755,16 +785,13 @@ class StateMethodsImpl {
                 throw new StateInvalidUsageError(this.path, ErrorId.GetStatePropertyWhenPrimitive);
             }
             if (Array.isArray(currentValue)) {
-                if (key === 'length') {
+                if (key === 'length')
                     return currentValue.length;
-                }
-                if (key in Array.prototype) {
+                if (key in Array.prototype)
                     return Array.prototype[key];
-                }
                 const index = Number(key);
-                if (!Number.isInteger(index)) {
+                if (!Number.isInteger(index))
                     return;
-                }
                 return this.nested(index);
             }
             return this.nested(key.toString());
@@ -772,7 +799,7 @@ class StateMethodsImpl {
         this.selfCache = proxyWrap(this.path, this.valueSource, () => {
             this.get(); // get latest & mark used
             return this.valueSource;
-        }, getter, (_, key, value) => {
+        }, getter, () => {
             throw new StateInvalidUsageError(this.path, ErrorId.SetProperty_State);
         }, false);
         return this.selfCache;
@@ -785,15 +812,18 @@ class StateMethodsImpl {
         return false;
     }
     get error() {
+        var _a;
         const currentValue = this.get(true); // marks used
         if (currentValue === none) {
-            if (this.state.promised && this.state.promised.fullfilled) {
+            if ((_a = this.state.promised) === null || _a === void 0 ? void 0 : _a.fullfilled) {
                 return this.state.promised.error;
             }
             this.get(); // will throw 'read while promised' exception
         }
         return;
     }
+    // TODO: Figure out function types
+    // eslint-disable-next-line @typescript-eslint/ban-types
     batch(action, context) {
         const opts = { context: context };
         try {
@@ -830,23 +860,16 @@ class StateMethodsImpl {
         }
     }
 }
-function proxyWrap(path, 
-// tslint:disable-next-line: no-any
-targetBootstrap, 
-// tslint:disable-next-line: no-any
-targetGetter, 
-// tslint:disable-next-line: no-any
-propertyGetter, 
-// tslint:disable-next-line: no-any
-propertySetter, isValueProxy) {
+function proxyWrap(path, targetBootstrap, targetGetter, propertyGetter, propertySetter, isValueProxy) {
     const onInvalidUsage = (op) => {
         throw new StateInvalidUsageError(path, op);
     };
     if (typeof targetBootstrap !== 'object' || targetBootstrap === null) {
         targetBootstrap = {};
     }
+    // TODO: Figure out proxy types
     return new Proxy(targetBootstrap, {
-        getPrototypeOf: target => {
+        getPrototypeOf: () => {
             // should satisfy the invariants:
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/getPrototypeOf#Invariants
             const targetReal = targetGetter();
@@ -858,7 +881,7 @@ propertySetter, isValueProxy) {
         setPrototypeOf: () => {
             return onInvalidUsage(isValueProxy ? ErrorId.SetPrototypeOf_State : ErrorId.SetPrototypeOf_Value);
         },
-        isExtensible: target => {
+        isExtensible: () => {
             // should satisfy the invariants:
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/isExtensible#Invariants
             return true; // required to satisfy the invariants of the getPrototypeOf
@@ -934,8 +957,8 @@ function createStore(initial) {
     if (typeof initial === 'function') {
         initialValue = initial();
     }
-    if (typeof initialValue === 'object' && initialValue !== null && initialValue[SelfMethodsID]) {
-        throw new StateInvalidUsageError(RootPath, ErrorId.InitStateToValueFromState);
+    if (typeof initialValue === 'object' && initialValue !== null && initialValue[selfMethodsID]) {
+        throw new StateInvalidUsageError(rootPath, ErrorId.InitStateToValueFromState);
     }
     return new Store(initialValue);
 }
@@ -946,9 +969,9 @@ function useSubscribedStateMethods(state, path, subscribeTarget) {
     return link;
 }
 
-exports.DevTools = DevTools;
-exports.DevToolsID = DevToolsID;
 exports.createState = createState;
+exports.devTools = devTools;
+exports.devToolsID = devToolsID;
 exports.none = none;
 exports.postpone = postpone;
 exports.useState = useState;
