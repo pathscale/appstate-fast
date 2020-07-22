@@ -1,8 +1,9 @@
-import { ref, onUnmounted, onMounted } from 'vue';
+import { onUnmounted, ref } from 'vue';
 
 const self = Symbol('self');
 const selfMethodsID = Symbol('ProxyMarker');
 const valueUnusedMarker = Symbol('valueUnusedMarker');
+const unmountedMarker = Symbol('unmountedMarker');
 const postpone = Symbol('postpone');
 const none = Symbol('none');
 const devToolsID = Symbol('devTools');
@@ -22,27 +23,47 @@ function useState(source) {
     if (parentMethods) {
         if (parentMethods.isMounted) {
             // Scoped state mount
-            return useSubscribedStateMethods(parentMethods.state, parentMethods.path, parentMethods)
-                .self;
+            const link = new StateMethodsImpl(parentMethods.state, parentMethods.path, parentMethods.state.get(parentMethods.path), parentMethods.state.edition, () => {
+                /*  */
+            }, () => {
+                /*  */
+            });
+            parentMethods.subscribe(link);
+            onUnmounted(() => parentMethods.unsubscribe(link));
+            return link.self;
         }
         else {
             // Global state mount or destroyed link
             const state = ref(parentMethods.state);
-            return useSubscribedStateMethods(state.value, parentMethods.path, state.value)
-                .self;
+            const link = new StateMethodsImpl(state.value, parentMethods.path, state.value.get(parentMethods.path), state.value.edition, () => {
+                /*  */
+            }, () => {
+                /*  */
+            });
+            state.value.subscribe(link);
+            onUnmounted(() => state.value.unsubscribe(link));
+            return link.self;
         }
     }
     else {
         // Local state mount
         const state = ref(createStore(source));
-        const result = useSubscribedStateMethods(state.value, rootPath, state.value);
-        onUnmounted(() => state.value.destroy());
+        const link = new StateMethodsImpl(state.value, rootPath, state.value.get(rootPath), state.value.edition, () => {
+            /*  */
+        }, () => {
+            /*  */
+        });
+        state.value.subscribe(link);
+        onUnmounted(() => {
+            state.value.unsubscribe(link);
+            state.value.destroy();
+        });
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const devtools = useState[devToolsID];
         if (devtools) {
-            result.attach(devtools);
+            link.attach(devtools);
         }
-        return result.self;
+        return link.self;
     }
 }
 function devTools(state) {
@@ -134,7 +155,9 @@ class Store {
                 this.edition !== destroyedEdition) {
                 const actions = this._batchesPendingActions;
                 this._batchesPendingActions = undefined;
-                actions.forEach(a => a());
+                for (const a of actions) {
+                    a();
+                }
             }
         });
         return promised;
@@ -330,7 +353,11 @@ class Store {
         }
     }
     toMethods() {
-        return new StateMethodsImpl(this, rootPath, this.get(rootPath), this.edition);
+        return new StateMethodsImpl(this, rootPath, this.get(rootPath), this.edition, () => {
+            /*  */
+        }, () => {
+            /*  */
+        });
     }
     subscribe(l) {
         this._subscribers.add(l);
@@ -371,18 +398,18 @@ class Promised {
     }
 }
 class StateMethodsImpl {
-    constructor(state, path, valueSource, valueEdition) {
+    constructor(state, path, valueSource, valueEdition, onGetUsed, onSetUsed) {
         this.state = state;
         this.path = path;
         this.valueSource = valueSource;
         this.valueEdition = valueEdition;
+        this.onGetUsed = onGetUsed;
+        this.onSetUsed = onSetUsed;
         this.valueCache = valueUnusedMarker;
-        this.isMounted = false;
-        onMounted(() => (this.isMounted = true));
-        onUnmounted(() => (this.isMounted = false));
     }
     getUntracked(allowPromised) {
         var _a;
+        this.onGetUsed();
         if (this.valueEdition !== this.state.edition) {
             this.valueSource = this.state.get(this.path);
             this.valueEdition = this.state.edition;
@@ -533,6 +560,12 @@ class StateMethodsImpl {
         var _a;
         (_a = this.subscribers) === null || _a === void 0 ? void 0 : _a.delete(l);
     }
+    get isMounted() {
+        return !this.onSetUsed[unmountedMarker];
+    }
+    onUnmount() {
+        this.onSetUsed[unmountedMarker] = true;
+    }
     onSet(paths, actions) {
         const update = () => {
             var _a;
@@ -583,7 +616,11 @@ class StateMethodsImpl {
                 return cachehit;
             }
         }
-        const r = new StateMethodsImpl(this.state, this.path.slice().concat(key), this.valueSource[key], this.valueEdition);
+        const r = new StateMethodsImpl(this.state, this.path.slice().concat(key), this.valueSource[key], this.valueEdition, () => {
+            /*  */
+        }, () => {
+            /*  */
+        });
         if (this.childrenCache) {
             this.childrenCache[key] = r;
         }
@@ -856,12 +893,6 @@ function createStore(initial) {
         throw new StateInvalidUsageError(rootPath, ErrorId.InitStateToValueFromState);
     }
     return new Store(initialValue);
-}
-function useSubscribedStateMethods(state, path, subscribeTarget) {
-    const link = new StateMethodsImpl(state, path, state.get(path), state.edition);
-    onMounted(() => subscribeTarget.subscribe(link));
-    onUnmounted(() => subscribeTarget.unsubscribe(link));
-    return link;
 }
 
 export { createState, devTools, devToolsID, none, postpone, useState };

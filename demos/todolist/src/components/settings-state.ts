@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-unpublished-import
 import { createState, useState } from '../../../../dist'
 
 export const useSettingsState = createState({

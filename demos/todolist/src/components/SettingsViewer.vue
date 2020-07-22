@@ -49,7 +49,7 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { useSettingsState } from './SettingsState'
+import { useSettingsState } from './settings-state'
 
 export default defineComponent({
   name: 'SettingsViewer',

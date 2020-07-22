@@ -2,7 +2,7 @@
   <div style="display: flex; justify-content: space-evenly; margin-bottom: 30px;">
     <div
       v-if="settingsState.isHighlightUpdateEnabled"
-      style="width: 10px; marginright: 15px;"
+      style="width: 10px; margin-right: 15px;"
     ></div>
     <p v-if="tasksState.promised">Loading</p>
     <p v-else-if="tasksState.error">Error</p>
@@ -14,8 +14,8 @@
 
 <script>
 import { ref, defineComponent } from 'vue'
-import { useTasksState } from './TasksState'
-import { useSettingsState } from './SettingsState'
+import { useTasksState } from './tasks-state'
+import { useSettingsState } from './settings-state'
 
 export default defineComponent({
   name: 'TasksTotal',

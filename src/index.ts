@@ -1,4 +1,4 @@
-import { onUnmounted, onMounted, ref } from 'vue'
+import { onUnmounted, ref } from 'vue'
 
 export type Path = ReadonlyArray<string | number>
 
@@ -133,27 +133,75 @@ export function useState<S>(source: SetInitialStateAction<S> | State<S>): State<
   if (parentMethods) {
     if (parentMethods.isMounted) {
       // Scoped state mount
-      return useSubscribedStateMethods<S>(parentMethods.state, parentMethods.path, parentMethods)
-        .self
+      const link = new StateMethodsImpl<S>(
+        parentMethods.state,
+        parentMethods.path,
+        parentMethods.state.get(parentMethods.path) as S,
+        parentMethods.state.edition,
+        () => {
+          /*  */
+        },
+        () => {
+          /*  */
+        },
+      )
+
+      parentMethods.subscribe(link)
+      onUnmounted(() => parentMethods.unsubscribe(link))
+
+      return link.self
     } else {
       // Global state mount or destroyed link
       const state = ref(parentMethods.state)
-      return useSubscribedStateMethods<S>(state.value as Store, parentMethods.path, state.value)
-        .self
+
+      const link = new StateMethodsImpl<S>(
+        state.value as Store,
+        parentMethods.path,
+        state.value.get(parentMethods.path) as S,
+        state.value.edition,
+        () => {
+          /*  */
+        },
+        () => {
+          /*  */
+        },
+      )
+
+      state.value.subscribe(link)
+      onUnmounted(() => state.value.unsubscribe(link))
+
+      return link.self
     }
   } else {
     // Local state mount
     const state = ref(createStore(source))
-    const result = useSubscribedStateMethods<S>(state.value as Store, rootPath, state.value)
-    onUnmounted(() => state.value.destroy())
+
+    const link = new StateMethodsImpl<S>(
+      state.value as Store,
+      rootPath,
+      state.value.get(rootPath) as S,
+      state.value.edition,
+      () => {
+        /*  */
+      },
+      () => {
+        /*  */
+      },
+    )
+
+    state.value.subscribe(link)
+    onUnmounted(() => {
+      state.value.unsubscribe(link)
+      state.value.destroy()
+    })
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const devtools = useState[devToolsID]
     if (devtools) {
-      result.attach(devtools)
+      link.attach(devtools)
     }
 
-    return result.self
+    return link.self
   }
 }
 
@@ -293,7 +341,9 @@ class Store implements Subscribable {
         ) {
           const actions = this._batchesPendingActions
           this._batchesPendingActions = undefined
-          actions.forEach(a => a())
+          for (const a of actions) {
+            a()
+          }
         }
       },
     )
@@ -525,7 +575,18 @@ class Store implements Subscribable {
   }
 
   toMethods() {
-    return new StateMethodsImpl<StateValueAtRoot>(this, rootPath, this.get(rootPath), this.edition)
+    return new StateMethodsImpl<StateValueAtRoot>(
+      this,
+      rootPath,
+      this.get(rootPath),
+      this.edition,
+      () => {
+        /*  */
+      },
+      () => {
+        /*  */
+      },
+    )
   }
 
   subscribe(l: Subscriber) {
@@ -587,7 +648,6 @@ onSetUsedNoAction[unmountedMarker] = true
 
 class StateMethodsImpl<S>
   implements StateMethods<S>, StateMethodsDestroy, Subscribable, Subscriber {
-  isMounted: boolean
   private subscribers: Set<Subscriber> | undefined
   private childrenCache: Record<string | number, StateMethodsImpl<StateValueAtPath>> | undefined
   private selfCache: State<S> | undefined
@@ -598,13 +658,13 @@ class StateMethodsImpl<S>
     public readonly path: Path,
     private valueSource: S,
     private valueEdition: number,
-  ) {
-    this.isMounted = false
-    onMounted(() => (this.isMounted = true))
-    onUnmounted(() => (this.isMounted = false))
-  }
+    public readonly onGetUsed: () => void,
+    private readonly onSetUsed: () => void,
+  ) {}
 
   getUntracked(allowPromised?: boolean) {
+    this.onGetUsed()
+
     if (this.valueEdition !== this.state.edition) {
       this.valueSource = this.state.get(this.path) as S
       this.valueEdition = this.state.edition
@@ -767,6 +827,14 @@ class StateMethodsImpl<S>
     this.subscribers?.delete(l)
   }
 
+  get isMounted(): boolean {
+    return !this.onSetUsed[unmountedMarker]
+  }
+
+  onUnmount() {
+    this.onSetUsed[unmountedMarker] = true
+  }
+
   onSet(paths: Path[], actions: (() => void)[]): boolean {
     const update = () => {
       for (const path of paths) {
@@ -829,6 +897,12 @@ class StateMethodsImpl<S>
       this.path.slice().concat(key),
       this.valueSource[key],
       this.valueEdition,
+      () => {
+        /*  */
+      },
+      () => {
+        /*  */
+      },
     )
 
     if (this.childrenCache) {
@@ -1142,32 +1216,41 @@ function proxyWrap(
       if (typeof p === 'symbol') {
         return false
       }
+
       const targetReal = targetGetter()
+
       if (typeof targetReal === 'object' && targetReal !== null) {
         return p in targetReal
       }
+
       return false
     },
 
     enumerate: () => {
       const targetReal = targetGetter()
+
       if (Array.isArray(targetReal)) {
         return Object.keys(targetReal).concat('length')
       }
+
       if (targetReal === undefined || targetReal === null) {
         return []
       }
+
       return Object.keys(targetReal as Record<string, unknown>)
     },
 
     ownKeys: () => {
       const targetReal = targetGetter()
+
       if (Array.isArray(targetReal)) {
         return Object.keys(targetReal).concat('length')
       }
+
       if (targetReal === undefined || targetReal === null) {
         return []
       }
+
       return Object.keys(targetReal as Record<string, unknown>)
     },
 
@@ -1204,11 +1287,4 @@ function createStore<S>(initial: SetInitialStateAction<S>): Store {
   }
 
   return new Store(initialValue)
-}
-
-function useSubscribedStateMethods<S>(state: Store, path: Path, subscribeTarget: Subscribable) {
-  const link = new StateMethodsImpl<S>(state, path, state.get(path) as S, state.edition)
-  onMounted(() => subscribeTarget.subscribe(link))
-  onUnmounted(() => subscribeTarget.unsubscribe(link))
-  return link
 }
