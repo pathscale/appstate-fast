@@ -9,8 +9,8 @@
     "start": "serve dist"
   },
   "dependencies": {
-    "vue": "^3.0.0-rc.2",
-    "vue-router": "^4.0.0-beta.2"
+    "vue": "^3.0.0-rc.4",
+    "vue-router": "^4.0.0-beta.3"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^14.0.0",
@@ -18,7 +18,7 @@
     "@rollup/plugin-node-resolve": "^8.4.0",
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-typescript": "^5.0.2",
-    "@vue/compiler-sfc": "^3.0.0-rc.2",
+    "@vue/compiler-sfc": "^3.0.0-rc.4",
     "rollup": "^2.22.1",
     "rollup-plugin-styles": "^3.10.0",
     "rollup-plugin-vue": "^6.0.0-beta.9",

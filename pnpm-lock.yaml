@@ -7,7 +7,7 @@ devDependencies:
   '@types/jest': 26.0.5
   '@typescript-eslint/eslint-plugin': 3.7.0_a7d792035c43f2b80bcf395c5516fe5c
   '@typescript-eslint/parser': 3.7.0_eslint@7.5.0+typescript@3.9.7
-  '@vue/test-utils': 2.0.0-beta.0_vue@3.0.0-rc.2
+  '@vue/test-utils': 2.0.0-beta.0_vue@3.0.0-rc.4
   '@wessberg/rollup-plugin-ts': 1.2.28_rollup@2.22.1+typescript@3.9.7
   builtin-modules: 3.1.0
   eslint: 7.5.0
@@ -25,7 +25,7 @@ devDependencies:
   shx: 0.3.2
   ts-jest: 26.1.3_jest@26.1.0+typescript@3.9.7
   typescript: 3.9.7
-  vue: 3.0.0-rc.2
+  vue: 3.0.0-rc.4
 lockfileVersion: 5.1
 packages:
   /@babel/code-frame/7.10.4:
@@ -911,7 +911,7 @@ packages:
       integrity: sha512-Ra3JXOHBq2xd56xSF7lMKXdjBn3T772Y1Wet3yWnkDly9zHvJki029tAFzvAAK5cf4YV3yoxuP61crYRol6SVg==
   /@babel/runtime/7.10.5:
     dependencies:
-      regenerator-runtime: 0.13.5
+      regenerator-runtime: 0.13.6
     dev: true
     resolution:
       integrity: sha512-otddXKhdNn7d0ptoFRHtMLa8LqDxLYwTjB4nYgM1yy5N6gU/MUf8zqyyLltCH3yAVitBzmwK4us+DD0l/MauAg==
@@ -1085,7 +1085,7 @@ packages:
     engines:
       node: '>= 10.14.2'
     optionalDependencies:
-      node-notifier: 7.0.1
+      node-notifier: 7.0.2
     resolution:
       integrity: sha512-SVAysur9FOIojJbF4wLP0TybmqwDkdnFxHSPzHMMIYyBtldCW9gG+Q5xWjpMFyErDiwlRuPyMSJSU64A67Pazg==
   /@jest/source-map/26.1.0:
@@ -1495,51 +1495,51 @@ packages:
       node: ^8.10.0 || ^10.13.0 || >=11.10.1
     resolution:
       integrity: sha512-k5PiZdB4vklUpUX4NBncn5RBKty8G3ihTY+hqJsCdMuD0v4jofI5xuqwnVcWxfv6iTm2P/dfEa2wMUnsUY8ODw==
-  /@vue/compiler-core/3.0.0-rc.2:
+  /@vue/compiler-core/3.0.0-rc.4:
     dependencies:
       '@babel/parser': 7.10.5
       '@babel/types': 7.10.5
-      '@vue/shared': 3.0.0-rc.2
+      '@vue/shared': 3.0.0-rc.4
       estree-walker: 2.0.1
       source-map: 0.6.1
     dev: true
     resolution:
-      integrity: sha512-FPPNTd20Y8U5RWyXHWOC22gpSnaFz8V2zDq+f1AQ6xTTRD09qFw7wJ8T50mnVgeXgYbACMnD+RXOAAwYfB6ijQ==
-  /@vue/compiler-dom/3.0.0-rc.2:
+      integrity: sha512-0SZKcUTBYI+v9JN9cCjeJvu/jglw7N+l0g3KspjAHLsA8mXZn5XM2j8v22uR3ChoJmxTFjAyuQfFYcomJpqXRw==
+  /@vue/compiler-dom/3.0.0-rc.4:
     dependencies:
-      '@vue/compiler-core': 3.0.0-rc.2
-      '@vue/shared': 3.0.0-rc.2
+      '@vue/compiler-core': 3.0.0-rc.4
+      '@vue/shared': 3.0.0-rc.4
     dev: true
     resolution:
-      integrity: sha512-38iflPPoZtbPBBLDI9q2xP3MQAnUIQFs9aRwSMJqDI0PxEvB2J9O6o5bBtN7QIorL5KnxDO9LLz+RuCgmFIQVQ==
-  /@vue/reactivity/3.0.0-rc.2:
+      integrity: sha512-CZbPWlcQlLEa/IEXBxvIbs+OgCbONS3Auq/RXRff+zj440XNQ7j4vgd18+8suWaxObL5oBo0wg9BTUhP0oJgog==
+  /@vue/reactivity/3.0.0-rc.4:
     dependencies:
-      '@vue/shared': 3.0.0-rc.2
+      '@vue/shared': 3.0.0-rc.4
     dev: true
     resolution:
-      integrity: sha512-kgnBKzX74sV/Zc2iS5Zp+QwlctMBplsw7LAogGr2K2BrkfjqXSBr4yag/m8poGmceVMNm6/wFsWrOEnbL0hyZQ==
-  /@vue/runtime-core/3.0.0-rc.2:
+      integrity: sha512-Qer7HKYS70imlxPTiIEeSoxXcGLRL96ZoTzDfAOdEd4kjRcztz9tPhiu/70jEuNoHWmQWSWbn09WLusgMB4Eqw==
+  /@vue/runtime-core/3.0.0-rc.4:
     dependencies:
-      '@vue/reactivity': 3.0.0-rc.2
-      '@vue/shared': 3.0.0-rc.2
+      '@vue/reactivity': 3.0.0-rc.4
+      '@vue/shared': 3.0.0-rc.4
     dev: true
     resolution:
-      integrity: sha512-NNeFIkW0IQCuqp77XcgqsYdME7wr6ab6RcSmu9ZSKcEZbqhL+0PVioCjfyMW6Sa+35ng6PegocNbOp++vXIQ9g==
-  /@vue/runtime-dom/3.0.0-rc.2:
+      integrity: sha512-wxyB2PwMRF5iPB4JGQ4xbrdYve/oYeh3Gem2JUDGTlSpU6M5HsxyvEL8aUp3uVy+XLgtABoMZZJnYClnWwwzLQ==
+  /@vue/runtime-dom/3.0.0-rc.4:
     dependencies:
-      '@vue/runtime-core': 3.0.0-rc.2
-      '@vue/shared': 3.0.0-rc.2
+      '@vue/runtime-core': 3.0.0-rc.4
+      '@vue/shared': 3.0.0-rc.4
       csstype: 2.6.11
     dev: true
     resolution:
-      integrity: sha512-VvT06p5Qm29LdyX+jvEMXgqD5/2PfeftnkIPbLRjvmpcZTxmdm1GmitLfbv2YQvOPUDWjVBmjJ1SHJkdI0SDhg==
-  /@vue/shared/3.0.0-rc.2:
+      integrity: sha512-0YdPMQxJv3IVlCJe0Jr+oN3qXhoCPSgwyxPZhbGgf5tOaNFsBAuqtahNcZL7H9XIiTEI3GdQC2d6UpVSKmwn0g==
+  /@vue/shared/3.0.0-rc.4:
     dev: true
     resolution:
-      integrity: sha512-lJ1jb5PEDoSTosKdOyFh9/GpSFY/d9HXkG126aJXM4WgvJaf+OVKUWKZSgqolKLLIOJHG9ZcQt4OQyoktMenBg==
-  /@vue/test-utils/2.0.0-beta.0_vue@3.0.0-rc.2:
+      integrity: sha512-cN1YTH/LUPsufLrDQR/n/DxdTu7GjsmLWcZ249mQc+fcYeUdjAFDiOHL2xWE/s3g6jwwOMjS7jelpxYUctD7Gw==
+  /@vue/test-utils/2.0.0-beta.0_vue@3.0.0-rc.4:
     dependencies:
-      vue: 3.0.0-rc.2
+      vue: 3.0.0-rc.4
     dev: true
     peerDependencies:
       vue: ^3.0.0-beta.17
@@ -4041,7 +4041,7 @@ packages:
       nwsapi: 2.2.0
       parse5: 5.1.1
       request: 2.88.2
-      request-promise-native: 1.0.8_request@2.88.2
+      request-promise-native: 1.0.9_request@2.88.2
       saxes: 5.0.1
       symbol-tree: 3.2.4
       tough-cookie: 3.0.1
@@ -4434,18 +4434,18 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-jZ2+KJZKSsVxLpExZCEHxx6Q7EA=
-  /node-notifier/7.0.1:
+  /node-notifier/7.0.2:
     dependencies:
       growly: 1.3.0
       is-wsl: 2.2.0
       semver: 7.3.2
       shellwords: 0.1.1
-      uuid: 7.0.3
+      uuid: 8.2.0
       which: 2.0.2
     dev: true
     optional: true
     resolution:
-      integrity: sha512-VkzhierE7DBmQEElhTGJIoiZa1oqRijOtgOlsXg32KrJRXsPy0NXFBqWGW/wTswnJlDCs5viRYaqWguqzsKcmg==
+      integrity: sha512-ux+n4hPVETuTL8+daJXTOC6uKLgMsl1RYfFv7DKRzyvzBapqco0rZZ9g72ZN8VS6V+gvNYHYa/ofcCY8fkJWsA==
   /node-releases/1.1.59:
     dev: true
     resolution:
@@ -4939,10 +4939,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-j2+C8+NtXQgEKWk49MMP5P/u2GhnahTtVkRIHr5R5lVRlbKvmQ+oS+A5aLKWp2ma5VkT8sh6v+v4hbH0YHR66A==
-  /regenerator-runtime/0.13.5:
+  /regenerator-runtime/0.13.6:
     dev: true
     resolution:
-      integrity: sha512-ZS5w8CpKFinUzOwW3c83oPeVXoNsrLsaCoLtJvAClH135j/R77RuymhiSErhm2lKcwSCIpmvIWSbDkIfAqKQlA==
+      integrity: sha512-GmwlGiazQEbOwQWDdbbaP10i15pGtScYWLbMZuu+RKRz0cZ+g8IUONazBnaZqe7j1670IV1HgE4/8iy7CQPf4Q==
   /regenerator-transform/0.14.5:
     dependencies:
       '@babel/runtime': 7.10.5
@@ -5009,7 +5009,7 @@ packages:
       node: '>=0.10'
     resolution:
       integrity: sha1-jcrkcOHIirwtYA//Sndihtp15jc=
-  /request-promise-core/1.1.3_request@2.88.2:
+  /request-promise-core/1.1.4_request@2.88.2:
     dependencies:
       lodash: 4.17.19
       request: 2.88.2
@@ -5019,20 +5019,21 @@ packages:
     peerDependencies:
       request: ^2.34
     resolution:
-      integrity: sha512-QIs2+ArIGQVp5ZYbWD5ZLCY29D5CfWizP8eWnm8FoGD1TX61veauETVQbrV60662V0oFBkrDOuaBI8XgtuyYAQ==
-  /request-promise-native/1.0.8_request@2.88.2:
+      integrity: sha512-TTbAfBBRdWD7aNNOoVOBH4pN/KigV6LyapYNNlAPA8JwbovRti1E88m3sYAwsLi5ryhPKsE9APwnjFTgdUjTpw==
+  /request-promise-native/1.0.9_request@2.88.2:
     dependencies:
       request: 2.88.2
-      request-promise-core: 1.1.3_request@2.88.2
+      request-promise-core: 1.1.4_request@2.88.2
       stealthy-require: 1.1.1
       tough-cookie: 2.5.0
+    deprecated: 'request-promise-native has been deprecated because it extends the now deprecated request package, see https://github.com/request/request/issues/3142'
     dev: true
     engines:
       node: '>=0.12.0'
     peerDependencies:
       request: ^2.34
     resolution:
-      integrity: sha512-dapwLGqkHtwL5AEbfenuzjTYg35Jd6KPytsC2/TLkVMz8rm+tNt72MGUWT1RP/aYawMpN6HqbNGBQaRcBtjQMQ==
+      integrity: sha512-wcW+sIUiWnKgNY0dqCpOZkUbF/I+YPi+f09JZIDa39Ec+q82CpSYniDp+ISgTTbKmnpJWASeJBPZmoxH84wt3g==
   /request/2.88.2:
     dependencies:
       aws-sign2: 0.7.0
@@ -5882,12 +5883,12 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
-  /uuid/7.0.3:
+  /uuid/8.2.0:
     dev: true
     hasBin: true
     optional: true
     resolution:
-      integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==
+      integrity: sha512-CYpGiFTUrmI6OBMkAdjSDM0k5h8SkkiTP4WAjQgDgNB1S3Ou9VBEvr6q0Kv2H1mMk7IWfxYGpMH5sd5AvcIV2Q==
   /v8-compile-cache/2.1.1:
     dev: true
     resolution:
@@ -5919,14 +5920,14 @@ packages:
       '0': node >=0.6.0
     resolution:
       integrity: sha1-OhBcoXBTr1XW4nDB+CiGguGNpAA=
-  /vue/3.0.0-rc.2:
+  /vue/3.0.0-rc.4:
     dependencies:
-      '@vue/compiler-dom': 3.0.0-rc.2
-      '@vue/runtime-dom': 3.0.0-rc.2
-      '@vue/shared': 3.0.0-rc.2
+      '@vue/compiler-dom': 3.0.0-rc.4
+      '@vue/runtime-dom': 3.0.0-rc.4
+      '@vue/shared': 3.0.0-rc.4
     dev: true
     resolution:
-      integrity: sha512-syYidmtdfAz2aN1q7F/TlyPZdRXjIbp/QnpetWwhoBaOQOnqm+dHN5KwN8xBF+eUE4ys4aO8rrv7ulTQ4l8rFQ==
+      integrity: sha512-nBmuGl/M2LEHn5Db+9Xm0cJoC7yKpx+9RJJObVMLUB4ru7z+ysL4ugKuag+1ehvl6SnljbvYOcuQeGLLvKK07w==
   /w3c-hr-time/1.0.2:
     dependencies:
       browser-process-hrtime: 1.0.0
@@ -6115,4 +6116,4 @@ specifiers:
   ts-jest: ^26.1.3
   tslib: ^2.0.0
   typescript: ^3.9.7
-  vue: ^3.0.0-rc.2
+  vue: ^3.0.0-rc.4

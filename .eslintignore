@@ -1,5 +1,6 @@
 dist
 node_modules
+*.d.ts
 
 /plugins
 /tmp

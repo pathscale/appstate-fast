@@ -8,7 +8,6 @@ const none = Symbol('none');
 const devToolsID = Symbol('devTools');
 function createState(initial) {
     const methods = createStore(initial).toMethods();
-    // TODO: Figure out how this part works
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const devtools = createState[devToolsID];
     if (devtools)
@@ -37,12 +36,10 @@ function useState(source) {
         const state = ref(createStore(source));
         const result = useSubscribedStateMethods(state.value, rootPath, state.value);
         onUnmounted(() => state.value.destroy());
-        // TODO: Figure out how this part works
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const devtools = useState[devToolsID];
-        if (devtools) {
+        if (devtools)
             result.attach(devtools);
-        }
         return result.self;
     }
 }
@@ -154,9 +151,8 @@ class Store {
         return result;
     }
     set(path, value, mergeValue) {
-        if (this._edition < 0) {
+        if (this._edition < 0)
             throw new StateInvalidUsageError(path, ErrorId.SetStateWhenDestroyed);
-        }
         if (path.length === 0) {
             // Root value UPDATE case,
             const onSetArg = {
@@ -181,23 +177,19 @@ class Store {
                 throw new StateInvalidUsageError(path, ErrorId.SetStateWhenPromised);
             }
             const prevValue = this._value;
-            if (prevValue === none) {
+            if (prevValue === none)
                 delete onSetArg.previous;
-            }
             this._value = value;
             this.afterSet(onSetArg);
-            if (prevValue === none && this._value !== none && this.promised && this.promised.resolver) {
+            if (prevValue === none && this._value !== none && this.promised && this.promised.resolver)
                 this.promised.resolver();
-            }
             return path;
         }
-        if (typeof value === 'object' && Promise.resolve(value) === value) {
+        if (typeof value === 'object' && Promise.resolve(value) === value)
             throw new StateInvalidUsageError(path, ErrorId.SetStateNestedToPromised);
-        }
         let target = this._value;
-        for (let i = 0; i < path.length - 1; i += 1) {
+        for (let i = 0; i < path.length - 1; i += 1)
             target = target[path[i]];
-        }
         const p = path[path.length - 1];
         if (p in target) {
             if (value !== none) {
@@ -237,12 +229,7 @@ class Store {
         if (value !== none) {
             // Property INSERT case
             target[p] = value;
-            this.afterSet({
-                path: path,
-                state: this._value,
-                value: value,
-                merged: mergeValue,
-            });
+            this.afterSet({ path, state: this._value, value, merged: mergeValue });
             // if an array of object is about to be extended by new property
             // we consider it is the whole object is changed
             // which is identified by upper path
@@ -266,7 +253,8 @@ class Store {
     afterSet(params) {
         if (this._edition !== destroyedEdition) {
             this._edition += 1;
-            this._setSubscribers.forEach(cb => cb(params));
+            for (const cb of this._setSubscribers)
+                cb(params);
         }
     }
     startBatch(path, options) {
@@ -274,24 +262,20 @@ class Store {
         const cbArgument = {
             path: path,
         };
-        if (options && 'context' in options) {
+        if (options && 'context' in options)
             cbArgument.context = options.context;
-        }
-        if (this._value !== none) {
+        if (this._value !== none)
             cbArgument.state = this._value;
-        }
         this._batchStartSubscribers.forEach(cb => cb(cbArgument));
     }
     finishBatch(path, options) {
         const cbArgument = {
             path: path,
         };
-        if (options && 'context' in options) {
+        if (options && 'context' in options)
             cbArgument.context = options.context;
-        }
-        if (this._value !== none) {
+        if (this._value !== none)
             cbArgument.state = this._value;
-        }
         this._batchFinishSubscribers.forEach(cb => cb(cbArgument));
         this._batches -= 1;
         if (this._batches === 0) {
@@ -312,23 +296,18 @@ class Store {
     }
     register(plugin) {
         const existingInstance = this._plugins.get(plugin.id);
-        if (existingInstance) {
+        if (existingInstance)
             return;
-        }
         const pluginCallbacks = plugin.init ? plugin.init(this.toMethods().self) : {};
         this._plugins.set(plugin.id, pluginCallbacks);
-        if (pluginCallbacks.onSet) {
+        if (pluginCallbacks.onSet)
             this._setSubscribers.add(p => { var _a; return (_a = pluginCallbacks.onSet) === null || _a === void 0 ? void 0 : _a.call(pluginCallbacks, p); });
-        }
-        if (pluginCallbacks.onDestroy) {
+        if (pluginCallbacks.onDestroy)
             this._destroySubscribers.add(p => { var _a; return (_a = pluginCallbacks.onDestroy) === null || _a === void 0 ? void 0 : _a.call(pluginCallbacks, p); });
-        }
-        if (pluginCallbacks.onBatchStart) {
+        if (pluginCallbacks.onBatchStart)
             this._batchStartSubscribers.add(p => { var _a; return (_a = pluginCallbacks.onBatchStart) === null || _a === void 0 ? void 0 : _a.call(pluginCallbacks, p); });
-        }
-        if (pluginCallbacks.onBatchFinish) {
+        if (pluginCallbacks.onBatchFinish)
             this._batchFinishSubscribers.add(p => { var _a; return (_a = pluginCallbacks.onBatchFinish) === null || _a === void 0 ? void 0 : _a.call(pluginCallbacks, p); });
-        }
     }
     toMethods() {
         return new StateMethodsImpl(this, rootPath, this.get(rootPath), this.edition);
@@ -436,12 +415,10 @@ class StateMethodsImpl {
         return this.get();
     }
     setUntracked(newValue, mergeValue) {
-        if (typeof newValue === 'function') {
+        if (typeof newValue === 'function')
             newValue = newValue(this.getUntracked());
-        }
-        if (typeof newValue === 'object' && newValue !== null && newValue[selfMethodsID]) {
+        if (typeof newValue === 'object' && newValue !== null && newValue[selfMethodsID])
             throw new StateInvalidUsageError(this.path, ErrorId.SetStateToValueFromState);
-        }
         return [this.state.set(this.path, newValue, mergeValue)];
     }
     set(newValue) {
@@ -460,9 +437,7 @@ class StateMethodsImpl {
             }
             else {
                 const deletedIndexes = [];
-                Object.keys(sourceValue)
-                    .sort()
-                    .forEach(i => {
+                for (const i of Object.keys(sourceValue).sort()) {
                     const index = Number(i);
                     // TODO: Proper types
                     const newPropValue = sourceValue[index];
@@ -474,13 +449,12 @@ class StateMethodsImpl {
                         deletedOrInsertedProps = deletedOrInsertedProps || !(index in currentValue);
                         currentValue[index] = newPropValue;
                     }
-                });
+                }
                 // indexes are ascending sorted as per above
                 // so, delete one by one from the end
                 // this way index positions do not change
-                deletedIndexes.reverse().forEach(p => {
+                for (const p of deletedIndexes.reverse())
                     currentValue.splice(p, 1);
-                });
                 updatedPaths = this.setUntracked(currentValue, sourceValue);
             }
         }
@@ -505,9 +479,8 @@ class StateMethodsImpl {
         else {
             return this.setUntracked(sourceValue);
         }
-        if (updatedPaths.length !== 1 || updatedPaths[0] !== this.path || deletedOrInsertedProps) {
+        if (updatedPaths.length !== 1 || updatedPaths[0] !== this.path || deletedOrInsertedProps)
             return updatedPaths;
-        }
         const updatedPath = updatedPaths[0];
         return Object.keys(sourceValue).map(p => updatedPath.slice().concat(p));
     }
@@ -539,37 +512,31 @@ class StateMethodsImpl {
             for (const path of paths) {
                 const firstChildKey = path[this.path.length];
                 if (firstChildKey === undefined) {
-                    if (this.valueCache !== valueUnusedMarker) {
+                    if (this.valueCache !== valueUnusedMarker)
                         return true;
-                    }
                 }
                 else {
                     const firstChildValue = (_a = this.childrenCache) === null || _a === void 0 ? void 0 : _a[firstChildKey];
-                    if (firstChildValue === null || firstChildValue === void 0 ? void 0 : firstChildValue.onSet(paths, actions)) {
+                    if (firstChildValue === null || firstChildValue === void 0 ? void 0 : firstChildValue.onSet(paths, actions))
                         return true;
-                    }
                 }
             }
             return false;
         };
         const updated = update();
-        if (!updated && this.subscribers !== undefined) {
-            this.subscribers.forEach(s => {
+        if (!updated && this.subscribers !== undefined)
+            for (const s of this.subscribers)
                 s.onSet(paths, actions);
-            });
-        }
         return updated;
     }
     get keys() {
         const value = this.get();
-        if (Array.isArray(value)) {
+        if (Array.isArray(value))
             return Object.keys(value)
                 .map(i => Number(i))
                 .filter(i => Number.isInteger(i));
-        }
-        if (typeof value === 'object' && value !== null) {
+        if (typeof value === 'object' && value !== null)
             return Object.keys(value);
-        }
         return undefined;
     }
     child(key) {
@@ -602,9 +569,8 @@ class StateMethodsImpl {
                 return target[key];
             }
             const index = Number(key);
-            if (!Number.isInteger(index)) {
+            if (!Number.isInteger(index))
                 return;
-            }
             return this.child(index).get();
         }, (target, key, value) => {
             if (typeof key === 'symbol') {
@@ -633,19 +599,15 @@ class StateMethodsImpl {
         }, true);
     }
     get self() {
-        if (this.selfCache) {
+        if (this.selfCache)
             return this.selfCache;
-        }
         const getter = (_, key) => {
-            if (key === self) {
+            if (key === self)
                 return this;
-            }
-            if (typeof key === 'symbol') {
+            if (typeof key === 'symbol')
                 return;
-            }
-            if (key === 'toJSON') {
+            if (key === 'toJSON')
                 throw new StateInvalidUsageError(this.path, ErrorId.ToJson_State);
-            }
             switch (key) {
                 case 'path':
                     return this.path;
@@ -683,9 +645,8 @@ class StateMethodsImpl {
             // if currentValue is primitive type
             (typeof currentValue !== 'object' || currentValue === null) &&
                 // if promised, it will be none
-                currentValue !== none) {
+                currentValue !== none)
                 throw new StateInvalidUsageError(this.path, ErrorId.GetStatePropertyWhenPrimitive);
-            }
             if (Array.isArray(currentValue)) {
                 if (key === 'length')
                     return currentValue.length;
@@ -708,18 +669,16 @@ class StateMethodsImpl {
     }
     get promised() {
         const currentValue = this.get(true); // marks used
-        if (currentValue === none && this.state.promised && !this.state.promised.fullfilled) {
+        if (currentValue === none && this.state.promised && !this.state.promised.fullfilled)
             return true;
-        }
         return false;
     }
     get error() {
         var _a;
         const currentValue = this.get(true); // marks used
         if (currentValue === none) {
-            if ((_a = this.state.promised) === null || _a === void 0 ? void 0 : _a.fullfilled) {
+            if ((_a = this.state.promised) === null || _a === void 0 ? void 0 : _a.fullfilled)
                 return this.state.promised.error;
-            }
             this.get(); // will throw 'read while promised' exception
         }
         return;
@@ -727,13 +686,12 @@ class StateMethodsImpl {
     // TODO: Figure out function types
     // eslint-disable-next-line @typescript-eslint/ban-types
     batch(action, context) {
-        const opts = { context: context };
+        const opts = { context };
         try {
             this.state.startBatch(this.path, opts);
             const result = action(this.self);
-            if (result === postpone) {
+            if (result === postpone)
                 this.state.postponeBatch(() => this.batch(action, context));
-            }
             return result;
         }
         finally {
@@ -742,9 +700,8 @@ class StateMethodsImpl {
     }
     get ornull() {
         const value = this.get();
-        if (value === null || value === undefined) {
+        if (value === null || value === undefined)
             return value;
-        }
         return this.self;
     }
     attach(p) {
@@ -755,10 +712,8 @@ class StateMethodsImpl {
             return this.self;
         }
         else {
-            return [
-                (_a = this.state.getPlugin(p)) !== null && _a !== void 0 ? _a : new StateInvalidUsageError(this.path, ErrorId.GetUnknownPlugin, p.toString()),
-                this,
-            ];
+            const plugin = (_a = this.state.getPlugin(p)) !== null && _a !== void 0 ? _a : new StateInvalidUsageError(this.path, ErrorId.GetUnknownPlugin, p.toString());
+            return [plugin, this];
         }
     }
 }
@@ -766,11 +721,12 @@ function proxyWrap(path, targetBootstrap, targetGetter, propertyGetter, property
     const onInvalidUsage = (op) => {
         throw new StateInvalidUsageError(path, op);
     };
-    if (typeof targetBootstrap !== 'object' || targetBootstrap === null) {
+    if (typeof targetBootstrap !== 'object' || targetBootstrap === null)
         targetBootstrap = {};
-    }
     // TODO: Figure out proxy types
     return new Proxy(targetBootstrap, {
+        get: propertyGetter,
+        set: propertySetter,
         getPrototypeOf: () => {
             // should satisfy the invariants:
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/getPrototypeOf#Invariants
@@ -779,27 +735,18 @@ function proxyWrap(path, targetBootstrap, targetGetter, propertyGetter, property
                 return null;
             return Object.getPrototypeOf(targetReal);
         },
-        setPrototypeOf: () => {
-            return onInvalidUsage(isValueProxy ? ErrorId.SetPrototypeOf_State : ErrorId.SetPrototypeOf_Value);
-        },
         isExtensible: () => {
             // should satisfy the invariants:
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/isExtensible#Invariants
             return true; // required to satisfy the invariants of the getPrototypeOf
-            // return Object.isExtensible(target);
-        },
-        preventExtensions: () => {
-            return onInvalidUsage(isValueProxy ? ErrorId.PreventExtensions_State : ErrorId.PreventExtensions_Value);
         },
         getOwnPropertyDescriptor: (_, p) => {
             const targetReal = targetGetter();
-            if (targetReal === undefined || targetReal === null) {
+            if (targetReal === undefined || targetReal === null)
                 return;
-            }
             const origin = Object.getOwnPropertyDescriptor(targetReal, p);
-            if (origin && Array.isArray(targetReal) && p in Array.prototype) {
+            if (origin && Array.isArray(targetReal) && p in Array.prototype)
                 return origin;
-            }
             return (origin && {
                 configurable: true,
                 enumerable: origin.enumerable,
@@ -811,54 +758,40 @@ function proxyWrap(path, targetBootstrap, targetGetter, propertyGetter, property
             if (typeof p === 'symbol')
                 return false;
             const targetReal = targetGetter();
-            if (typeof targetReal === 'object' && targetReal !== null) {
+            if (typeof targetReal === 'object' && targetReal !== null)
                 return p in targetReal;
-            }
             return false;
-        },
-        get: propertyGetter,
-        set: propertySetter,
-        deleteProperty: () => {
-            return onInvalidUsage(isValueProxy ? ErrorId.DeleteProperty_State : ErrorId.DeleteProperty_Value);
-        },
-        defineProperty: () => {
-            return onInvalidUsage(isValueProxy ? ErrorId.DefineProperty_State : ErrorId.DefineProperty_Value);
         },
         enumerate: () => {
             const targetReal = targetGetter();
-            if (Array.isArray(targetReal)) {
+            if (Array.isArray(targetReal))
                 return Object.keys(targetReal).concat('length');
-            }
-            if (targetReal === undefined || targetReal === null) {
+            if (targetReal === undefined || targetReal === null)
                 return [];
-            }
             return Object.keys(targetReal);
         },
         ownKeys: () => {
             const targetReal = targetGetter();
-            if (Array.isArray(targetReal)) {
+            if (Array.isArray(targetReal))
                 return Object.keys(targetReal).concat('length');
-            }
-            if (targetReal === undefined || targetReal === null) {
+            if (targetReal === undefined || targetReal === null)
                 return [];
-            }
             return Object.keys(targetReal);
         },
-        apply: () => {
-            return onInvalidUsage(isValueProxy ? ErrorId.Apply_State : ErrorId.Apply_Value);
-        },
-        construct: () => {
-            return onInvalidUsage(isValueProxy ? ErrorId.Construct_State : ErrorId.Construct_Value);
-        },
+        apply: () => onInvalidUsage(isValueProxy ? ErrorId.Apply_State : ErrorId.Apply_Value),
+        preventExtensions: () => onInvalidUsage(isValueProxy ? ErrorId.PreventExtensions_State : ErrorId.PreventExtensions_Value),
+        setPrototypeOf: () => onInvalidUsage(isValueProxy ? ErrorId.SetPrototypeOf_State : ErrorId.SetPrototypeOf_Value),
+        deleteProperty: () => onInvalidUsage(isValueProxy ? ErrorId.DeleteProperty_State : ErrorId.DeleteProperty_Value),
+        defineProperty: () => onInvalidUsage(isValueProxy ? ErrorId.DefineProperty_State : ErrorId.DefineProperty_Value),
+        construct: () => onInvalidUsage(isValueProxy ? ErrorId.Construct_State : ErrorId.Construct_Value),
     });
 }
 function createStore(initial) {
     let initialValue = initial;
     if (typeof initial === 'function')
         initialValue = initial();
-    if (typeof initialValue === 'object' && initialValue !== null && initialValue[selfMethodsID]) {
+    if (typeof initialValue === 'object' && initialValue !== null && initialValue[selfMethodsID])
         throw new StateInvalidUsageError(rootPath, ErrorId.InitStateToValueFromState);
-    }
     return new Store(initialValue);
 }
 function useSubscribedStateMethods(state, path, subscribeTarget) {

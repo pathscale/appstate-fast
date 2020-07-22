@@ -22,6 +22,7 @@ module.exports = {
     'unicorn/no-null': 'off',
     'unicorn/prefer-set-has': 'off',
     'unicorn/prevent-abbreviations': 'off',
+    curly: 'error',
     yoda: ['error', 'never', { exceptRange: true }],
   },
   settings: { 'import/resolver': { node: { extensions } }, node: { tryExtensions: extensions } },

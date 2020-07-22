@@ -1,26 +1,31 @@
 <template>
-  <router-view />
+  <div class="wrapper">
+    <h2>Appstate - Async State</h2>
+    <State />
+  </div>
 </template>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
+import { onMounted, defineComponent } from 'vue'
+import { createState, useState } from '../../../dist'
+import State from './components/State.vue'
 
-#nav {
-  padding: 30px;
-}
+export default defineComponent({
+  components: { State },
+  setup() {
+    onMounted(() => console.log('component is mounted!'))
+  },
+})
+</script>
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+<style scoped>
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  background-color: black;
+  color: white;
 }
 </style>
