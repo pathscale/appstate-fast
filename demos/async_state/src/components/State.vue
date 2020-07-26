@@ -1,9 +1,7 @@
 <template>
   <div>
-    <p>{{ test }}</p>
-    <p v-if="demoState.promised">Loading</p>
-    <p v-else-if="demoState.error">Error</p>
-    <p v-else>Loaded: {{ !demoState.promised ? 'loaded' : 'nope' }}</p>
+    <p style="display: none;">{{ tick }}</p>
+    <p v-for="task in tasks" :key="task.id">{{ task.id }} - {{ task.name }} - {{ task.done }}</p>
   </div>
 </template>
 
@@ -12,14 +10,12 @@ import { ref, watchEffect, defineComponent } from 'vue'
 import { useDemoState } from './state'
 export default defineComponent({
   setup() {
-    const test = ref(25)
-    test.value += 15
-    setInterval(() => (test.value += 1), 5000)
+    const tick = ref(0)
+    setInterval(() => tick.value++, 1000)
 
-    const demoState = useDemoState()
-    watchEffect(() => console.log(demoState.promised, demoState.error))
-
-    return { demoState, test }
+    const tasks = useDemoState()
+    watchEffect(() => console.log(tasks.value))
+    return { tasks, tick }
   },
 })
 </script>

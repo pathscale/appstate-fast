@@ -7,7 +7,7 @@
 
 <script>
 import { onMounted, defineComponent } from 'vue'
-import { createState, useState } from '../../../dist'
+import { useState } from '../../../dist'
 import State from './components/State.vue'
 
 export default defineComponent({

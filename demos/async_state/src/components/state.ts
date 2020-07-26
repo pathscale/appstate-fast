@@ -1,5 +1,6 @@
 // eslint-disable-next-line node/no-unpublished-import
 import { createState, useState, State } from '../../../../dist'
+import { Ref } from 'vue'
 
 export interface Task {
   id: string
@@ -7,36 +8,25 @@ export interface Task {
   done: boolean
 }
 
-const state = createState<Task[]>(
-  new Promise(resolve => {
-    // Emulate asynchronous loading of the initial state data.
-    // The real application would run some fetch request,
-    // to get the initial data from a server.
-    setTimeout(
-      () =>
-        resolve([
-          {
-            id: '1',
-            name: 'Discover Hookstate',
-            done: true,
-          },
-          {
-            id: '2',
-            name: 'Replace Redux by Hookstate',
-            done: false,
-          },
-          {
-            id: '3',
-            name: 'Enjoy simpler code and faster application',
-            done: false,
-          },
-        ]),
-      3000,
-    )
-  }),
-)
+const state: State<Task[]> = createState([
+  {
+    id: '1',
+    name: 'Discover Hookstate',
+    done: true,
+  },
+  {
+    id: '2',
+    name: 'Replace Redux by Hookstate',
+    done: false,
+  },
+  {
+    id: '3',
+    name: 'Enjoy simpler code and faster application',
+    done: false,
+  },
+])
 
-export function useDemoState(): State<Task[]> {
+export function useDemoState(): Ref<Task[]> {
   // This function exposes the state directly.
   // i.e. the state is accessible directly outside of this module.
   // The state for settings in SettingsState.ts wraps the state by an interface.
@@ -46,3 +36,15 @@ export function useDemoState(): State<Task[]> {
   // like it is done below is a safe bet.
   return useState(state)
 }
+
+// for example purposes, let's update the state outside of a React component
+setTimeout(() => {
+  state.update(s => {
+    s.push({
+      id: '100',
+      name: 'Spread few words about Hookstate',
+      done: false,
+    })
+  })
+  console.log('updated!')
+}, 3000)
