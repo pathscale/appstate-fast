@@ -1,4 +1,4 @@
-import { ref, onUnmounted } from 'vue';
+import { ref, onUnmounted, triggerRef } from 'vue';
 
 class State {
     constructor(value) {
@@ -10,22 +10,16 @@ class State {
     }
     set(value) {
         this.val = value;
-        this.subscribers.forEach(s => {
-            s.ref.value = this.val;
-            console.log(s.ref.value);
-        });
+        this.subscribers.forEach(s => s(this.val));
     }
     update(op) {
-        op(this.val);
-        this.subscribers.forEach(s => {
-            s.ref.value = this.val;
-            console.log(s.ref.value);
-        });
+        this.val = op(this.val);
+        this.subscribers.forEach(s => s(this.val));
     }
-    subscribe(subscriber) {
-        this.subscribers.push(subscriber);
+    subscribe(sub) {
+        this.subscribers.push(sub);
         return () => {
-            const index = this.subscribers.indexOf(subscriber);
+            const index = this.subscribers.indexOf(sub);
             if (index !== -1) {
                 this.subscribers.splice(index, 1);
             }
@@ -38,14 +32,24 @@ function createState(source) {
 }
 function useState(state) {
     if (state instanceof State) {
-        const subscriber = ref(state.value);
-        const unsubscribe = state.subscribe({ ref: subscriber });
+        const value = ref(state.value);
+        const get = () => value.value;
+        const set = (newValue) => {
+            value.value = newValue;
+            triggerRef(value);
+        };
+        const unsubscribe = state.subscribe(set);
         onUnmounted(() => unsubscribe());
-        return subscriber;
+        return { set, get };
     }
     else {
         const value = ref(state);
-        return value;
+        const get = () => value.value;
+        const set = (newValue) => {
+            value.value = newValue;
+            triggerRef(value);
+        };
+        return { set, get };
     }
 }
 

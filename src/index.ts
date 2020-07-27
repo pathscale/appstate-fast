@@ -1,8 +1,8 @@
-import { ref, Ref, onUnmounted } from 'vue'
+import { ref, Ref, onUnmounted, triggerRef } from 'vue'
 
 export class State<S> {
   private val: S
-  private readonly subscribers: { ref: Ref<S> }[]
+  private readonly subscribers: ((value: S) => void)[]
 
   constructor(value: S) {
     this.val = value
@@ -15,24 +15,18 @@ export class State<S> {
 
   set(value: S): void {
     this.val = value
-    this.subscribers.forEach(s => {
-      s.ref.value = this.val
-      console.log(s.ref.value)
-    })
+    this.subscribers.forEach(s => s(this.val))
   }
 
-  update(op: (value: S) => void): void {
-    op(this.val)
-    this.subscribers.forEach(s => {
-      s.ref.value = this.val
-      console.log(s.ref.value)
-    })
+  update(op: (value: S) => S): void {
+    this.val = op(this.val)
+    this.subscribers.forEach(s => s(this.val))
   }
 
-  subscribe(subscriber: { ref: Ref<S> }): () => void {
-    this.subscribers.push(subscriber)
+  subscribe(sub: (value: S) => void): () => void {
+    this.subscribers.push(sub)
     return () => {
-      const index = this.subscribers.indexOf(subscriber)
+      const index = this.subscribers.indexOf(sub)
       if (index !== -1) {
         this.subscribers.splice(index, 1)
       }
@@ -45,14 +39,34 @@ export function createState<S>(source: S): State<S> {
   return state
 }
 
-export function useState<S>(state: S | State<S>): Ref<S> {
+interface StateMethods<S> {
+  set: (value: S) => void
+  get: () => S
+}
+
+export function useState<S>(state: S | State<S>): StateMethods<S> {
   if (state instanceof State) {
-    const subscriber = ref(state.value) as Ref<S>
-    const unsubscribe = state.subscribe({ ref: subscriber })
+    const value = ref(state.value) as Ref<S>
+
+    const get = () => value.value
+    const set = (newValue: S) => {
+      value.value = newValue
+      triggerRef(value)
+    }
+
+    const unsubscribe = state.subscribe(set)
     onUnmounted(() => unsubscribe())
-    return subscriber
+
+    return { set, get }
   } else {
     const value = ref(state) as Ref<S>
-    return value
+
+    const get = () => value.value
+    const set = (newValue: S) => {
+      value.value = newValue
+      triggerRef(value)
+    }
+
+    return { set, get }
   }
 }
