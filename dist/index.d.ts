@@ -1,3 +1,4 @@
+import { Ref } from 'vue';
 declare class State<S> {
     private val;
     private readonly subscribers;
@@ -9,8 +10,8 @@ declare class State<S> {
 }
 declare function createState<S>(source: S): State<S>;
 interface StateMethods<S> {
+    state: Ref<S>;
     set: (value: S) => void;
-    get: () => S;
 }
 declare function useState<S>(state: S | State<S>): StateMethods<S>;
 export { State, createState, useState };

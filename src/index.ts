@@ -1,4 +1,4 @@
-import { ref, Ref, onUnmounted, triggerRef } from 'vue'
+import { ref, Ref, onUnmounted, triggerRef, readonly, onMounted } from 'vue'
 
 export class State<S> {
   private val: S
@@ -40,33 +40,41 @@ export function createState<S>(source: S): State<S> {
 }
 
 interface StateMethods<S> {
+  state: Ref<S>
   set: (value: S) => void
-  get: () => S
 }
 
 export function useState<S>(state: S | State<S>): StateMethods<S> {
-  if (state instanceof State) {
-    const value = ref(state.value) as Ref<S>
+  // if (state instanceof State) {
+  //   const value = ref(state.value) as Ref<S>
 
-    const get = () => value.value
-    const set = (newValue: S) => {
-      value.value = newValue
-      triggerRef(value)
-    }
+  //   const set = (newValue: S) => {
+  //     value.value = newValue
+  //     triggerRef(value)
+  //   }
 
-    const unsubscribe = state.subscribe(set)
-    onUnmounted(() => unsubscribe())
+  //   const unsubscribe = state.subscribe(set)
+  //   onUnmounted(() => unsubscribe())
 
-    return { set, get }
-  } else {
-    const value = ref(state) as Ref<S>
+  //   return { state: readonly(value) as Ref<S>, set }
+  // } else {
+  //   const value = ref(state) as Ref<S>
 
-    const get = () => value.value
-    const set = (newValue: S) => {
-      value.value = newValue
-      triggerRef(value)
-    }
+  //   const set = (newValue: S) => {
+  //     value.value = newValue
+  //     triggerRef(value)
+  //   }
 
-    return { set, get }
+  //   return { state: readonly(value) as Ref<S>, set }
+  // }
+
+  onMounted(() => console.log('mounted!'))
+  onUnmounted(() => console.log('unmounted!'))
+
+  return {
+    state: readonly({}) as Ref<S>,
+    set: () => {
+      /**/
+    },
   }
 }

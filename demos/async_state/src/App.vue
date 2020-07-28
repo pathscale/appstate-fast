@@ -10,12 +10,13 @@ import { onMounted, defineComponent } from 'vue'
 import { useState } from '../../../dist'
 import State from './components/State.vue'
 
-export default defineComponent({
+export default {
   components: { State },
   setup() {
+    const tasks = useState(0)
     onMounted(() => console.log('component is mounted!'))
   },
-})
+}
 </script>
 
 <style scoped>

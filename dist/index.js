@@ -35,26 +35,31 @@ function createState(source) {
     return state;
 }
 function useState(state) {
-    if (state instanceof State) {
-        const value = vue.ref(state.value);
-        const get = () => value.value;
-        const set = (newValue) => {
-            value.value = newValue;
-            vue.triggerRef(value);
-        };
-        const unsubscribe = state.subscribe(set);
-        vue.onUnmounted(() => unsubscribe());
-        return { set, get };
-    }
-    else {
-        const value = vue.ref(state);
-        const get = () => value.value;
-        const set = (newValue) => {
-            value.value = newValue;
-            vue.triggerRef(value);
-        };
-        return { set, get };
-    }
+    // if (state instanceof State) {
+    //   const value = ref(state.value) as Ref<S>
+    //   const set = (newValue: S) => {
+    //     value.value = newValue
+    //     triggerRef(value)
+    //   }
+    //   const unsubscribe = state.subscribe(set)
+    //   onUnmounted(() => unsubscribe())
+    //   return { state: readonly(value) as Ref<S>, set }
+    // } else {
+    //   const value = ref(state) as Ref<S>
+    //   const set = (newValue: S) => {
+    //     value.value = newValue
+    //     triggerRef(value)
+    //   }
+    //   return { state: readonly(value) as Ref<S>, set }
+    // }
+    vue.onMounted(() => console.log('mounted!'));
+    vue.onUnmounted(() => console.log('unmounted!'));
+    return {
+        state: vue.readonly({}),
+        set: () => {
+            /**/
+        },
+    };
 }
 
 exports.State = State;

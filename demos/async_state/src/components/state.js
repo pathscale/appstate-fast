@@ -1,13 +1,7 @@
 // eslint-disable-next-line node/no-unpublished-import
 import { createState, State } from '../../../../dist'
 
-export interface Task {
-  id: string
-  name: string
-  done: boolean
-}
-
-export const state: State<Task[]> = createState([
+export const state = createState([
   {
     id: '1',
     name: 'Discover Hookstate',

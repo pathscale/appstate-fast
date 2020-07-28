@@ -1,6 +1,7 @@
 <template>
   <div>
     <p v-for="task in tasks" :key="task.id">{{ task.id }} - {{ task.name }} - {{ task.done }}</p>
+    <button @click="setState">Set State</button>
   </div>
 </template>
 
@@ -26,13 +27,18 @@ setTimeout(() => {
   console.log(state)
 }, 4000)
 
-export default defineComponent({
+export default {
   setup() {
     const tasksState = useState(state)
-    const tasks = computed(() => tasksState.get())
-    return { tasks }
+
+    function setState() {
+      tasksState.set([{ id: 1, name: 'test', done: true }])
+      console.log(tasksState.state.value)
+    }
+
+    return { tasks: tasksState.state, setState }
   },
-})
+}
 </script>
 
 <style></style>
