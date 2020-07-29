@@ -48,8 +48,8 @@ function useState(state) {
     //   }
     //   return { state: readonly(value) as Ref<S>, set }
     // }
-    onMounted(() => console.log('mounted!'));
-    onUnmounted(() => console.log('unmounted!'));
+    onMounted(() => console.log('state mounted!'));
+    onUnmounted(() => console.log('state unmounted!'));
     return {
         state: readonly({}),
         set: () => {

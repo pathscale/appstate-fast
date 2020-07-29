@@ -52,8 +52,8 @@ function useState(state) {
     //   }
     //   return { state: readonly(value) as Ref<S>, set }
     // }
-    vue.onMounted(() => console.log('mounted!'));
-    vue.onUnmounted(() => console.log('unmounted!'));
+    vue.onMounted(() => console.log('state mounted!'));
+    vue.onUnmounted(() => console.log('state unmounted!'));
     return {
         state: vue.readonly({}),
         set: () => {

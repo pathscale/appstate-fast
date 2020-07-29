@@ -68,8 +68,8 @@ export function useState<S>(state: S | State<S>): StateMethods<S> {
   //   return { state: readonly(value) as Ref<S>, set }
   // }
 
-  onMounted(() => console.log('mounted!'))
-  onUnmounted(() => console.log('unmounted!'))
+  onMounted(() => console.log('state mounted!'))
+  onUnmounted(() => console.log('state unmounted!'))
 
   return {
     state: readonly({}) as Ref<S>,

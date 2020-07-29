@@ -6,8 +6,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from 'vue'
-export default defineComponent({
+import { ref, watchEffect } from 'vue'
+export default {
   setup() {
     const counter = ref(0)
 
@@ -17,5 +17,5 @@ export default defineComponent({
 
     return { counter, increment }
   },
-})
+}
 </script>
