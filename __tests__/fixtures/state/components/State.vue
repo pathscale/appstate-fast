@@ -1,7 +1,7 @@
 <template>
   <div>
-    <p v-for="task in tasks" :key="task.id">{{ task.id }} - {{ task.name }} - {{ task.done }}</p>
     <button @click="setState">Set State</button>
+    <p v-for="task in tasksState" :key="task.id">{{ task.id }} - {{ task.name }} - {{ task.done }}</p>
   </div>
 </template>
 
@@ -29,14 +29,14 @@ setTimeout(() => {
 
 export default {
   setup() {
-    const tasksState = useState(state)
+    const { value: tasksState } = useState(state)
 
     function setState() {
-      tasksState.set([{ id: 1, name: 'test', done: true }])
-      console.log(tasksState.state.value)
+      tasksState.value = [...tasksState.value, { id: 1, name: 'test', done: true }]
+      console.log(tasksState.value)
     }
 
-    return { tasks: tasksState.state, setState }
+    return { tasksState, setState }
   },
 }
 </script>

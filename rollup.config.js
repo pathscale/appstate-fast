@@ -17,12 +17,13 @@ export default {
       exports: 'named',
       sourcemap: true,
     },
-    {
-      file: pkg.module,
-      format: 'es',
-      exports: 'named',
-      sourcemap: true,
-    },
+    // TODO: Re-enable after fixing rollup-plugin-vue
+    // {
+    //   file: pkg.module,
+    //   format: 'es',
+    //   exports: 'named',
+    //   sourcemap: true,
+    // },
   ],
   plugins: [externals({ deps: true }), url(), resolve({ preferBuiltins: true }), commonjs(), ts()],
 }

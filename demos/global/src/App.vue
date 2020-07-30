@@ -6,14 +6,12 @@
 </template>
 
 <script>
-import { onMounted, defineComponent } from 'vue'
-import { useState } from '../../../dist'
+import { onMounted } from 'vue'
 import State from './components/State.vue'
 
 export default {
   components: { State },
   setup() {
-    const tasks = useState(0)
     onMounted(() => console.log('component is mounted!'))
   },
 }

@@ -1,32 +1,22 @@
-import { ref, Ref, onUnmounted, triggerRef, readonly, onMounted } from 'vue'
+import { ref, Ref, onUnmounted, customRef, triggerRef } from 'vue'
 
 export class State<S> {
-  private val: S
-  private readonly subscribers: ((value: S) => void)[]
+  value: S
+  private readonly subscribers: (() => void)[]
 
   constructor(value: S) {
-    this.val = value
+    this.value = value
     this.subscribers = []
   }
 
-  get value(): S {
-    return this.val
+  _sync(): void {
+    this.subscribers.forEach(s => s())
   }
 
-  set(value: S): void {
-    this.val = value
-    this.subscribers.forEach(s => s(this.val))
-  }
-
-  update(op: (value: S) => S): void {
-    this.val = op(this.val)
-    this.subscribers.forEach(s => s(this.val))
-  }
-
-  subscribe(sub: (value: S) => void): () => void {
-    this.subscribers.push(sub)
+  subscribe(trigger: () => void): () => void {
+    this.subscribers.push(trigger)
     return () => {
-      const index = this.subscribers.indexOf(sub)
+      const index = this.subscribers.indexOf(trigger)
       if (index !== -1) {
         this.subscribers.splice(index, 1)
       }
@@ -36,45 +26,44 @@ export class State<S> {
 
 export function createState<S>(source: S): State<S> {
   const state = new State(source)
-  return state
-}
 
-interface StateMethods<S> {
-  state: Ref<S>
-  set: (value: S) => void
-}
+  const proxy = new Proxy(state, {
+    set(obj, prop, value) {
+      obj[prop] = value as unknown
 
-export function useState<S>(state: S | State<S>): StateMethods<S> {
-  // if (state instanceof State) {
-  //   const value = ref(state.value) as Ref<S>
+      if (prop === 'value') {
+        obj._sync()
+      }
 
-  //   const set = (newValue: S) => {
-  //     value.value = newValue
-  //     triggerRef(value)
-  //   }
-
-  //   const unsubscribe = state.subscribe(set)
-  //   onUnmounted(() => unsubscribe())
-
-  //   return { state: readonly(value) as Ref<S>, set }
-  // } else {
-  //   const value = ref(state) as Ref<S>
-
-  //   const set = (newValue: S) => {
-  //     value.value = newValue
-  //     triggerRef(value)
-  //   }
-
-  //   return { state: readonly(value) as Ref<S>, set }
-  // }
-
-  onMounted(() => console.log('state mounted!'))
-  onUnmounted(() => console.log('state unmounted!'))
-
-  return {
-    state: readonly({}) as Ref<S>,
-    set: () => {
-      /**/
+      return true
     },
+  })
+
+  return proxy
+}
+
+export function useState<S>(state: S | State<S>): Ref<S> {
+  if (!(state instanceof State)) {
+    // Local state
+    return ref(state) as Ref<S>
   }
+
+  // Global state
+  const value = customRef(track => ({
+    get() {
+      track()
+      return state.value
+    },
+
+    set(newValue: S) {
+      state.value = newValue
+      // triggering is done by global state
+    },
+  }))
+
+  const trigger = () => triggerRef(value)
+  const unsubscribe = state.subscribe(trigger)
+  onUnmounted(() => unsubscribe())
+
+  return value
 }

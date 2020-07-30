@@ -6,24 +6,16 @@ var vue = require('vue');
 
 class State {
     constructor(value) {
-        this.val = value;
+        this.value = value;
         this.subscribers = [];
     }
-    get value() {
-        return this.val;
+    _sync() {
+        this.subscribers.forEach(s => s());
     }
-    set(value) {
-        this.val = value;
-        this.subscribers.forEach(s => s(this.val));
-    }
-    update(op) {
-        this.val = op(this.val);
-        this.subscribers.forEach(s => s(this.val));
-    }
-    subscribe(sub) {
-        this.subscribers.push(sub);
+    subscribe(trigger) {
+        this.subscribers.push(trigger);
         return () => {
-            const index = this.subscribers.indexOf(sub);
+            const index = this.subscribers.indexOf(trigger);
             if (index !== -1) {
                 this.subscribers.splice(index, 1);
             }
@@ -32,34 +24,37 @@ class State {
 }
 function createState(source) {
     const state = new State(source);
-    return state;
+    const proxy = new Proxy(state, {
+        set(obj, prop, value) {
+            obj[prop] = value;
+            if (prop === 'value') {
+                obj._sync();
+            }
+            return true;
+        },
+    });
+    return proxy;
 }
 function useState(state) {
-    // if (state instanceof State) {
-    //   const value = ref(state.value) as Ref<S>
-    //   const set = (newValue: S) => {
-    //     value.value = newValue
-    //     triggerRef(value)
-    //   }
-    //   const unsubscribe = state.subscribe(set)
-    //   onUnmounted(() => unsubscribe())
-    //   return { state: readonly(value) as Ref<S>, set }
-    // } else {
-    //   const value = ref(state) as Ref<S>
-    //   const set = (newValue: S) => {
-    //     value.value = newValue
-    //     triggerRef(value)
-    //   }
-    //   return { state: readonly(value) as Ref<S>, set }
-    // }
-    vue.onMounted(() => console.log('state mounted!'));
-    vue.onUnmounted(() => console.log('state unmounted!'));
-    return {
-        state: vue.readonly({}),
-        set: () => {
-            /**/
+    if (!(state instanceof State)) {
+        // Local state
+        return vue.ref(state);
+    }
+    // Global state
+    const value = vue.customRef(track => ({
+        get() {
+            track();
+            return state.value;
         },
-    };
+        set(newValue) {
+            state.value = newValue;
+            // triggering is done by global state
+        },
+    }));
+    const trigger = () => vue.triggerRef(value);
+    const unsubscribe = state.subscribe(trigger);
+    vue.onUnmounted(() => unsubscribe());
+    return value;
 }
 
 exports.State = State;

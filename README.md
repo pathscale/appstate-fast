@@ -1,5 +1,5 @@
 <h1 align="center">
-  Hookstate
+  Appstate-fast
 </h1>
 
 <p align="center">
@@ -8,67 +8,67 @@
 <br/>
 
 <p align="center">
-  <a href="https://hookstate.js.org">Why?</a> •
-  <a href="https://hookstate.js.org/docs/getting-started">Docs / Samples</a> •
-  <a href="https://hookstate.js.org/demo-todolist">Demo application</a> •
-  <a href="https://hookstate.js.org/docs/extensions-overview">Plugins</a> •
-  <a href="https://hookstate.js.org/blog/tags/releases">Release notes</a>
+  <a href="https://appstate-fast.js.org">Why?</a> •
+  <a href="https://appstate-fast.js.org/docs/getting-started">Docs / Samples</a> •
+  <a href="https://appstate-fast.js.org/demo-todolist">Demo application</a> •
+  <a href="https://appstate-fast.js.org/docs/extensions-overview">Plugins</a> •
+  <a href="https://appstate-fast.js.org/blog/tags/releases">Release notes</a>
 </p>
 
 <p align="center">
   <a href="./">
     <img src="https://badgen.net/badge/icon/typescript/green?icon=typescript&label">
   </a>
-  <a href="https://www.npmjs.com/package/@hookstate/core">
-      <img src="https://badgen.net/bundlephobia/minzip/@hookstate/core?label=size&color=green" />
+  <a href="https://www.npmjs.com/package/@appstate-fast/core">
+      <img src="https://badgen.net/bundlephobia/minzip/@appstate-fast/core?label=size&color=green" />
   </a>
-  <a href="https://www.npmjs.com/package/@hookstate/core">
+  <a href="https://www.npmjs.com/package/@appstate-fast/core">
     <img src="https://badgen.net/badge/dependencies/none/green" />
   </a>
   <a href="./LICENSE">
-    <img src="https://badgen.net/github/license/avkonst/hookstate?color=green" />
+    <img src="https://badgen.net/github/license/pathscale/appstate-fast?color=green" />
   </a>
-  <a href="https://travis-ci.org/avkonst/hookstate">
-    <img src="https://travis-ci.org/avkonst/hookstate.svg?branch=master" />
+  <a href="https://travis-ci.org/pathscale/appstate-fast">
+    <img src="https://travis-ci.org/pathscale/appstate-fast.svg?branch=master" />
   </a>
-  <a href="https://codecov.io/gh/avkonst/hookstate">
-    <img src="https://codecov.io/gh/avkonst/hookstate/branch/master/graph/badge.svg" />
+  <a href="https://codecov.io/gh/pathscale/appstate-fast">
+    <img src="https://codecov.io/gh/pathscale/appstate-fast/branch/master/graph/badge.svg" />
   </a>
-  <a href="https://www.npmjs.com/package/@hookstate/core">
-    <img src="https://img.shields.io/npm/v/@hookstate/core.svg?maxAge=300&label=version&colorB=007ec6" />
+  <a href="https://www.npmjs.com/package/@appstate-fast/core">
+    <img src="https://img.shields.io/npm/v/@appstate-fast/core.svg?maxAge=300&label=version&colorB=007ec6" />
   </a>
 </p>
 
 ## Preface
 
-Hookstate is a modern alternative to Redux, Mobx, Formik without boilerplate. It is simple to learn but very flexible to use. It has got impressive performance and predictable behavior.
+Appstate-fast is a modern alternative to Redux, Mobx, Formik without boilerplate. It is simple to learn but very flexible to use. It has got impressive performance and predictable behavior.
 
 **Any questions? Just ask by raising a github ticket.**
 
-## Why Hookstate
+## Why Appstate-fast
 
-[hookstate.js.org](https://hookstate.js.org)
+[appstate-fast.js.org](https://appstate-fast.js.org)
 
 ## Migrating to version 2
 
-[hookstate.js.org/docs/migrating-to-v2](https://hookstate.js.org/docs/migrating-to-v2)
+[appstate-fast.js.org/docs/migrating-to-v2](https://appstate-fast.js.org/docs/migrating-to-v2)
 
 ## Documentation / Code samples
 
-[hookstate.js.org/docs/getting-started](https://hookstate.js.org/docs/getting-started)
+[appstate-fast.js.org/docs/getting-started](https://appstate-fast.js.org/docs/getting-started)
 
 ## Demo application
 
-[hookstate.js.org/demo-todolist](https://hookstate.js.org/demo-todolist)
+[appstate-fast.js.org/demo-todolist](https://appstate-fast.js.org/demo-todolist)
 
 ## Development tools
 
-[hookstate.js.org/docs/devtools](https://hookstate.js.org/docs/devtools)
+[appstate-fast.js.org/docs/devtools](https://appstate-fast.js.org/docs/devtools)
 
 ## Plugins / Extensions
 
-[hookstate.js.org/docs/extensions-overview](https://hookstate.js.org/docs/extensions-overview)
+[appstate-fast.js.org/docs/extensions-overview](https://appstate-fast.js.org/docs/extensions-overview)
 
 ## API reference
 
-[hookstate.js.org/docs/typedoc-hookstate-core](https://hookstate.js.org/docs/typedoc-hookstate-core)
+[appstate-fast.js.org/docs/typedoc-appstate-fast-core](https://appstate-fast.js.org/docs/typedoc-appstate-fast-core)
