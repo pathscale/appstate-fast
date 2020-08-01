@@ -1,4 +1,4 @@
-import { createState } from '../../../../dist/index.js'
+import { createState } from '../../../../dist'
 
 export const state = createState([
   {

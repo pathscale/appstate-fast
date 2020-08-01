@@ -9,7 +9,7 @@
 
 <script>
 import { state } from './state'
-import { useState } from '../../../../dist/index.js'
+import { useState } from '../../../../dist'
 
 export default {
   setup() {
