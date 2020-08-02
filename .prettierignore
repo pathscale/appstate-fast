@@ -1,5 +1,7 @@
 dist
 node_modules
+pnpm-lock.yaml
+CHANGELOG.md
 
 /tmp
 /.cache
@@ -8,5 +10,3 @@ node_modules
 /docs
 /__tests__/fixtures/dist
 /__tests__/fixtures/**/*.d.ts
-/pnpm-lock.yaml
-/CHANGELOG.md

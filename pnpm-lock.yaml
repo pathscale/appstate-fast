@@ -10,7 +10,7 @@ devDependencies:
   '@typescript-eslint/eslint-plugin': 3.7.1_98f5354ad0bbc327ab4925c12674a6b1
   '@typescript-eslint/parser': 3.7.1_eslint@7.6.0+typescript@3.9.7
   '@vue/compiler-sfc': 3.0.0-rc.5_vue@3.0.0-rc.5
-  '@vue/test-utils': 2.0.0-beta.0_vue@3.0.0-rc.5
+  '@vue/test-utils': 2.0.0-beta.1_vue@3.0.0-rc.5
   '@wessberg/rollup-plugin-ts': 1.3.1_rollup@2.23.0+typescript@3.9.7
   babel-core: 7.0.0-bridge.0_@babel+core@7.11.0
   builtin-modules: 3.1.0
@@ -29,7 +29,7 @@ devDependencies:
   ts-jest: 26.1.4_jest@26.2.2+typescript@3.9.7
   typescript: 3.9.7
   vue: 3.0.0-rc.5
-  vue-jest: 5.0.0-alpha.1_9f4fabd57c7273828af3cf39bfe36442
+  vue-jest: 5.0.0-alpha.2_9f4fabd57c7273828af3cf39bfe36442
 lockfileVersion: 5.1
 packages:
   /@babel/code-frame/7.10.4:
@@ -1618,14 +1618,14 @@ packages:
     dev: true
     resolution:
       integrity: sha512-ZhcgGzBpp+pUzisZgQpM4ctIGgLpYjBj7/rZfbhEPxFHF/BuTV2jmhXvAl8aF9xDAejIcw85xCy92gDSwKtPag==
-  /@vue/test-utils/2.0.0-beta.0_vue@3.0.0-rc.5:
+  /@vue/test-utils/2.0.0-beta.1_vue@3.0.0-rc.5:
     dependencies:
       vue: 3.0.0-rc.5
     dev: true
     peerDependencies:
-      vue: ^3.0.0-beta.17
+      vue: ^3.0.0-rc.5
     resolution:
-      integrity: sha512-D9LPFqx+RMMtRFNdjR5SPBASM44nTiSF0mR3kE7yjD2i4zse7eMlVGIzF2KbiEkF8v6W/4oz2TfwIAiWPfxibA==
+      integrity: sha512-Y+jPkztS943JHFCS5v36VpOQODqZMu58/HxCOjvZ5AgX0QhCoq4gpX/uzdA4zyPaQm4JogHwEVFrEgiB3ipJMg==
   /@wessberg/browserslist-generator/1.0.37:
     dependencies:
       '@types/object-path': 0.11.0
@@ -1690,10 +1690,10 @@ packages:
       typescript: ^3.x
     resolution:
       integrity: sha512-wXvEc+bt9IIOH5TTYmpgLat4nxgS/ceOv70nUK2TXfBxUn02BVp79C+eA0Yau6eEq3Yh6g8kJIrrXcqs/zseNg==
-  /abab/2.0.3:
+  /abab/2.0.4:
     dev: true
     resolution:
-      integrity: sha512-tsFzPpcttalNjFBCFMqsKYQcWxxen1pgJR56by//QwvJc4/OUS3kPOOttx2tSIfjsylB0pYu7f5D3K1RCxUnUg==
+      integrity: sha512-Eu9ELJWCz/c1e9gTiCY+FceWxcqzjYEbqMgtndnuSqZSUCOL73TWNK2mHfIj4Cw2E/ongOp+JISVNCmovt2KYQ==
   /acorn-globals/6.0.0:
     dependencies:
       acorn: 7.3.1
@@ -2386,7 +2386,7 @@ packages:
       integrity: sha1-hTz6D3y+L+1d4gMmuN1YEDX24vA=
   /data-urls/2.0.0:
     dependencies:
-      abab: 2.0.3
+      abab: 2.0.4
       whatwg-mimetype: 2.3.0
       whatwg-url: 8.1.0
     dev: true
@@ -2918,7 +2918,7 @@ packages:
       is-stream: 2.0.0
       merge-stream: 2.0.0
       npm-run-path: 4.0.1
-      onetime: 5.1.0
+      onetime: 5.1.1
       signal-exit: 3.0.3
       strip-final-newline: 2.0.0
     dev: true
@@ -4183,7 +4183,7 @@ packages:
       integrity: sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
   /jsdom/16.3.0:
     dependencies:
-      abab: 2.0.3
+      abab: 2.0.4
       acorn: 7.3.1
       acorn-globals: 6.0.0
       cssom: 0.4.4
@@ -4749,14 +4749,14 @@ packages:
     dev: true
     resolution:
       integrity: sha1-WDsap3WWHUsROsF9nFC6753Xa9E=
-  /onetime/5.1.0:
+  /onetime/5.1.1:
     dependencies:
       mimic-fn: 2.1.0
     dev: true
     engines:
       node: '>=6'
     resolution:
-      integrity: sha512-5NcSkPHhwTVFIQN+TUqXoS5+dlElHXdpAWu9I0HP20YOtIi+aZ0Ct82jdlILDxjLEAWwvm+qj1m6aEtsDVmm6Q==
+      integrity: sha512-ZpZpjcJeugQfWsfyQlshVoowIIQ1qBGSVll4rfDq6JJVO//fesjoX808hXWfBjY+ROZgpKDI5TRSRBSoJiZ8eg==
   /optionator/0.8.3:
     dependencies:
       deep-is: 0.1.3
@@ -6212,7 +6212,7 @@ packages:
       '0': node >=0.6.0
     resolution:
       integrity: sha1-OhBcoXBTr1XW4nDB+CiGguGNpAA=
-  /vue-jest/5.0.0-alpha.1_9f4fabd57c7273828af3cf39bfe36442:
+  /vue-jest/5.0.0-alpha.2_9f4fabd57c7273828af3cf39bfe36442:
     dependencies:
       '@babel/core': 7.11.0
       '@babel/plugin-transform-modules-commonjs': 7.10.4_@babel+core@7.11.0
@@ -6225,10 +6225,14 @@ packages:
     dev: true
     peerDependencies:
       '@babel/core': 7.x
-      jest: ^24.x
-      vue: ^2.x
+      babel-jest: '>= 24 < 27'
+      jest: '>= 24 < 27 '
+      vue: ^3.0.0-0
+    peerDependenciesMeta:
+      ts-jest:
+        optional: true
     resolution:
-      integrity: sha512-ZeLrhMBLFlAMvew3OZ5/Cyswa6oJq4jHAsp4SOyIqB/X6mchQmAe3t3wovUfCrqXiSzJH+BgVcNcMybUIsjcrg==
+      integrity: sha512-WngRkmvutKsrzC9N95phLg/yv+SikkAqT10g/KLvQQyajue1idYv3igY2YYtLezcLnAJl3fdbnJlrj3DahrJ4Q==
   /vue/3.0.0-rc.5:
     dependencies:
       '@vue/compiler-dom': 3.0.0-rc.5
@@ -6419,7 +6423,7 @@ specifiers:
   '@typescript-eslint/eslint-plugin': ^3.7.1
   '@typescript-eslint/parser': ^3.7.1
   '@vue/compiler-sfc': ^3.0.0-rc.5
-  '@vue/test-utils': ^2.0.0-beta.0
+  '@vue/test-utils': ^2.0.0-beta.1
   '@wessberg/rollup-plugin-ts': ^1.3.1
   babel-core: ^7.0.0-bridge.0
   builtin-modules: ^3.1.0

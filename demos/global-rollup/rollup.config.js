@@ -8,6 +8,7 @@ import html, { makeHtmlAttributes } from '@rollup/plugin-html'
 import babel from '@rollup/plugin-babel'
 import vue from 'rollup-plugin-vue'
 import styles from 'rollup-plugin-styles'
+// import { terser } from 'rollup-plugin-terser'
 
 const watch = Boolean(process.env.ROLLUP_WATCH) || Boolean(process.env.LIVERELOAD)
 
@@ -70,6 +71,7 @@ export default {
     vue(),
     styles({ mode: 'extract' }),
     babel({ babelHelpers: 'bundled' }),
+    // terser(),
 
     html({ template }),
     watch && serve({ contentBase: 'dist', port: 8080 }),

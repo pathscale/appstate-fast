@@ -1,7 +1,9 @@
 <template>
   <div>
     <button @click="setState">Set State</button>
-    <p v-for="task in tasksState" :key="task.id">{{ task.id }} - {{ task.name }} - {{ task.done }}</p>
+    <p v-for="task in tasksState" :key="task.id">
+      {{ task.id }} - {{ task.name }} - {{ task.done }}
+    </p>
   </div>
 </template>
 
