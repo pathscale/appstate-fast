@@ -6,7 +6,7 @@ import alias from '@rollup/plugin-alias'
 import replace from '@rollup/plugin-replace'
 import html, { makeHtmlAttributes } from '@rollup/plugin-html'
 import babel from '@rollup/plugin-babel'
-import vue from 'rollup-plugin-vue'
+import vue from '@pathscale/rollup-plugin-vue3'
 import styles from 'rollup-plugin-styles'
 // import { terser } from 'rollup-plugin-terser'
 
