@@ -65,7 +65,7 @@ export default {
       },
     }),
 
-    resolve({ preferBuiltins: true }),
+    resolve({ preferBuiltins: true, dedupe: ['vue'] }),
     // commonjs(),
 
     vue(),
