@@ -1,6 +1,6 @@
 <template>
-  <div style="display: flex;">
-    <div style="flex-grow: 2;"></div>
+  <div style="display: flex">
+    <div style="flex-grow: 2"></div>
     <div
       style="
         min-height: 100vh;
@@ -12,11 +12,11 @@
         color: white;
       "
     >
-      <div style="min-width: 400px; max-width: 800px; padding: 20px;">
-        <div style="margin-bottom: 30px;">
+      <div style="min-width: 400px; max-width: 800px; padding: 20px">
+        <div style="margin-bottom: 30px">
           This is
           <a
-            style="color: #09d3ac;"
+            style="color: #09d3ac"
             href="https://github.com/avkonst/hookstate"
             target="_blank"
             rel="noopener noreferrer"
@@ -24,7 +24,7 @@
           >
           demo application. Source code is on
           <a
-            style="color: #09d3ac;"
+            style="color: #09d3ac"
             href="https://github.com/avkonst/hookstate/tree/master/docs/demos/todolist"
             target="_blank"
             rel="noopener noreferrer"
@@ -36,7 +36,7 @@
         <!-- <TasksViewer /> -->
       </div>
     </div>
-    <div style="flex-grow: 2;" />
+    <div style="flex-grow: 2" />
   </div>
 </template>
 

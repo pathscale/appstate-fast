@@ -1,12 +1,12 @@
 <template>
-  <div style="display: flex; justify-content: space-evenly; margin-bottom: 30px;">
+  <div style="display: flex; justify-content: space-evenly; margin-bottom: 30px">
     <div
       v-if="settingsState.isHighlightUpdateEnabled"
-      style="width: 10px; margin-right: 15px;"
+      style="width: 10px; margin-right: 15px"
     ></div>
     <p v-if="tasksState.promised">Loading</p>
     <p v-else-if="tasksState.error">Error</p>
-    <div v-else style="display: flex; justify-content: space-evenly; flex-grow: 2;">
+    <div v-else style="display: flex; justify-content: space-evenly; flex-grow: 2">
       <div>Loaded: {{ !tasksState.promised ? 'loaded' : 'nope' }}</div>
     </div>
   </div>
