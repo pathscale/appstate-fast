@@ -36,6 +36,5 @@
         <div v-if="true">
             <button :style="{marginLeft: 20}">{{true ? 'Save': 'Edit'}}</button>
         </div>
-        
     </div>
 </template>

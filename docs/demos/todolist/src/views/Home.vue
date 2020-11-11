@@ -25,9 +25,8 @@
                 target="_blank"
                 rel="noopener noreferrer">GitHub</a>.
           </div>
-          <SettingsViewer />
-          <TasksTotal />
-          <TasksViewer/>
+          <settings-viewer />
+          <tasks-total />
         </div>
       </div>
       <div :style="{flexGrow: 2}" />
@@ -35,19 +34,13 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
-import TasksViewer from "../components/TasksViewer";
-import SettingsViewer from "../components/SettingsViewer";
-import { TasksTotal } from "../components/TasksTotal";
+import {useState, createState} from '@pathscale/appstate-fast'
+import SettingsViewer from '../components/SettingsViewer'
+import  TasksTotal from "../components/TasksTotal";
 
-export default defineComponent({
-  components: {
-    SettingsViewer, TasksTotal, TasksViewer
-  },
-  setup () {
-    return {scale: 1}
-  }
-})
+export default {
+  components: { SettingsViewer, TasksTotal }
+}
 </script>
 
 <style scoped>
