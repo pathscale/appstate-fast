@@ -27,6 +27,7 @@
           </div>
           <settings-viewer />
           <tasks-total />
+          <tasks-viewer />
         </div>
       </div>
       <div :style="{flexGrow: 2}" />
@@ -37,9 +38,10 @@
 import {useState, createState} from '@pathscale/appstate-fast'
 import SettingsViewer from '../components/SettingsViewer'
 import  TasksTotal from "../components/TasksTotal";
+import TasksViewer from '../components/TasksViewer'
 
 export default {
-  components: { SettingsViewer, TasksTotal }
+  components: { SettingsViewer, TasksTotal, TasksViewer }
 }
 </script>
 

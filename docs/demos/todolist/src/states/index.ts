@@ -9,7 +9,7 @@ export const taskStorage = createState([
     {
         id: "2",
         name: "Replace Redux by Hookstate",
-        done: false
+        done: true
     },
     {
         id: "3",
