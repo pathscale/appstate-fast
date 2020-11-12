@@ -46,6 +46,7 @@ export default {
             const filter = taskStorage.value.filter(x => x.id !== id)
             taskStorage.value = [...filter]
         }
+        console.log(setting)
 
         return {setting, nextColor, isEditing, taskState, taskNameLocal, toogleDone, changeName, deleteTask}
     }
@@ -57,7 +58,7 @@ export default {
         marginBottom: '10px'
     }">
         <!-- backgroundColor: nextColor -->
-        <div v-if="setting.isHighlightUpdateEnabled" :style="{
+        <div v-if="setting.isHighlightUpdatesEnabled" :style="{
             width: '10px',
             marginRight: '10px',
             backgroundColor: nextColor
