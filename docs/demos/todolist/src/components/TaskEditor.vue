@@ -87,7 +87,7 @@ export default {
                     textDecoration: taskState.done ? 'line-through':'none'
                 }"
                     @change="(e)=> {taskNameLocal = e.target.value}"
-                    :readonly="!(setting.isEditableInline || isEditing)"
+                    :readonly="!setting.isEditableInline || !isEditing"
                     :value="!isEditing ? taskState.name : taskNameLocal" />
             </div>
         </div>
