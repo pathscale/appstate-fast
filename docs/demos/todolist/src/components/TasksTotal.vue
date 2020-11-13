@@ -14,8 +14,13 @@ export default {
         // This is the trick to obtain different color on every run of this function
         const colors = ["#ff0000", "#00ff00", "#0000ff"];
         const color = ref(0);
-        color.value += 1;
-        const nextColor = colors[color.value % colors.length];
+        const nextColor = useState(colors[0])
+        watchEffect(()=> {
+            if (setting.value) {
+                color.value += 1;
+                nextColor.value = colors[color.value % colors.length];
+            }
+        })
         return {setting, task, nextColor}
     }
 }

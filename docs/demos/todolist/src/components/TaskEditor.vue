@@ -1,5 +1,5 @@
 <script>
-import {onMounted, ref, watchEffect} from 'vue'
+import {onMounted, ref, watchEffect, reactive} from 'vue'
 import { useState } from '@pathscale/appstate-fast'
 import {settingStorage, taskStorage} from '../states'
 export default {
@@ -10,9 +10,9 @@ export default {
         let globalTask = useState(taskStorage)
         const taskNameLocal = useState(taskState.value.name)
 
-        // watchEffect(()=> {
-        //     console.log(taskNameLocal.value)
-        // })
+        // if (!setting.isScopedUpdateEnabled) {
+        //     taskState = task
+        // }
 
         const isEditing = useState(false);
 
@@ -21,9 +21,16 @@ export default {
         // const color = React.useRef(0);
         const color = ref(0);
         // color.current += 1;
-        color.value += 1;
+        
         // var nextColor = colors[color.current % colors.length];
-        const nextColor = colors[color.value % colors.length];
+        const nextColor = useState(colors[0])
+
+        watchEffect(()=> {
+            if (setting.value && taskState.value) {
+                color.value += 1;
+                nextColor.value = colors[color.value % colors.length];
+            }
+        })
 
         const toogleDone = (id) => {
             taskState.value = {...taskState.value, done: !taskState.value.done}
@@ -46,7 +53,6 @@ export default {
             const filter = taskStorage.value.filter(x => x.id !== id)
             taskStorage.value = [...filter]
         }
-        console.log(setting)
 
         return {setting, nextColor, isEditing, taskState, taskNameLocal, toogleDone, changeName, deleteTask}
     }
@@ -87,12 +93,15 @@ export default {
                     padding: '10px',
                     textDecoration: taskState.done ? 'line-through':'none'
                 }"
-                    @change="(e)=> {taskNameLocal = e.target.value}"
-                    :readonly="!setting.isEditableInline || !isEditing"
+                    @keyup="(e)=> {
+                        taskNameLocal = e.target.value
+                        if (setting.isEditableInline) changeName(taskState.id)
+                    }"
+                    :readonly="!(setting.isEditableInline || isEditing)"
                     :value="!isEditing ? taskState.name : taskNameLocal" />
             </div>
         </div>
-        <div v-if="setting.isEditableInline">
+        <div v-if="!setting.isEditableInline">
             <button v-if="isEditing" :style="{marginLeft: '20px'}"
                 @click="() => {
                     isEditing = false
