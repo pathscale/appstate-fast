@@ -52,4 +52,4 @@ const addTask = () => {
     task.value = [...task.value, newTask]
 }
 
-setTimeout(addTask, 5000)
+setTimeout(addTask, 3000)
