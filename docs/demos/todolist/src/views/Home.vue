@@ -26,7 +26,7 @@
                 rel="noopener noreferrer">GitHub</a>.
           </div>
           <settings-viewer />
-          <tasks-total />
+          <tasks-total v-if="!isPromised" />
           <tasks-viewer />
         </div>
       </div>
@@ -39,9 +39,23 @@ import {useState, createState} from '@pathscale/appstate-fast'
 import SettingsViewer from '../components/SettingsViewer'
 import  TasksTotal from "../components/TasksTotal";
 import TasksViewer from '../components/TasksViewer'
+import {ref, watchEffect} from 'vue'
+import {taskStorage} from '../states'
 
 export default {
-  components: { SettingsViewer, TasksTotal, TasksViewer }
+  components: { SettingsViewer, TasksTotal, TasksViewer },
+  setup () {
+    let taskState = useState(taskStorage)
+    const isPromised = ref(true)
+    watchEffect( () => {
+        if (taskState.value && Array.isArray(taskState.value)) {
+          isPromised.value = false
+        }
+    })
+
+    return {isPromised}
+
+  }
 }
 </script>
 

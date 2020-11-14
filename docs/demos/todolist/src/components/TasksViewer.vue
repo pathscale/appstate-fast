@@ -1,40 +1,50 @@
 <script>
 import {settingStorage, taskStorage} from '../states'
 import { useState } from '@pathscale/appstate-fast'
-import {ref} from 'vue'
+import {ref, onMounted} from 'vue'
 import TaskEditor from './TaskEditor'
 export default {
     components: { TaskEditor },
     setup () {
         const setting = useState(settingStorage)
-        const task = useState(taskStorage)
+        const taskState = useState(taskStorage)
+
+        const isPromised = ref(true)
+
+        onMounted(async () => {
+            taskState.value = [...await taskState.value]
+            isPromised.value = false
+        })
 
 
         const addNewTak = () => {
-            const findMax = Math.max.apply(Math, task.value.map(function(o) { return o.id; }))
+            const findMax = Math.max.apply(Math, taskState.value.map(function(o) { return o.id; }))
             const newId = findMax + 1
             const newTask = {
                 id: newId,
                 name: 'Untitled Task #' + newId ,
                 done: false
             }
-            task.value = [...task.value, newTask]
+            taskState.value = [...taskState.value, newTask]
         }
-        return {task, addNewTak}
+        return {taskState, addNewTak, isPromised}
     }
 }
 </script>
 
 <template>
     <div>
-        <task-editor v-for="(val, i) in task" :key="val.id" :index="i" :task="val" />
-        <div :style="{textAlign: 'right'}">
-                <button
-                    @click="addNewTak"
-                    :style="{
-                        marginTop: '20px', minWidth: '300px',
-                        borderColor: 'lightgreen'
-                    }">Add new task</button>
+        <div v-if="isPromised">Loading initial state asynchronously...</div>
+        <div v-if="!isPromised">
+            <task-editor v-for="(val, i) in taskState" :key="val.id" :index="i" :task="val" />
+            <div :style="{textAlign: 'right'}">
+                    <button
+                        @click="addNewTak"
+                        :style="{
+                            marginTop: '20px', minWidth: '300px',
+                            borderColor: 'lightgreen'
+                        }">Add new task</button>
+            </div>
         </div>
     </div>
 </template>
