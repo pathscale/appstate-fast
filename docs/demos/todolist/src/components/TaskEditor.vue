@@ -34,24 +34,25 @@ export default {
 
         const toogleDone = (id) => {
             taskState.value = {...taskState.value, done: !taskState.value.done}
-            taskStorage.value.forEach(x => {
+            globalTask.value.forEach(x => {
                 if (x.id === id) x.done = taskState.value.done
             })
-            taskStorage.value = [...taskStorage.value]
+            globalTask.value = [...taskStorage.value]
         }
 
         const changeName = (id) => {
             taskState.value = {...taskState.value, name: taskNameLocal.value}
-            taskStorage.value.forEach(x => {
+            globalTask.value.forEach(x => {
                 if (x.id === id) x.name = taskState.value.name
             })
-            taskStorage.value = [...taskStorage.value]
+            globalTask.value = [...taskStorage.value]
 
         }
 
         const deleteTask = (id) => {
-            const filter = taskStorage.value.filter(x => x.id !== id)
-            taskStorage.value = [...filter]
+            taskState = null
+            const filter = globalTask.value.filter(val => val.id !== id)
+            globalTask.value = [...filter]
         }
 
         return {setting, nextColor, isEditing, taskState, taskNameLocal, toogleDone, changeName, deleteTask}

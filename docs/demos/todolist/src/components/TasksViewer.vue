@@ -27,7 +27,7 @@ export default {
 
 <template>
     <div>
-        <task-editor v-for="(val, i) in task" :key="i" :task="val" />
+        <task-editor v-for="(val, i) in task" :key="val.id" :index="i" :task="val" />
         <div :style="{textAlign: 'right'}">
                 <button
                     @click="addNewTak"
