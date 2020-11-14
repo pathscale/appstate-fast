@@ -26,10 +26,15 @@ export default {
         const nextColor = useState(colors[0])
 
         watchEffect(()=> {
-            if (setting.value && taskState.value) {
+            if (setting.value && taskState.value && taskNameLocal.value) {
                 color.value += 1;
                 nextColor.value = colors[color.value % colors.length];
             }
+
+            // if (!setting.value.isScopedUpdateEnabled) {
+            //    taskState = task
+            //    direct assign taskState as task is not reactive
+            // }
         })
 
         const toogleDone = (id) => {
@@ -37,7 +42,7 @@ export default {
             globalTask.value.forEach(x => {
                 if (x.id === id) x.done = taskState.value.done
             })
-            globalTask.value = [...taskStorage.value]
+            globalTask.value = [...globalTask.value]
         }
 
         const changeName = (id) => {
@@ -45,7 +50,7 @@ export default {
             globalTask.value.forEach(x => {
                 if (x.id === id) x.name = taskState.value.name
             })
-            globalTask.value = [...taskStorage.value]
+            globalTask.value = [...globalTask.value]
 
         }
 

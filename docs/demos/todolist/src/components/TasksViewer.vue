@@ -11,15 +11,28 @@ export default {
 
         const isPromised = ref(true)
 
+
+        const findMaxID = () => taskState.value.length >= 1 ? Math.max.apply(Math, taskState.value.map(function(o) { return o.id; })) : 0
+
+        const pushTask = () => {
+            const newTask = {
+                id: findMaxID() + 1,
+                name: 'Spread few words about Hookstate',
+                done: false
+            }
+            taskState.value = [...taskState.value, newTask]
+        }
+
         onMounted(async () => {
             taskState.value = [...await taskState.value]
+            
+            setTimeout(pushTask, 7000)
             isPromised.value = false
         })
 
 
         const addNewTak = () => {
-            const findMax = Math.max.apply(Math, taskState.value.map(function(o) { return o.id; }))
-            const newId = findMax + 1
+            const newId = findMaxID() + 1
             const newTask = {
                 id: newId,
                 name: 'Untitled Task #' + newId ,
