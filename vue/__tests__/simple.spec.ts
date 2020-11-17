@@ -10,9 +10,10 @@ describe("test", () => {
         });
 
         expect(count.value).toBe(0);
-        state.count.set(10);
-
-        expect(count.value).toBe(10);
+        state.count.set(state.count.value + 1);
+        expect(count.value).toBe(1);
+        state.count.set(state.count.value - 1);
+        expect(count.value).toBe(0);
     });
 
     it.todo("should work with a watch");
