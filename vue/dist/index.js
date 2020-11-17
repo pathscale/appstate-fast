@@ -1,8 +1,4 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var vue = require('vue');
+import { onUnmounted, customRef, computed } from 'vue';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -114,7 +110,7 @@ function useState(source) {
         // Local state mount
         logger.log('create vue ref (local)');
         var store_1 = createStore(source);
-        vue.onUnmounted(function () { return store_1.destroy(); });
+        onUnmounted(function () { return store_1.destroy(); });
         var result = useSubscribedStateMethods(store_1, RootPath, store_1);
         var devtools = useState[DevToolsID];
         if (devtools) {
@@ -1216,13 +1212,13 @@ function createStore(initial) {
 function useSubscribedStateMethods(state, path, subscribeTarget, parentOnGetUsed) {
     var capturedTrack;
     var capturedTrigger;
-    vue.customRef(function (track, trigger) {
+    customRef(function (track, trigger) {
         capturedTrack = track;
         capturedTrigger = trigger;
         return { get: function () { }, set: function () { } };
     });
     var renderTimes = 0;
-    var renderWatcher = vue.computed(function () {
+    var renderWatcher = computed(function () {
         renderTimes += 1;
         capturedTrack();
         logger.warn('called renderWatcher', renderTimes);
@@ -1255,13 +1251,13 @@ function useSubscribedStateMethods(state, path, subscribeTarget, parentOnGetUsed
     // in vue this is executed only once during setup
     subscribeTarget.subscribe(link);
     // and this will be executed when unmounted, which also happens only once
-    vue.onUnmounted(function () { return subscribeTarget.unsubscribe(link); });
+    onUnmounted(function () { return subscribeTarget.unsubscribe(link); });
     return link;
 }
 
-exports.DevTools = DevTools;
-exports.DevToolsID = DevToolsID;
-exports.Downgraded = Downgraded;
+export { DevTools, DevToolsID, Downgraded, StateFragment, createState, none, postpone, self, useState };
+//# sourceMappingURL=index.js.map
+graded = Downgraded;
 exports.StateFragment = StateFragment;
 exports.createState = createState;
 exports.none = none;
