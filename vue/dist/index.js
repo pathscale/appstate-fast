@@ -1,4 +1,8 @@
-import { onUnmounted, customRef, computed } from 'vue';
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+var vue = require('vue');
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -110,7 +114,7 @@ function useState(source) {
         // Local state mount
         logger.log('create vue ref (local)');
         var store_1 = createStore(source);
-        onUnmounted(function () { return store_1.destroy(); });
+        vue.onUnmounted(function () { return store_1.destroy(); });
         var result = useSubscribedStateMethods(store_1, RootPath, store_1);
         var devtools = useState[DevToolsID];
         if (devtools) {
@@ -1212,13 +1216,13 @@ function createStore(initial) {
 function useSubscribedStateMethods(state, path, subscribeTarget, parentOnGetUsed) {
     var capturedTrack;
     var capturedTrigger;
-    customRef(function (track, trigger) {
+    vue.customRef(function (track, trigger) {
         capturedTrack = track;
         capturedTrigger = trigger;
         return { get: function () { }, set: function () { } };
     });
     var renderTimes = 0;
-    var renderWatcher = computed(function () {
+    var renderWatcher = vue.computed(function () {
         renderTimes += 1;
         capturedTrack();
         logger.warn('called renderWatcher', renderTimes);
@@ -1251,13 +1255,13 @@ function useSubscribedStateMethods(state, path, subscribeTarget, parentOnGetUsed
     // in vue this is executed only once during setup
     subscribeTarget.subscribe(link);
     // and this will be executed when unmounted, which also happens only once
-    onUnmounted(function () { return subscribeTarget.unsubscribe(link); });
+    vue.onUnmounted(function () { return subscribeTarget.unsubscribe(link); });
     return link;
 }
 
-export { DevTools, DevToolsID, Downgraded, StateFragment, createState, none, postpone, self, useState };
-//# sourceMappingURL=index.js.map
-graded = Downgraded;
+exports.DevTools = DevTools;
+exports.DevToolsID = DevToolsID;
+exports.Downgraded = Downgraded;
 exports.StateFragment = StateFragment;
 exports.createState = createState;
 exports.none = none;
