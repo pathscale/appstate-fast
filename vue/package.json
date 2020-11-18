@@ -1,6 +1,6 @@
 {
     "name": "@pathscale/appstate-fast",
-    "version": "0.0.2",
+    "version": "0.0.1",
     "description": "The flexible, fast and extendable state management for Vue that is based on hooks and state usage tracking.",
     "license": "MIT",
     "author": {
@@ -14,7 +14,7 @@
     },
     "homepage": "https://github.com/pathscale/appstate-fast",
     "main": "dist/index.js",
-    "module": "dist/index.js",
+    "module": "dist/index.es.js",
     "jsnext:main": "dist/index.es.js",
     "engines": {
         "node": ">=8",
@@ -22,7 +22,7 @@
     },
     "scripts": {
         "start": "rollup -c -w",
-        "build": "rollup -c --environment NODE_ENV:production",
+        "build": "rollup -c",
         "build:watch": "npm run start",
         "lint": "tslint --project .",
         "clean": "rimraf dist",
