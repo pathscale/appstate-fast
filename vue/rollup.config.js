@@ -16,12 +16,14 @@ export default {
             exports: "named",
             sourcemap: true,
         },
+        /* The reactivity is not working with the module version
         {
             file: pkg.module,
             format: "es",
             exports: "named",
             sourcemap: true,
-        },
+        }, 
+        */
     ],
     plugins: [
         replace({

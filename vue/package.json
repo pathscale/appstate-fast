@@ -1,6 +1,6 @@
 {
     "name": "@pathscale/appstate-fast",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "description": "The flexible, fast and extendable state management for Vue that is based on hooks and state usage tracking.",
     "license": "MIT",
     "author": {
@@ -14,7 +14,7 @@
     },
     "homepage": "https://github.com/pathscale/appstate-fast",
     "main": "dist/index.js",
-    "module": "dist/index.es.js",
+    "module": "dist/index.js",
     "jsnext:main": "dist/index.es.js",
     "engines": {
         "node": ">=8",
@@ -37,7 +37,7 @@
     },
     "dependencies": {},
     "peerDependencies": {
-        "vue": "^3.0.0-beta.14"
+        "vue": "^3.0.1"
     },
     "devDependencies": {
         "@babel/core": "7.9.6",
