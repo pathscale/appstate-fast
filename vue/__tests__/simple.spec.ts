@@ -1,20 +1,33 @@
+import { h, watchEffect, onMounted } from "vue"
 import { useState } from "../src";
-import { computed } from "vue";
+import { mount } from "@vue/test-utils";
 
-describe("test", () => {    
+describe("Test nested state", () => {    
+    it("WatchEffect should run indepedently for nested states", () => {
+        mount({
+            name: 'Test',
+            setup() {
+                const state = useState({ a: 1, b: 2 });
 
-    it("should work with a computed", () => {
-        const state = useState({ count: 0 });
-        const count = computed(() => {
-            return state.count.value
-        });
+                /** WatchEffect runs one time and then tracks its dependencies
+                 *  So the fact that b changes 
+                 */
 
-        expect(count.value).toBe(0);
-        state.count.set(state.count.value + 1);
-        expect(count.value).toBe(1);
-        state.count.set(state.count.value - 1);
-        expect(count.value).toBe(0);
+                watchEffect(() => {
+                    console.log('side effect for state.a', state.a.value)
+                });
+
+                watchEffect(() => {
+                    console.log('side effect for state.b', state.b.value)
+                });
+
+                onMounted(() => {
+                    state.a.set(p => p +1)
+                })
+            },
+            render() {
+                return h("h1", {}, "Hello world");
+            }
+        })
     });
-
-    it.todo("should work with a watch");
 });
