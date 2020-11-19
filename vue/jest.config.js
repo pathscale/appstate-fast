@@ -10,6 +10,5 @@ module.exports = {
     watchPathIgnorePatterns: ["/node_modules/", "/dist/"],
     moduleFileExtensions: ["ts", "tsx", "js", "json", "vue"],
     rootDir: __dirname,
-    // testMatch: ["<rootDir>/**/__tests__/**/*spec.[jt]s?(x)"],
-    testMatch: ["<rootDir>/**/__tests__/**/simple.spec.ts"],
+    testMatch: ["<rootDir>/**/__tests__/**/*spec.[jt]s?(x)"],
 };
