@@ -1,22 +1,87 @@
 import { mount } from "@vue/test-utils";
-import { useState, self, State } from "../src";
-import { h, nextTick } from "vue";
+import { useState, State } from "../src";
+import { h, nextTick, reactive } from "vue";
 
-test('nested: changes should not propage to other properties', async () => {
+
+// vue3 composition api based
+test('composition api: changes should not propage to other properties', async () => {
     let fatherRenderCount = 0;
     let childRenderCount = 0;
 
-    let _state: State<{ name: string, color: string }[]> = {} as any;
+    let _state: any;
+
+    /* component whose render function depends on state.foo */
+    const child = {
+        setup() {
+            return () => {
+                // console.log("rendering child")
+                ++childRenderCount
+                return h(
+                    "div",
+                    _state.foo
+                )
+            }
+        }
+    }
+
+    /*  component whose render function depends on state.bar */
+    const father = {
+        setup() {
+            _state = reactive({
+                foo: 1,
+                bar: 2
+            });
+
+            return () => {
+                // console.log("rendering father")
+                ++fatherRenderCount;
+                return h(
+                    "div",
+                    {
+                        disabled: _state.bar
+                    },
+                );
+            };
+        },
+    }
+
+    // we mount them
+    mount(father)
+    mount(child)
+
+    // both should have rendered once
+    expect(fatherRenderCount).toStrictEqual(1);
+    expect(childRenderCount).toStrictEqual(1);
+
+    // we update state.bar
+    _state.bar = 4;
+
+    await nextTick();
+
+    // father depends on state.bar, thus it should have re-rendered
+    expect(fatherRenderCount).toStrictEqual(2);
+
+    // child does not depend on state.bar, so it should not have re-rendered
+    expect(childRenderCount).toStrictEqual(1);
+})
+
+// appstate-fast based
+test('appstate: changes should not propage to other properties', async () => {
+    let fatherRenderCount = 0;
+    let childRenderCount = 0;
+
+    let _state: State<{ name: string, color: string }> = {} as any;
 
     /* component whose render function depends on state.name */
     const child = {
         setup() {
             return () => {
+                console.log("rendering child")
                 ++childRenderCount
                 return h(
                     "div",
                     {},
-                    _state[0][self].get().name
+                    _state.name.get()
                 )
             }
         }
@@ -25,17 +90,18 @@ test('nested: changes should not propage to other properties', async () => {
     /*  component whose render function depends on state.color */
     const father = {
         setup() {
-            _state = useState([{
+            _state = useState({
                 name: 'oscar',
                 color: 'blue'
-            }]);
+            });
 
             return () => {
+                console.log("rendering father")
                 ++fatherRenderCount;
                 return h(
                     "div",
                     {
-                        disabled: _state[0][self].get().color
+                        disabled: _state.color.get()
                     },
                 );
             };
@@ -51,7 +117,7 @@ test('nested: changes should not propage to other properties', async () => {
     expect(childRenderCount).toStrictEqual(1);
 
     // we update state.color
-    _state[0].color[self].set(p => "red");
+    _state.color.set(p => "red");
 
     await nextTick();
 
