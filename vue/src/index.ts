@@ -1487,6 +1487,13 @@ class StateMethodsImpl<S> implements StateMethods<S>, StateMethodsDestroy, Subsc
                     if (key === "__v_raw") {
                         return this
                     }
+
+                    // makes state compatible with isReactive vue helper function
+                    // at the same time, it is now accepted as first argument to vue watch function
+                    // it will trigger incorrectly though, same for watchEffect
+                    if (key === "__v_isReactive") {
+                        return true
+                    }
                     
                     const currentValue = this.getUntracked(true);
                     if (// if currentValue is primitive type
