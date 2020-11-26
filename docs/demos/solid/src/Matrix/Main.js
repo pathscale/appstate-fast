@@ -99,9 +99,9 @@ const Matrix = () => {
             <div class="mb-4 table-container">
                 <table>
                     <tbody>
-                        {state.data.map((row, i) => (
-                            <TableRow key={i} data={row} />
-                        ))}
+                        <For each={state.data}>
+                            {row => <TableRow data={row} />}
+                        </For>
                     </tbody>
                 </table>
             </div>
@@ -119,9 +119,11 @@ const Matrix = () => {
 // simple row
 const TableRow = (props) => (
     <tr>
-        {props.data.map((val, index) => (
-            <TableCell key={index} val={val} />
-        ))}
+        <For each={props.data}>
+            {value => (
+                <TableCell val={value} />
+            )}
+        </For>
     </tr>
 );
 
