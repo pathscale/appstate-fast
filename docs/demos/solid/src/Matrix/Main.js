@@ -32,7 +32,7 @@ const init = () => ({
 });
 
 // main component
-export default Matrix = () => {
+const Matrix = () => {
     const [state, setState] = createState(init());
     let timer = null;
 
@@ -127,3 +127,5 @@ const TableRow = (props) => (
 
 // simple cell
 const TableCell = (props) => <td>{props.val.toString(16)}</td>;
+
+export default Matrix;
