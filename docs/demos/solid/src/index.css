@@ -1,5 +1,5 @@
 .table-container {
     height: 250px;
-    max-width: 300px;
     overflow: scroll;
+    margin-top: 1em;
 }

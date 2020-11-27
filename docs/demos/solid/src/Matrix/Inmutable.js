@@ -1,4 +1,4 @@
-import { createState, produce } from "solid-js";
+import { createState, batch } from "solid-js";
 
 // helper function to create ints
 const randomInt = (min, max) => {
@@ -61,23 +61,25 @@ const Matrix = () => {
         setState("running", true);
 
         timer = setInterval(() => {
-            for (let i = 0; i < config.callsPerInterval; i += 1) {
-                const amount = randomInt(0, 5);
-                const row = randomInt(0, config.totalRows);
-                const col = randomInt(0, config.totalColumns);
+            batch(() => {
+                for (let i = 0; i < config.callsPerInterval; i += 1) {
+                    const amount = randomInt(0, 5);
+                    const row = randomInt(0, config.totalRows);
+                    const col = randomInt(0, config.totalColumns);
 
-                // first attempt
-                setState("data", row, col, (p) => p + amount);
-
-                // second attent
-                // setState(
-                //     produce((st) => {
-                //         st.data[row][col] += amount;
-                //     })
-                // );
-
-                updateStats({ amount });
-            }
+                    // first attempt
+                    setState("data", (current_data) => {
+                        // as this is the inmutable approach we are going to clone the matrix data
+                        // and return it so it gets replaced
+                        // the others tiny pieces of state like stats will continue to use mutation
+                        // as that should be irrelevant, the big player is the matrix data which is big
+                        const new_data = current_data.map((row) => row.slice());
+                        new_data[row][col] += amount;
+                        return new_data;
+                    });
+                    updateStats({ amount });
+                }
+            });
         }, config.interval);
 
         // in 20 seconds from start stop the test
@@ -89,7 +91,8 @@ const Matrix = () => {
 
     return (
         <>
-            <h1 class="title is-1">SolidJS Benchmark</h1>
+            <p class="title is-1">SolidJS Benchmark</p>
+            <p class="subtitle is-3">Inmutable State</p>
 
             <p>TIME_ELAPSED: {state.stats.elapsed}s</p>
             <p>TOTAL_SUM: {state.stats.totalSum}</p>
@@ -97,11 +100,11 @@ const Matrix = () => {
             <p>AVERAGE_UPDATE_RATE: {state.stats.rate}cells/s</p>
 
             <div class="mb-4 table-container">
-                <table>
+                <table class="table is-bordered is-fullwidth">
                     <tbody>
-                        <For each={state.data}>
-                            {row => <TableRow data={row} />}
-                        </For>
+                        <Index each={state.data}>
+                            {(row) => <TableRow data={row()} />}
+                        </Index>
                     </tbody>
                 </table>
             </div>
@@ -119,11 +122,7 @@ const Matrix = () => {
 // simple row
 const TableRow = (props) => (
     <tr>
-        <For each={props.data}>
-            {value => (
-                <TableCell val={value} />
-            )}
-        </For>
+        <Index each={props.data}>{(val) => <TableCell val={val()} />}</Index>
     </tr>
 );
 
