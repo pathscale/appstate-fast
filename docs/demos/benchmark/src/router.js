@@ -4,6 +4,7 @@ import Layout from './Layout.vue'
 import Hello from './Hello.vue'
 
 import Vuex from './Vuex/Main.vue'
+import Pinia from './Pinia/Main.vue'
 import CompositionAPI from './CompositionAPI/Main.vue'
 import Appstate from './Appstate/Main.vue'
 
@@ -27,17 +28,22 @@ const routes = [
         path: '/composition-api',
         component: CompositionAPI
       },
-      {
-        name: 'vuex',
-        path: '/vuex',
-        component: Vuex,
-      },
+        {
+            name: 'vuex',
+            path: '/vuex',
+            component: Vuex,
+        },
+        {
+            name: 'pinia',
+            path: '/pinia',
+            component: Pinia,
+        },
       {
         path: '/',
         redirect: '/hello'
       }
     ]
-  }, 
+  },
 ]
 
 export default createRouter({

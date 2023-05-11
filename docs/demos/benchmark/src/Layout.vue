@@ -11,6 +11,7 @@
               @click="redirect('/composition-api')"
             />
             <v-menu-item label="Vuex" @click="redirect('/vuex')" />
+            <v-menu-item label="Pinia" @click="redirect('/pinia')" />
           </v-menu-list>
         </v-menu>
       </v-column>
