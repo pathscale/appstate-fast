@@ -3,17 +3,17 @@
 </template>
 
 <script>
-import { useState } from "@pathscale/appstate-fast";
+// import { useState } from "@pathscale/appstate-fast";
 
 export default {
   props: {
     state: Number,
   },
   setup(props) {
-    const statee = useState(props.state);
-    return {
-      statee,
-    };
+    // const statee = useState(props.state);
+    // return {
+    //   statee,
+    // };
   },
 }
 </script>

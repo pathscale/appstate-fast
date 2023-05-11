@@ -5,7 +5,6 @@
 </template>
 
 <script>
-// import { useState } from "@pathscale/appstate-fast";
 import TableCell from "./Cell.vue";
 
 export default {
@@ -16,11 +15,6 @@ export default {
     TableCell,
   },
   setup(props) {
-    // const statee = useState(props.state);
-
-    // return {
-    //   statee,
-    // };
   },
 };
 </script>

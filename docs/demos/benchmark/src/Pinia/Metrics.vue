@@ -17,7 +17,7 @@
 
 <script>
 import { computed } from "vue";
-import { useStore } from "vuex";
+import { useStore } from "./store";
 
 export default {
   props: {
@@ -26,7 +26,7 @@ export default {
   },
   setup(props) {
     const store = useStore();
-    const stats = computed(() => store.state.metrics);
+    const stats = computed(() => store.metrics);
     return { stats };
   },
 };

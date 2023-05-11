@@ -17,7 +17,6 @@
 
 <script>
 import { onBeforeUnmount, computed } from "vue";
-// import { useStore } from "vuex";
 import TableMeter from "./Metrics.vue";
 import TableRow from "./Row.vue";
 import config from "../config";
