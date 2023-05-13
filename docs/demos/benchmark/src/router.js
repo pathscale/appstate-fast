@@ -6,7 +6,7 @@ import Hello from './Hello.vue'
 import Vuex from './Vuex/Main.vue'
 import VuexLarge from './VuexLarge/Main.vue'
 import Pinia from './Pinia/Main.vue'
-import PiniaLarge from './PiniaLarge/Main.vue'
+import PiniaLarge from './PiniaLarge/Main.vue
 import CompositionAPI from './CompositionAPI/Main.vue'
 import CompositionAPILarge from './CompositionAPILarge/Main.vue'
 import Appstate from './Appstate/Main.vue'
