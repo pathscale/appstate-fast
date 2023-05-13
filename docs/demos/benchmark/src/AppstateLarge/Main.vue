@@ -13,7 +13,7 @@
 
 <script>
 import { computed } from "vue";
-import { useState } from "@pathscale/appstate-fast";
+import { useHookstate } from "@hookstate/core";
 import Dump from "./Dump.vue";
 import row from "./Row.vue";
 import config from "../config";
@@ -26,7 +26,7 @@ export default {
   },
 
   setup() {
-    const data = useState(
+    const data = useHookstate(
       Array.from(Array(config.largeTotalRows).keys()).map((i) => `Field #${i + 1} value`)
     );
     const state = computed(() => {
