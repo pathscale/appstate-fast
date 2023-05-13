@@ -12,6 +12,14 @@
             />
             <v-menu-item label="Vuex" @click="redirect('/vuex')" />
             <v-menu-item label="Pinia" @click="redirect('/pinia')" />
+              <div style="border-bottom: solid 1px #eee"></div>
+              <v-menu-item label="Appstate LargeState" @click="redirect('/appstate-large')" />
+              <v-menu-item
+                  label="Composition API LargeState"
+                  @click="redirect('/composition-api-large')"
+              />
+              <v-menu-item label="Vuex Large" @click="redirect('/vuex-large')" />
+              <v-menu-item label="Pinia Large" @click="redirect('/pinia-large')" />
           </v-menu-list>
         </v-menu>
       </v-column>

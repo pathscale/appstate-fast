@@ -14511,6 +14511,11 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
 }
 
 
+td[data-v-3e8bbcf0] {
+  padding: 8px;
+}
+
+
 tr[data-v-5b9d982b]:nth-child(even) {
   background-color: white;
 }
@@ -14520,12 +14525,58 @@ tr[data-v-5b9d982b]:nth-child(odd) {
 }
 
 
-tr[data-v-0ecd6ef0]:nth-child(even) {
+tr[data-v-4d31b7d2]:nth-child(even) {
+        background-color: white;
+}
+tr[data-v-4d31b7d2]:nth-child(odd) {
+        background-color: black;
+        color: white;
+}
+
+
+.large-row[data-v-f7a6fa9c] {
+    display: flex;
+    align-items: center;
+}
+.large-row span[data-v-f7a6fa9c] {
+        padding: 0 24px 0 6px;
+}
+
+
+td[data-v-929da8ed] {
+  padding: 8px;
+}
+
+
+tr[data-v-732c2fba]:nth-child(even) {
   background-color: white;
 }
-tr[data-v-0ecd6ef0]:nth-child(odd) {
+tr[data-v-732c2fba]:nth-child(odd) {
   background-color: black;
   color: white;
+}
+
+
+tr[data-v-757fb1ac]:nth-child(even) {
+        background-color: white;
+}
+tr[data-v-757fb1ac]:nth-child(odd) {
+        background-color: black;
+        color: white;
+}
+
+
+.large-row[data-v-22732fb8] {
+    display: flex;
+    align-items: center;
+}
+.large-row span[data-v-22732fb8] {
+        padding: 0 24px 0 6px;
+}
+
+
+td[data-v-f4263868] {
+  padding: 8px;
 }
 
 
@@ -14538,6 +14589,29 @@ tr[data-v-a6b94a73]:nth-child(odd) {
 }
 
 
+tr[data-v-9b998a06]:nth-child(even) {
+        background-color: white;
+}
+tr[data-v-9b998a06]:nth-child(odd) {
+        background-color: black;
+        color: white;
+}
+
+
+.large-row[data-v-72237dfa] {
+    display: flex;
+    align-items: center;
+}
+.large-row span[data-v-72237dfa] {
+        padding: 0 24px 0 6px;
+}
+
+
+td[data-v-14fd37c5] {
+  padding: 8px;
+}
+
+
 tr[data-v-ea439c1b]:nth-child(even) {
   background-color: white;
 }
@@ -14547,21 +14621,19 @@ tr[data-v-ea439c1b]:nth-child(odd) {
 }
 
 
-td[data-v-3e8bbcf0] {
-  padding: 8px;
+tr[data-v-83e1c77b]:nth-child(even) {
+        background-color: white;
+}
+tr[data-v-83e1c77b]:nth-child(odd) {
+        background-color: black;
+        color: white;
 }
 
 
-td[data-v-3bd1c216] {
-  padding: 8px;
+.large-row[data-v-5a62c3e9] {
+    display: flex;
+    align-items: center;
 }
-
-
-td[data-v-f4263868] {
-  padding: 8px;
-}
-
-
-td[data-v-14fd37c5] {
-  padding: 8px;
+.large-row span[data-v-5a62c3e9] {
+        padding: 0 24px 0 6px;
 }

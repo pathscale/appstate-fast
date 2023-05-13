@@ -41,10 +41,10 @@ export const useStore = defineStore('store', {
             this.incrementCell({ row, column, amount })
             const elapsedMs = Date.now() - this.startTime
             this.updateMetrics({
-                totalSum: state.metrics.totalSum + amount,
-                totalCalls: state.metrics.totalCalls + 1,
+                totalSum: this.metrics.totalSum + amount,
+                totalCalls: this.metrics.totalCalls + 1,
                 elapsed: Math.floor(elapsedMs / 1000),
-                rate: Math.floor((state.metrics.totalCalls / elapsedMs) * 1000)
+                rate: Math.floor((this.metrics.totalCalls / elapsedMs) * 1000)
             })
         }
     }
