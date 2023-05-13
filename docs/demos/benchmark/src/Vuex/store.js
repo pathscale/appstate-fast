@@ -11,7 +11,8 @@ const initial = {
         totalCalls: 0,
         elapsed: 0,
         rate: 0,
-    }
+    },
+    largeData: []
 }
 
 export default createStore({
@@ -31,6 +32,17 @@ export default createStore({
         },
         clear(state) {
             Object.assign(state, initial, { startTime: new Date().getTime() })
+        },
+        incrementRow(state, {i, v}) {
+            state.largeData[i] = v;
+        },
+        largeIncrement(state, data ) {
+            state.largeData = data;
+        }
+    },
+    getters: {
+        largeState(state) {
+            return state.largeData.length > 10 ? state.largeData.slice(0, 10) : []
         }
     },
     actions: {

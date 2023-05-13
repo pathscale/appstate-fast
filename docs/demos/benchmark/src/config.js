@@ -4,4 +4,5 @@ export default {
     callsPerInterval: 50,
     interval: 10, // ms
     MAX_TIME: 20000, // ms
+    largeTotalRows: 5000
   }
